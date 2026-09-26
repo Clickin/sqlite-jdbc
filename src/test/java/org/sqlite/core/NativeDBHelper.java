@@ -41,4 +41,20 @@ public class NativeDBHelper {
     public static long getUpdateListener(DB nativeDB) {
         return ((NativeDB) nativeDB).getUpdateListener();
     }
+
+    /**
+     * Test-only hook backed by a fault-injection native library; see
+     * {@link NativeDB#backupTestOutstanding}.
+     */
+    public static long[] backupTestOutstanding(DB nativeDB) {
+        return ((NativeDB) nativeDB).backupTestOutstanding();
+    }
+
+    /**
+     * Test-only hook backed by a fault-injection native library; see
+     * {@link NativeDB#backupTestSetFaultMode}.
+     */
+    public static void backupTestSetFaultMode(DB nativeDB, int mode) {
+        ((NativeDB) nativeDB).backupTestSetFaultMode(mode);
+    }
 }

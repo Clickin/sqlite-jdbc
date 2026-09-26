@@ -161,6 +161,24 @@ $(NATIVE_DLL): $(SQLITE_OUT)/$(LIBNAME)
 	@mkdir -p $(NATIVE_TARGET_DIR)
 	cp $< $(NATIVE_TARGET_DIR)/$(LIBNAME)
 
+# Fault-injection build for backupInit resource tests: rebuilds only the JNI
+# wrapper with -DSQLITEJDBC_TEST_FAULTS into a separate object directory and
+# installs the resulting library like `make native` does. Run the fault tests
+# with SQLITEJDBC_TEST_FAULTS=1 in the environment, then restore the normal
+# library with `make native`.
+FAULT_OUT:=$(SQLITE_OUT)/faults
+native-faults: $(SQLITE_OUT)/$(LIBNAME)
+	mkdir -p $(FAULT_OUT)
+	$(CC) $(CCFLAGS) -DSQLITEJDBC_TEST_FAULTS -I $(TARGET)/common-lib -c -o $(FAULT_OUT)/NativeDB.o $(SRC)/org/sqlite/core/NativeDB.c
+	$(CC) $(CCFLAGS) -o $(FAULT_OUT)/$(LIBNAME) $(FAULT_OUT)/NativeDB.o $(SQLITE_OBJ) $(LINKFLAGS)
+	cp $(FAULT_OUT)/$(LIBNAME) $(NATIVE_DLL)
+	cp $(FAULT_OUT)/$(LIBNAME) $(NATIVE_TARGET_DIR)/$(LIBNAME)
+
+test-faults: native-faults
+	mvn -Dtest=BackupFaultInjectionTest test
+	cp $(SQLITE_OUT)/$(LIBNAME) $(NATIVE_DLL)
+	cp $(SQLITE_OUT)/$(LIBNAME) $(NATIVE_TARGET_DIR)/$(LIBNAME)
+
 win32: $(SQLITE_UNPACKED) jni-header
 	./docker/dockcross-windows-x86 -a $(DOCKER_RUN_OPTS) bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
 
