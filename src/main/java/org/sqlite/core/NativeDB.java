@@ -517,6 +517,14 @@ public final class NativeDB extends DB {
     private boolean backupSessionActive;
 
     /**
+     * Non-blocking test observation: number of Java-side busy waits entered across this process.
+     * An increment happens just before a wait begins and never blocks, so tests can prove a
+     * virtual thread reached the Java wait without letting test synchronization steal the carrier.
+     */
+    static final java.util.concurrent.atomic.AtomicLong javaWaitObservations =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    /**
      * Drives the copy loop of a backup/restore session from Java. Busy waits happen on the Java
      * side with {@link Thread#sleep}, outside any SQLite native frame, while the monitor of this
      * DB instance stays held: concurrent use and close() remain excluded exactly as with the
@@ -562,6 +570,7 @@ public final class NativeDB extends DB {
 
                 if (rc == SQLITE_BUSY || rc == SQLITE_LOCKED) {
                     if (nTimeout++ >= nTimeouts) break;
+                    javaWaitObservations.incrementAndGet();
                     Thread.sleep(sleepTimeMillis);
                 }
             } while (rc == SQLITE_OK || rc == SQLITE_BUSY || rc == SQLITE_LOCKED);
