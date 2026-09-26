@@ -31,6 +31,7 @@ public class JDBC4Connection extends JDBC3Connection {
         checkOpen();
         checkCursor(rst, rsc, rsh);
 
+        recoverTransactionRestart();
         return new JDBC4PreparedStatement(this, sql);
     }
 

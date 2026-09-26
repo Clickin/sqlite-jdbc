@@ -145,6 +145,15 @@ public abstract class Function {
      */
     protected abstract void xFunc() throws SQLException;
 
+    protected final void xFuncCallback() throws SQLException {
+        DB.enterNativeCallback();
+        try {
+            xFunc();
+        } finally {
+            DB.exitNativeCallback();
+        }
+    }
+
     /**
      * Returns the number of arguments passed to the function. Can only be called from
      * <tt>xFunc()</tt>.
@@ -327,9 +336,36 @@ public abstract class Function {
          */
         protected abstract void xFinal() throws SQLException;
 
+        protected final void xStepCallback() throws SQLException {
+            DB.enterNativeCallback();
+            try {
+                xStep();
+            } finally {
+                DB.exitNativeCallback();
+            }
+        }
+
+        protected final void xFinalCallback() throws SQLException {
+            DB.enterNativeCallback();
+            try {
+                xFinal();
+            } finally {
+                DB.exitNativeCallback();
+            }
+        }
+
         /** @see java.lang.Object#clone() */
         public Object clone() throws CloneNotSupportedException {
             return super.clone();
+        }
+
+        protected final Object cloneForSQLite() throws CloneNotSupportedException {
+            DB.enterNativeCallback();
+            try {
+                return clone();
+            } finally {
+                DB.exitNativeCallback();
+            }
         }
     }
 
@@ -356,5 +392,23 @@ public abstract class Function {
          *     href="https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions">https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions</a>
          */
         protected abstract void xValue() throws SQLException;
+
+        protected final void xInverseCallback() throws SQLException {
+            DB.enterNativeCallback();
+            try {
+                xInverse();
+            } finally {
+                DB.exitNativeCallback();
+            }
+        }
+
+        protected final void xValueCallback() throws SQLException {
+            DB.enterNativeCallback();
+            try {
+                xValue();
+            } finally {
+                DB.exitNativeCallback();
+            }
+        }
     }
 }

@@ -110,9 +110,49 @@ public final class NativeDB extends DB {
     @Override
     public synchronized native int enable_load_extension(boolean enable);
 
-    /** @see org.sqlite.core.DB#interrupt() */
+    /**
+     * Test observation: bumped on every {@link #interrupt()}; lets the control-statement wait
+     * boundary detect a cancel that arrives while it sleeps between native attempts.
+     */
+    private final java.util.concurrent.atomic.AtomicLong interruptGeneration =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    /** Current cancellation generation of this connection. */
+    public long interruptGeneration() {
+        return interruptGeneration.get();
+    }
+
     @Override
-    public native void interrupt();
+    public void interrupt() throws SQLException {
+        interruptGeneration.incrementAndGet();
+        interrupt0();
+    }
+
+    private native void interrupt0();
+
+    /**
+     * True while a driver-installed {@link org.sqlite.BusyHandler} is registered. Such a policy
+     * cannot be snapshotted and restored by value, so the control-statement wait boundary must take
+     * the legacy native path.
+     */
+    @Override
+    protected boolean hasDriverBusyHandler() {
+        return busyHandler != 0;
+    }
+
+    /** Effective native busy timeout in milliseconds, or -1 when it cannot be read. */
+    public synchronized native int busyTimeoutReadback();
+
+    /**
+     * One native control-statement step; low 32 bits are rc, bit 32 marks busy callback invocation.
+     */
+    @Override
+    protected synchronized native long attemptNoWaitBusy(long stmtPointer, boolean autoCommitProbe);
+
+    @Override
+    public boolean supportsPolicyPreservingBusyWait() {
+        return true;
+    }
 
     /** @see org.sqlite.core.DB#busy_timeout(int) */
     @Override
@@ -385,7 +425,8 @@ public final class NativeDB extends DB {
         return backup(
                 stringToUtf8ByteArray(dbName),
                 stringToUtf8ByteArray(destFileName),
-                otherFileOpenFlags(destFileName, SQLiteOpenMode.READWRITE.flag | SQLiteOpenMode.CREATE.flag),
+                otherFileOpenFlags(
+                        destFileName, SQLiteOpenMode.READWRITE.flag | SQLiteOpenMode.CREATE.flag),
                 observer,
                 DEFAULT_BACKUP_BUSY_SLEEP_TIME_MILLIS,
                 DEFAULT_BACKUP_NUM_BUSY_BEFORE_FAIL,
@@ -408,7 +449,8 @@ public final class NativeDB extends DB {
         return backup(
                 stringToUtf8ByteArray(dbName),
                 stringToUtf8ByteArray(destFileName),
-                otherFileOpenFlags(destFileName, SQLiteOpenMode.READWRITE.flag | SQLiteOpenMode.CREATE.flag),
+                otherFileOpenFlags(
+                        destFileName, SQLiteOpenMode.READWRITE.flag | SQLiteOpenMode.CREATE.flag),
                 observer,
                 sleepTimeMillis,
                 nTimeouts,
@@ -424,8 +466,15 @@ public final class NativeDB extends DB {
             int nTimeouts,
             int pagesPerStep)
             throws SQLException {
-        return guardedDriveBackupCopy(true, dbNameUtf8, destFileNameUtf8, otherFileOpenFlags,
-                observer, sleepTimeMillis, nTimeouts, pagesPerStep);
+        return guardedDriveBackupCopy(
+                true,
+                dbNameUtf8,
+                destFileNameUtf8,
+                otherFileOpenFlags,
+                observer,
+                sleepTimeMillis,
+                nTimeouts,
+                pagesPerStep);
     }
 
     /**
@@ -475,15 +524,21 @@ public final class NativeDB extends DB {
             int nTimeouts,
             int pagesPerStep)
             throws SQLException {
-        return guardedDriveBackupCopy(false, dbNameUtf8, sourceFileNameUtf8, otherFileOpenFlags,
-                observer, sleepTimeMillis, nTimeouts, pagesPerStep);
+        return guardedDriveBackupCopy(
+                false,
+                dbNameUtf8,
+                sourceFileNameUtf8,
+                otherFileOpenFlags,
+                observer,
+                sleepTimeMillis,
+                nTimeouts,
+                pagesPerStep);
     }
 
     /**
-     * Rejects a nested backup/restore on this connection before entering JNI:
-     * while a session is open the monitor does not stop same-thread reuse, and
-     * using the restore destination through another session is undefined.
-     * Uses of the source connection are still allowed.
+     * Rejects a nested backup/restore on this connection before entering JNI: while a session is
+     * open the monitor does not stop same-thread reuse, and using the restore destination through
+     * another session is undefined. Uses of the source connection are still allowed.
      */
     private int guardedDriveBackupCopy(
             boolean sessionDbIsBackupSource,
@@ -496,13 +551,15 @@ public final class NativeDB extends DB {
             int pagesPerStep)
             throws SQLException {
         if (backupSessionActive) {
-            throw new SQLException(
-                    "a backup/restore session is already active on this connection");
+            throw new SQLException("a backup/restore session is already active on this connection");
         }
         backupSessionActive = true;
         try {
             return driveBackupCopy(
-                    backupInit(dbNameUtf8, otherFileNameUtf8, otherFileOpenFlags,
+                    backupInit(
+                            dbNameUtf8,
+                            otherFileNameUtf8,
+                            otherFileOpenFlags,
                             sessionDbIsBackupSource),
                     observer,
                     sleepTimeMillis,
@@ -517,27 +574,19 @@ public final class NativeDB extends DB {
     private boolean backupSessionActive;
 
     /**
-     * Non-blocking test observation: number of Java-side busy waits entered across this process.
-     * An increment happens just before a wait begins and never blocks, so tests can prove a
-     * virtual thread reached the Java wait without letting test synchronization steal the carrier.
-     */
-    static final java.util.concurrent.atomic.AtomicLong javaWaitObservations =
-            new java.util.concurrent.atomic.AtomicLong();
-
-    /**
      * Drives the copy loop of a backup/restore session from Java. Busy waits happen on the Java
-     * side with {@link Thread#sleep}, outside any SQLite native frame, while the monitor of this
-     * DB instance stays held: concurrent use and close() remain excluded exactly as with the
-     * former in-native loop. On JDK 24+ (JEP 491) a virtual thread sleeping here releases its
-     * carrier instead of pinning it; on older JDKs the wait blocks the carrier like the former
-     * native {@code sqlite3_sleep}.
+     * side with {@link Thread#sleep}, outside any SQLite native frame, while the monitor of this DB
+     * instance stays held: concurrent use and close() remain excluded exactly as with the former
+     * in-native loop. On JDK 24+ (JEP 491) a virtual thread sleeping here releases its carrier
+     * instead of pinning it; on older JDKs the wait blocks the carrier like the former native
+     * {@code sqlite3_sleep}.
      *
-     * @param session result of {@link #backupInit}: {@code {resultCode, sessionPointer}}, where
-     *     the pointer is 0 unless the result code is SQLITE_OK
+     * @param session result of {@link #backupInit}: {@code {resultCode, sessionPointer}}, where the
+     *     pointer is 0 unless the result code is SQLITE_OK
      * @return SQLITE_OK when the copy completed (SQLITE_DONE), otherwise the last observed result
-     *     code. Unlike the former native loop, which reported the error code of the temporary
-     *     file connection, a restore that was exhausted or aborted while busy with a locked
-     *     source now reports that actual code instead of a possible spurious SQLITE_OK.
+     *     code. Unlike the former native loop, which reported the error code of the temporary file
+     *     connection, a restore that was exhausted or aborted while busy with a locked source now
+     *     reports that actual code instead of a possible spurious SQLITE_OK.
      */
     private int driveBackupCopy(
             long[] session,
@@ -615,18 +664,20 @@ public final class NativeDB extends DB {
     private native void backupFinish(long sessionPointer);
 
     /**
-     * Test-only hook, present only in native libraries built with
-     * -DSQLITEJDBC_TEST_FAULTS: returns the number of live backup sessions.
-     * Invoking it against the shipped library raises UnsatisfiedLinkError.
+     * Test-only hook, present only in native libraries built with -DSQLITEJDBC_TEST_FAULTS: returns
+     * the number of live backup sessions. Invoking it against the shipped library raises
+     * UnsatisfiedLinkError.
      */
     native long[] backupTestOutstanding();
 
     /**
-     * Test-only hook, present only in fault-injection native libraries: selects
-     * the injected backupInit fault (0 none, 1 failed session allocation, 2
-     * failed JNI result-array creation).
+     * Test-only hook, present only in fault-injection native libraries: selects the injected
+     * backupInit fault (0 none, 1 failed session allocation, 2 failed JNI result-array creation).
      */
     native void backupTestSetFaultMode(int mode);
+
+    /** Test-only hook, present only in -DSQLITEJDBC_TEST_FAULTS native libraries. */
+    native void failNextAutocommitProbeCommitForTest();
 
     // COMPOUND FUNCTIONS (for optimisation) /////////////////////////
 
