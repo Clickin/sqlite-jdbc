@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteConnection;
 import org.sqlite.core.VtWaitProbe;
 
@@ -31,8 +32,7 @@ public class VtWaitScenarioMain {
         File workDir = new File(args.length > 1 ? args[1] : ".");
         // marker=call-start: for the parent-commit control group, where the whole backup is one
         // blocking native call, the marker is the statement right before that call.
-        boolean callStartMarker =
-                args.length > 2 && "--marker=call-start".equals(args[2]);
+        boolean callStartMarker = args.length > 2 && "--marker=call-start".equals(args[2]);
 
         Object builder;
         try {
@@ -45,6 +45,13 @@ public class VtWaitScenarioMain {
 
         String sourcePath = new File(workDir, "source.sqlite").getAbsolutePath();
         String destinationPath = new File(workDir, "destination.sqlite").getAbsolutePath();
+
+        if ("begin-progress".equals(scenario)
+                || "commit-progress".equals(scenario)
+                || "control-exclusion".equals(scenario)) {
+            runControlScenario(builder, scenario, workDir, callStartMarker);
+            return;
+        }
 
         // The platform main thread holds the destination write lock for the whole scenario; it
         // never depends on the virtual threads, so releasing it cannot deadlock on a stolen
@@ -65,21 +72,25 @@ public class VtWaitScenarioMain {
                     new java.util.concurrent.atomic.AtomicBoolean(false);
             AtomicBoolean targetDone = new AtomicBoolean(false);
             AtomicReference<String> targetResult = new AtomicReference<>("PENDING");
-            Runnable targetTask = () -> {
-                try {
-                    if (callStartMarker) {
-                        waitEntered.set(true);
-                    }
-                    // Generous Java-wait budget: 5 busy retries x 150ms so the scenario has room.
-                    int rc = ((SQLiteConnection) source).getDatabase()
-                            .backup("main", destinationPath, null, 150, 5, 1);
-                    targetResult.set("RC=" + rc);
-                } catch (SQLException error) {
-                    targetResult.set("SQLERROR");
-                } finally {
-                    targetDone.set(true);
-                }
-            };
+            Runnable targetTask =
+                    () -> {
+                        try {
+                            if (callStartMarker) {
+                                waitEntered.set(true);
+                            }
+                            // Generous Java-wait budget: 5 busy retries x 150ms so the scenario has
+                            // room.
+                            int rc =
+                                    ((SQLiteConnection) source)
+                                            .getDatabase()
+                                            .backup("main", destinationPath, null, 150, 5, 1);
+                            targetResult.set("RC=" + rc);
+                        } catch (SQLException error) {
+                            targetResult.set("SQLERROR");
+                        } finally {
+                            targetDone.set(true);
+                        }
+                    };
             Object targetThread = unstarted(builder, targetTask, "vt-target-backup");
             start(targetThread);
 
@@ -104,20 +115,23 @@ public class VtWaitScenarioMain {
             if ("backup-progress".equals(scenario)) {
                 final java.util.concurrent.CountDownLatch independentDone =
                         new java.util.concurrent.CountDownLatch(1);
-                Runnable independentTask = () -> {
-                    try {
-                        System.out.println("B-START");
-                        for (int i = 0; i < 5; i++) {
-                            Thread.sleep(20);
-                        }
-                        // Non-blocking read only: the marker must not yield the carrier itself.
-                        System.out.println("B-DONE targetStillWaiting=" + !targetDone.get());
-                    } catch (InterruptedException ignored) {
-                        Thread.currentThread().interrupt();
-                    } finally {
-                        independentDone.countDown();
-                    }
-                };
+                Runnable independentTask =
+                        () -> {
+                            try {
+                                System.out.println("B-START");
+                                for (int i = 0; i < 5; i++) {
+                                    Thread.sleep(20);
+                                }
+                                // Non-blocking read only: the marker must not yield the carrier
+                                // itself.
+                                System.out.println(
+                                        "B-DONE targetStillWaiting=" + !targetDone.get());
+                            } catch (InterruptedException ignored) {
+                                Thread.currentThread().interrupt();
+                            } finally {
+                                independentDone.countDown();
+                            }
+                        };
                 Object independentThread = unstarted(builder, independentTask, "vt-independent");
                 start(independentThread);
                 join(independentThread, 10_000L);
@@ -128,14 +142,18 @@ public class VtWaitScenarioMain {
                 }
             } else if ("backup-exclusion".equals(scenario)) {
                 AtomicBoolean proberFinished = new AtomicBoolean(false);
-                Thread prober = new Thread(() -> {
-                    try (Statement stmt = source.createStatement()) {
-                        stmt.executeQuery("select 1").close();
-                        proberFinished.set(true);
-                    } catch (SQLException ignored) {
-                        // expected only if the wait aborted with the monitor released
-                    }
-                }, "same-connection-prober");
+                Thread prober =
+                        new Thread(
+                                () -> {
+                                    try (Statement stmt = source.createStatement()) {
+                                        stmt.executeQuery("select 1").close();
+                                        proberFinished.set(true);
+                                    } catch (SQLException ignored) {
+                                        // expected only if the wait aborted with the monitor
+                                        // released
+                                    }
+                                },
+                                "same-connection-prober");
                 prober.start();
                 Thread.sleep(400);
                 System.out.println("EXCLUSION-BLOCKED=" + !proberFinished.get());
@@ -157,6 +175,148 @@ public class VtWaitScenarioMain {
             lock.close();
             System.out.println("RESULT=PASS");
             System.exit(0);
+        }
+    }
+
+    private static void runControlScenario(
+            Object builder, String scenario, File workDir, boolean callStartMarker)
+            throws Exception {
+        boolean begin = !"commit-progress".equals(scenario);
+        boolean exclusion = "control-exclusion".equals(scenario);
+        String url = "jdbc:sqlite:" + new File(workDir, scenario + ".sqlite").getAbsolutePath();
+
+        try (Connection blocker = DriverManager.getConnection(url)) {
+            try (Statement setup = blocker.createStatement()) {
+                setup.executeUpdate("create table t(v)");
+                setup.executeUpdate("insert into t values (1)");
+            }
+
+            SQLiteConfig config = new SQLiteConfig();
+            config.setBusyTimeout(1500);
+            config.setTransactionMode(
+                    begin
+                            ? SQLiteConfig.TransactionMode.IMMEDIATE
+                            : SQLiteConfig.TransactionMode.DEFERRED);
+            try (Connection waiter = DriverManager.getConnection(url, config.toProperties())) {
+                Connection reader = null;
+                try {
+                    if (!begin) {
+                        reader = DriverManager.getConnection(url);
+                        reader.setAutoCommit(false);
+                        try (Statement statement = reader.createStatement()) {
+                            statement.executeQuery("select * from t").close();
+                        }
+                    }
+
+                    if (begin) {
+                        blocker.setAutoCommit(false);
+                        try (Statement statement = blocker.createStatement()) {
+                            statement.executeUpdate("insert into t values (2)");
+                        }
+                    } else {
+                        waiter.setAutoCommit(false);
+                        try (Statement statement = waiter.createStatement()) {
+                            statement.executeUpdate("insert into t values (2)");
+                        }
+                    }
+
+                    long waits = VtWaitProbe.javaWaitObservations();
+                    AtomicBoolean waitEntered = new AtomicBoolean(false);
+                    AtomicBoolean targetDone = new AtomicBoolean(false);
+                    AtomicReference<String> targetResult = new AtomicReference<>("PENDING");
+                    Runnable targetTask =
+                            () -> {
+                                try {
+                                    if (callStartMarker) waitEntered.set(true);
+                                    if (begin) waiter.setAutoCommit(false);
+                                    else waiter.commit();
+                                    targetResult.set(
+                                            begin ? "BEGIN-SUCCEEDED" : "COMMIT-SUCCEEDED");
+                                } catch (SQLException error) {
+                                    targetResult.set("SQLERROR:" + error.getErrorCode());
+                                } finally {
+                                    targetDone.set(true);
+                                }
+                            };
+                    Object target = unstarted(builder, targetTask, "vt-target-" + scenario);
+                    start(target);
+
+                    long deadline = System.nanoTime() + 20_000_000_000L;
+                    while (!waitEntered.get()) {
+                        if (!callStartMarker) {
+                            waitEntered.set(VtWaitProbe.javaWaitObservations() > waits);
+                        }
+                        if (System.nanoTime() > deadline || targetDone.get()) {
+                            fail("control target never reached the Java wait");
+                            return;
+                        }
+                        Thread.sleep(5);
+                    }
+                    System.out.println("WAIT-ENTERED");
+
+                    Thread sameConnectionProber = null;
+                    if (exclusion) {
+                        AtomicBoolean proberFinished = new AtomicBoolean(false);
+                        sameConnectionProber =
+                                new Thread(
+                                        () -> {
+                                            try (Statement statement = waiter.createStatement()) {
+                                                statement.executeQuery("select 1").close();
+                                                proberFinished.set(true);
+                                            } catch (SQLException ignored) {
+                                            }
+                                        },
+                                        "same-connection-prober");
+                        sameConnectionProber.start();
+                        Thread.sleep(400);
+                        System.out.println("EXCLUSION-BLOCKED=" + !proberFinished.get());
+                        System.out.println(
+                                "PROBER-ALIVE-AFTER-400MS=" + sameConnectionProber.isAlive());
+                    } else {
+                        AtomicBoolean independentDone = new AtomicBoolean(false);
+                        Object independent =
+                                unstarted(
+                                        builder,
+                                        () -> {
+                                            try {
+                                                System.out.println("B-START");
+                                                for (int i = 0; i < 5; i++) Thread.sleep(20);
+                                                System.out.println(
+                                                        "B-DONE targetStillWaiting="
+                                                                + !targetDone.get());
+                                            } catch (InterruptedException ignored) {
+                                                Thread.currentThread().interrupt();
+                                            } finally {
+                                                independentDone.set(true);
+                                            }
+                                        },
+                                        "vt-independent");
+                        start(independent);
+                        join(independent, 10_000L);
+                        if (!independentDone.get()) {
+                            fail("independent virtual thread made no progress during control wait");
+                            return;
+                        }
+                    }
+
+                    if (begin) blocker.setAutoCommit(true);
+                    else reader.setAutoCommit(true);
+                    join(target, 10_000L);
+                    if (sameConnectionProber != null) sameConnectionProber.join(5_000L);
+                    System.out.println("TARGET-RESULT=" + targetResult.get());
+                    if (!targetDone.get()) {
+                        fail("control target did not finish after lock release");
+                        return;
+                    }
+                    if (!callStartMarker && !targetResult.get().endsWith("SUCCEEDED")) {
+                        fail("control target did not succeed after lock release");
+                        return;
+                    }
+                    System.out.println("RESULT=PASS");
+                } finally {
+                    if (reader != null) reader.close();
+                }
+            }
         }
     }
 

@@ -45,48 +45,65 @@ run_scenario() { # $1 label, $2 classpath, $3 workdir, extra args...
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "${WORKDIR}"' EXIT
 
-# --- current build ----------------------------------------------------------
-( cd "${REPO_DIR}" && mvn -q -DskipTests compile test-compile > /dev/null 2>&1 )
-run_scenario "vt-java-wait" "${REPO_DIR}/target/test-classes:${REPO_DIR}/target/classes" \
-  "${WORKDIR}/current" backup-progress "${WORKDIR}/current"
+ # --- current build ----------------------------------------------------------
+ ( cd "${REPO_DIR}" && mvn -q -DskipTests compile test-compile > /dev/null 2>&1 )
+ run_scenario "vt-java-wait" "${REPO_DIR}/target/test-classes:${REPO_DIR}/target/classes" \
+   "${WORKDIR}/current-backup" backup-progress "${WORKDIR}/current-backup"
+ run_scenario "vt-begin" "${REPO_DIR}/target/test-classes:${REPO_DIR}/target/classes" \
+   "${WORKDIR}/current-begin" begin-progress "${WORKDIR}/current-begin"
+ run_scenario "vt-commit" "${REPO_DIR}/target/test-classes:${REPO_DIR}/target/classes" \
+   "${WORKDIR}/current-commit" commit-progress "${WORKDIR}/current-commit"
 
-# --- parent commit native ---------------------------------------------------
-( cd "${WORKTREE}" && mvn -q -DskipTests compile > /dev/null 2>&1 )
-( cd "${WORKTREE}" && make native > /dev/null 2>&1 )
-CTRL_CLASSES="${WORKTREE}/control-classes"
-mkdir -p "${CTRL_CLASSES}" "${WORKTREE}/org/sqlite/core"
-# The probe reads a counter that only exists on the vt-java-wait branch; the
-# control run uses the call-start marker and never calls into it.
-cat > "${WORKTREE}/org/sqlite/core/VtWaitProbe.java" <<'EOF'
+ # --- parent commit native ---------------------------------------------------
+ ( cd "${WORKTREE}" && mvn -q -DskipTests compile > /dev/null 2>&1 )
+ ( cd "${WORKTREE}" && make native > /dev/null 2>&1 )
+ CTRL_CLASSES="${WORKTREE}/control-classes"
+ mkdir -p "${CTRL_CLASSES}" "${WORKTREE}/org/sqlite/core"
+ cat > "${WORKTREE}/org/sqlite/core/VtWaitProbe.java" <<'EOF'
 package org.sqlite.core;
 public class VtWaitProbe {
     public static long javaWaitObservations() { return 0; }
 }
 EOF
-"${JAVA_BIN}" -version 2> "${EVIDENCE}/java-version.txt" || true
-javac -encoding UTF-8 -cp "${WORKTREE}/target/classes" \
-  -d "${CTRL_CLASSES}" \
-  "${REPO_DIR}/src/test/java/org/sqlite/vt/VtWaitScenarioMain.java" \
-  "${WORKTREE}/org/sqlite/core/VtWaitProbe.java" \
-  > "${EVIDENCE}/control-compile.log" 2>&1
+ "${JAVA_BIN}" -version 2> "${EVIDENCE}/java-version.txt" || true
+ javac -encoding UTF-8 -cp "${WORKTREE}/target/classes" \
+   -d "${CTRL_CLASSES}" \
+   "${REPO_DIR}/src/test/java/org/sqlite/vt/VtWaitScenarioMain.java" \
+   "${WORKTREE}/org/sqlite/core/VtWaitProbe.java" \
+   > "${EVIDENCE}/control-compile.log" 2>&1
 
-run_scenario "parent-native" "${CTRL_CLASSES}:${WORKTREE}/target/classes" \
-  "${WORKDIR}/parent" backup-progress "${WORKDIR}/parent" --marker=call-start
+ run_scenario "parent-native" "${CTRL_CLASSES}:${WORKTREE}/target/classes" \
+   "${WORKDIR}/parent-backup" backup-progress "${WORKDIR}/parent-backup" --marker=call-start
+ run_scenario "parent-begin" "${CTRL_CLASSES}:${WORKTREE}/target/classes" \
+   "${WORKDIR}/parent-begin" begin-progress "${WORKDIR}/parent-begin" --marker=call-start
+ run_scenario "parent-commit" "${CTRL_CLASSES}:${WORKTREE}/target/classes" \
+   "${WORKDIR}/parent-commit" commit-progress "${WORKDIR}/parent-commit" --marker=call-start
 
-# --- verdict ----------------------------------------------------------------
-if grep -q "B-DONE targetStillWaiting=true" "${EVIDENCE}/vt-java-wait-stdout.txt" \
-    && [ "$(cat "${EVIDENCE}/vt-java-wait-exit.txt")" = "0" ]; then
-  echo "PASS: current build yields the carrier during the Java wait"
-else
-  echo "FAIL: current build did not prove carrier progress" >&2
-  exit 1
-fi
-# Parent native loop pins the carrier: the independent VT can only run after the
-# target exhausted its busy budget (targetStillWaiting=false), never during it.
-if [ "$(cat "${EVIDENCE}/parent-native-exit.txt")" = "0" ] \
-    && grep -q "B-DONE targetStillWaiting=false" "${EVIDENCE}/parent-native-stdout.txt"; then
-  echo "PASS: parent native loop only allows progress after the busy budget (expected contrast)"
-else
-  echo "FAIL: parent control did not reproduce the pinned-carrier behavior" >&2
-  exit 1
-fi
+ assert_yielded() {
+   local label="$1"
+   if [ "$(cat "${EVIDENCE}/${label}-exit.txt")" = "0" ] \
+       && grep -q "B-DONE targetStillWaiting=true" "${EVIDENCE}/${label}-stdout.txt"; then
+     echo "PASS: ${label} yielded its carrier during Java wait"
+   else
+     echo "FAIL: ${label} did not prove carrier progress" >&2
+     exit 1
+   fi
+ }
+
+ assert_native_blocked() {
+   local label="$1"
+   if [ "$(cat "${EVIDENCE}/${label}-exit.txt")" = "0" ] \
+       && grep -q "B-DONE targetStillWaiting=false" "${EVIDENCE}/${label}-stdout.txt"; then
+     echo "PASS: ${label} only allowed progress after the native wait (expected contrast)"
+   else
+     echo "FAIL: ${label} did not reproduce native carrier blocking" >&2
+     exit 1
+   fi
+ }
+
+ assert_yielded "vt-java-wait"
+ assert_yielded "vt-begin"
+ assert_yielded "vt-commit"
+ assert_native_blocked "parent-native"
+ assert_native_blocked "parent-begin"
+ assert_native_blocked "parent-commit"
