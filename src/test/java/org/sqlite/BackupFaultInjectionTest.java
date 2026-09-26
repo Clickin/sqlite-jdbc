@@ -20,9 +20,9 @@ import org.sqlite.core.DB;
 import org.sqlite.core.NativeDBHelper;
 
 /**
- * B04/B08: backupInit resource handling under injected failures. Requires the
- * fault-injection native (build and run via `make test-faults`); against the
- * shipped library every test is skipped by assumption.
+ * B04/B08: backupInit resource handling under injected failures. Requires the fault-injection
+ * native (build and run via `make test-faults`); against the shipped library every test is skipped
+ * by assumption.
  */
 public class BackupFaultInjectionTest {
 
@@ -49,20 +49,25 @@ public class BackupFaultInjectionTest {
     void failedSessionAllocationClosesTemporaryConnection() throws Exception {
         File source = new File(tempDir, "source.sqlite");
         try (SQLiteConnection conn =
-                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
+                (SQLiteConnection)
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
             createSample(conn);
             DB db = conn.getDatabase();
             Long baseline = outstanding(db);
-            assumeTrue(baseline != null, "fault-injection native library required (make test-faults)");
+            assumeTrue(
+                    baseline != null, "fault-injection native library required (make test-faults)");
 
             File destination = new File(tempDir, "dest1.sqlite");
             NativeDBHelper.backupTestSetFaultMode(db, 1);
             try {
-                assertThatThrownBy(() -> {
-                    try (Statement stmt = conn.createStatement()) {
-                        stmt.executeUpdate("backup to " + destination.getAbsolutePath());
-                    }
-                }).isInstanceOf(SQLException.class);
+                assertThatThrownBy(
+                                () -> {
+                                    try (Statement stmt = conn.createStatement()) {
+                                        stmt.executeUpdate(
+                                                "backup to " + destination.getAbsolutePath());
+                                    }
+                                })
+                        .isInstanceOf(SQLException.class);
             } finally {
                 NativeDBHelper.backupTestSetFaultMode(db, 0);
             }
@@ -82,20 +87,25 @@ public class BackupFaultInjectionTest {
     void failedResultArrayCreationReleasesSessionNatively() throws Exception {
         File source = new File(tempDir, "source.sqlite");
         try (SQLiteConnection conn =
-                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
+                (SQLiteConnection)
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
             createSample(conn);
             DB db = conn.getDatabase();
             Long baseline = outstanding(db);
-            assumeTrue(baseline != null, "fault-injection native library required (make test-faults)");
+            assumeTrue(
+                    baseline != null, "fault-injection native library required (make test-faults)");
 
             File destination = new File(tempDir, "dest2.sqlite");
             NativeDBHelper.backupTestSetFaultMode(db, 2);
             try {
-                assertThatThrownBy(() -> {
-                    try (Statement stmt = conn.createStatement()) {
-                        stmt.executeUpdate("backup to " + destination.getAbsolutePath());
-                    }
-                }).isInstanceOf(SQLException.class);
+                assertThatThrownBy(
+                                () -> {
+                                    try (Statement stmt = conn.createStatement()) {
+                                        stmt.executeUpdate(
+                                                "backup to " + destination.getAbsolutePath());
+                                    }
+                                })
+                        .isInstanceOf(SQLException.class);
             } finally {
                 NativeDBHelper.backupTestSetFaultMode(db, 0);
             }
@@ -111,11 +121,13 @@ public class BackupFaultInjectionTest {
     void repeatedSessionsReturnToBaseline() throws Exception {
         File source = new File(tempDir, "source.sqlite");
         try (SQLiteConnection conn =
-                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
+                (SQLiteConnection)
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
             createSample(conn);
             DB db = conn.getDatabase();
             Long baseline = outstanding(db);
-            assumeTrue(baseline != null, "fault-injection native library required (make test-faults)");
+            assumeTrue(
+                    baseline != null, "fault-injection native library required (make test-faults)");
 
             File destination = new File(tempDir, "dest3.sqlite");
             for (int i = 0; i < 5; i++) {

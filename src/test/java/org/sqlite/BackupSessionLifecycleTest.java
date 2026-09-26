@@ -20,9 +20,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.sqlite.core.DB;
 
 /**
- * Phase 1 accuracy tests for the Java-driven backup/restore session lifecycle:
- * initialization failures must report the right connection's error, must not
- * leak the temporary connection, and dangerous re-entry must be rejected.
+ * Phase 1 accuracy tests for the Java-driven backup/restore session lifecycle: initialization
+ * failures must report the right connection's error, must not leak the temporary connection, and
+ * dangerous re-entry must be rejected.
  */
 public class BackupSessionLifecycleTest {
 
@@ -36,14 +36,17 @@ public class BackupSessionLifecycleTest {
         }
     }
 
-    /** B01: normal completion reports progress on the caller thread; the connection stays usable. */
+    /**
+     * B01: normal completion reports progress on the caller thread; the connection stays usable.
+     */
     @Test
     void backupReportsProgressOnCallerThreadAndConnectionIsReusable() throws Exception {
         File source = new File(tempDir, "source.sqlite");
         File destination = new File(tempDir, "destination.sqlite");
 
         try (SQLiteConnection conn =
-                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
+                (SQLiteConnection)
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
             createSample(conn);
 
             AtomicInteger progressCalls = new AtomicInteger();
@@ -54,31 +57,39 @@ public class BackupSessionLifecycleTest {
                         progressThread.compareAndSet(null, Thread.currentThread());
                     };
 
-            int rc = conn.getDatabase()
-                    .backup("main", destination.getAbsolutePath(), observer, 100, 3, 1);
+            int rc =
+                    conn.getDatabase()
+                            .backup("main", destination.getAbsolutePath(), observer, 100, 3, 1);
             assertThat(rc).isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
             assertThat(progressCalls.get()).isGreaterThan(0);
             assertThat(progressThread.get()).isEqualTo(Thread.currentThread());
 
             // The connection accepts more work after the session finished.
             assertThat(
-                    conn.getDatabase()
-                            .backup("main", destination.getAbsolutePath(), null, 100, 3, 1))
+                            conn.getDatabase()
+                                    .backup("main", destination.getAbsolutePath(), null, 100, 3, 1))
                     .isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
         }
     }
 
-    /** B02: an unopenable destination fails with the real error and leaves the connection usable. */
+    /**
+     * B02: an unopenable destination fails with the real error and leaves the connection usable.
+     */
     @Test
     void backupToUnopenableDestinationFailsAndKeepsSourceUsable() throws Exception {
         File source = new File(tempDir, "source.sqlite");
-        File badDestination = new File(tempDir, "missing-directory" + File.separator + "dest.sqlite");
+        File badDestination =
+                new File(tempDir, "missing-directory" + File.separator + "dest.sqlite");
 
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath());
-             Statement stmt = conn.createStatement()) {
+        try (Connection conn =
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath());
+                Statement stmt = conn.createStatement()) {
             createSample(conn);
 
-            assertThatThrownBy(() -> stmt.executeUpdate("backup to " + badDestination.getAbsolutePath()))
+            assertThatThrownBy(
+                            () ->
+                                    stmt.executeUpdate(
+                                            "backup to " + badDestination.getAbsolutePath()))
                     .isInstanceOf(SQLException.class)
                     .hasMessageContaining("Backup failed");
 
@@ -100,10 +111,11 @@ public class BackupSessionLifecycleTest {
         File source = new File(tempDir, "source.sqlite");
 
         try (Connection destConn =
-                     DriverManager.getConnection("jdbc:sqlite:" + destination.getAbsolutePath());
-             Connection sourceConn =
-                     DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath());
-             Statement destStmt = destConn.createStatement()) {
+                        DriverManager.getConnection(
+                                "jdbc:sqlite:" + destination.getAbsolutePath());
+                Connection sourceConn =
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath());
+                Statement destStmt = destConn.createStatement()) {
             createSample(sourceConn);
 
             // A write transaction on the destination makes sqlite3_backup_init fail
@@ -112,11 +124,15 @@ public class BackupSessionLifecycleTest {
 
             // Pre-fix behavior reported a step-time MISUSE; the fix surfaces the
             // destination connection's SQLITE_ERROR from initialization.
-            assertThatThrownBy(() -> destStmt.executeUpdate("restore from " + source.getAbsolutePath()))
+            assertThatThrownBy(
+                            () ->
+                                    destStmt.executeUpdate(
+                                            "restore from " + source.getAbsolutePath()))
                     .isInstanceOfSatisfying(
                             SQLiteException.class,
-                            error -> assertThat(error.getResultCode())
-                                    .isEqualTo(SQLiteErrorCode.SQLITE_ERROR))
+                            error ->
+                                    assertThat(error.getResultCode())
+                                            .isEqualTo(SQLiteErrorCode.SQLITE_ERROR))
                     .hasMessageContaining("Restore failed");
 
             destStmt.execute("ROLLBACK");
@@ -133,7 +149,8 @@ public class BackupSessionLifecycleTest {
         File destination = new File(tempDir, "destination.sqlite");
 
         try (SQLiteConnection conn =
-                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
+                (SQLiteConnection)
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
             createSample(conn);
 
             RuntimeException failure = new RuntimeException("observer boom");
@@ -143,14 +160,21 @@ public class BackupSessionLifecycleTest {
                     };
 
             assertThatThrownBy(
-                    () -> conn.getDatabase()
-                            .backup("main", destination.getAbsolutePath(), throwingObserver, 100, 3, 1))
+                            () ->
+                                    conn.getDatabase()
+                                            .backup(
+                                                    "main",
+                                                    destination.getAbsolutePath(),
+                                                    throwingObserver,
+                                                    100,
+                                                    3,
+                                                    1))
                     .isSameAs(failure);
 
             // Session released: a fresh backup on the same connection completes.
             assertThat(
-                    conn.getDatabase()
-                            .backup("main", destination.getAbsolutePath(), null, 100, 3, 1))
+                            conn.getDatabase()
+                                    .backup("main", destination.getAbsolutePath(), null, 100, 3, 1))
                     .isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
         }
     }
@@ -166,25 +190,47 @@ public class BackupSessionLifecycleTest {
         File other = new File(tempDir, "other.sqlite");
 
         try (SQLiteConnection conn =
-                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
+                (SQLiteConnection)
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath())) {
             createSample(conn);
 
             DB.ProgressObserver reenteringObserver =
                     (remaining, pageCount) -> {
                         assertThatThrownBy(
-                                () -> conn.getDatabase()
-                                        .backup("main", other.getAbsolutePath(), null, 100, 3, 1))
+                                        () ->
+                                                conn.getDatabase()
+                                                        .backup(
+                                                                "main",
+                                                                other.getAbsolutePath(),
+                                                                null,
+                                                                100,
+                                                                3,
+                                                                1))
                                 .isInstanceOf(SQLException.class)
                                 .hasMessageContaining("already active");
                         assertThatThrownBy(
-                                () -> conn.getDatabase()
-                                        .restore("main", source.getAbsolutePath(), null, 100, 3, 1))
+                                        () ->
+                                                conn.getDatabase()
+                                                        .restore(
+                                                                "main",
+                                                                source.getAbsolutePath(),
+                                                                null,
+                                                                100,
+                                                                3,
+                                                                1))
                                 .isInstanceOf(SQLException.class)
                                 .hasMessageContaining("already active");
                     };
 
-            int rc = conn.getDatabase()
-                    .backup("main", destination.getAbsolutePath(), reenteringObserver, 100, 3, 1);
+            int rc =
+                    conn.getDatabase()
+                            .backup(
+                                    "main",
+                                    destination.getAbsolutePath(),
+                                    reenteringObserver,
+                                    100,
+                                    3,
+                                    1);
             assertThat(rc).isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
         }
     }
@@ -195,22 +241,31 @@ public class BackupSessionLifecycleTest {
         File source = new File(tempDir, "source.sqlite");
         File destination = new File(tempDir, "destination.sqlite");
 
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath());
-             Statement stmt = conn.createStatement()) {
+        try (Connection conn =
+                        DriverManager.getConnection("jdbc:sqlite:" + source.getAbsolutePath());
+                Statement stmt = conn.createStatement()) {
             createSample(conn);
 
             for (int i = 0; i < 10; i++) {
                 stmt.executeUpdate("backup to " + destination.getAbsolutePath());
                 assertThatThrownBy(
-                        () -> stmt.executeUpdate(
-                                "backup to " + new File(tempDir, "no-such-dir" + File.separator + "x.db")))
+                                () ->
+                                        stmt.executeUpdate(
+                                                "backup to "
+                                                        + new File(
+                                                                tempDir,
+                                                                "no-such-dir"
+                                                                        + File.separator
+                                                                        + "x.db")))
                         .isInstanceOf(SQLException.class);
             }
 
             try (Connection verify =
-                         DriverManager.getConnection("jdbc:sqlite:" + destination.getAbsolutePath());
-                 Statement verifyStmt = verify.createStatement();
-                 java.sql.ResultSet rs = verifyStmt.executeQuery("select count(*) from sample")) {
+                            DriverManager.getConnection(
+                                    "jdbc:sqlite:" + destination.getAbsolutePath());
+                    Statement verifyStmt = verify.createStatement();
+                    java.sql.ResultSet rs =
+                            verifyStmt.executeQuery("select count(*) from sample")) {
                 assertThat(rs.next()).isTrue();
                 assertThat(rs.getInt(1)).isEqualTo(2);
             }

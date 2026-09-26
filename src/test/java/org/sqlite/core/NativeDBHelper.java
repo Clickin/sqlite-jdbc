@@ -43,18 +43,23 @@ public class NativeDBHelper {
     }
 
     /**
-     * Test-only hook backed by a fault-injection native library; see
-     * {@link NativeDB#backupTestOutstanding}.
+     * Test-only hook backed by a fault-injection native library; see {@link
+     * NativeDB#backupTestOutstanding}.
      */
     public static long[] backupTestOutstanding(DB nativeDB) {
         return ((NativeDB) nativeDB).backupTestOutstanding();
     }
 
     /**
-     * Test-only hook backed by a fault-injection native library; see
-     * {@link NativeDB#backupTestSetFaultMode}.
+     * Test-only hook backed by a fault-injection native library; see {@link
+     * NativeDB#backupTestSetFaultMode}.
      */
     public static void backupTestSetFaultMode(DB nativeDB, int mode) {
         ((NativeDB) nativeDB).backupTestSetFaultMode(mode);
+    }
+
+    /** Test-only hook that fails the next autocommit compatibility COMMIT step. */
+    public static void failNextAutocommitProbeCommit(DB nativeDB) {
+        ((NativeDB) nativeDB).failNextAutocommitProbeCommitForTest();
     }
 }

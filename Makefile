@@ -161,11 +161,8 @@ $(NATIVE_DLL): $(SQLITE_OUT)/$(LIBNAME)
 	@mkdir -p $(NATIVE_TARGET_DIR)
 	cp $< $(NATIVE_TARGET_DIR)/$(LIBNAME)
 
-# Fault-injection build for backupInit resource tests: rebuilds only the JNI
-# wrapper with -DSQLITEJDBC_TEST_FAULTS into a separate object directory and
-# installs the resulting library like `make native` does. Run the fault tests
-# with SQLITEJDBC_TEST_FAULTS=1 in the environment, then restore the normal
-# library with `make native`.
+# Fault-injection build for backupInit resource paths and the autocommit probe
+# failure state. Run `make test-faults`, then restore the normal library.
 FAULT_OUT:=$(SQLITE_OUT)/faults
 native-faults: $(SQLITE_OUT)/$(LIBNAME)
 	mkdir -p $(FAULT_OUT)
@@ -176,6 +173,7 @@ native-faults: $(SQLITE_OUT)/$(LIBNAME)
 
 test-faults: native-faults
 	mvn -Dtest=BackupFaultInjectionTest test
+	mvn -Dtest=ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml test
 	cp $(SQLITE_OUT)/$(LIBNAME) $(NATIVE_DLL)
 	cp $(SQLITE_OUT)/$(LIBNAME) $(NATIVE_TARGET_DIR)/$(LIBNAME)
 
