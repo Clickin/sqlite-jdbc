@@ -26,6 +26,7 @@ import org.sqlite.Function;
 import org.sqlite.ProgressHandler;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteJDBCLoader;
+import org.sqlite.SQLiteOpenMode;
 import org.sqlite.util.Logger;
 import org.sqlite.util.LoggerFactory;
 
@@ -384,6 +385,7 @@ public final class NativeDB extends DB {
         return backup(
                 stringToUtf8ByteArray(dbName),
                 stringToUtf8ByteArray(destFileName),
+                otherFileOpenFlags(destFileName, SQLiteOpenMode.READWRITE.flag | SQLiteOpenMode.CREATE.flag),
                 observer,
                 DEFAULT_BACKUP_BUSY_SLEEP_TIME_MILLIS,
                 DEFAULT_BACKUP_NUM_BUSY_BEFORE_FAIL,
@@ -406,20 +408,29 @@ public final class NativeDB extends DB {
         return backup(
                 stringToUtf8ByteArray(dbName),
                 stringToUtf8ByteArray(destFileName),
+                otherFileOpenFlags(destFileName, SQLiteOpenMode.READWRITE.flag | SQLiteOpenMode.CREATE.flag),
                 observer,
                 sleepTimeMillis,
                 nTimeouts,
                 pagesPerStep);
     }
 
-    synchronized native int backup(
+    public synchronized int backup(
             byte[] dbNameUtf8,
             byte[] destFileNameUtf8,
+            int otherFileOpenFlags,
             ProgressObserver observer,
             int sleepTimeMillis,
             int nTimeouts,
             int pagesPerStep)
-            throws SQLException;
+            throws SQLException {
+        return driveBackupCopy(
+                backupInit(dbNameUtf8, destFileNameUtf8, otherFileOpenFlags, true),
+                observer,
+                sleepTimeMillis,
+                nTimeouts,
+                pagesPerStep);
+    }
 
     /**
      * @see org.sqlite.core.DB#restore(java.lang.String, java.lang.String,
@@ -440,7 +451,7 @@ public final class NativeDB extends DB {
 
     /** @see org.sqlite.core.DB#restore(String, String, ProgressObserver, int, int, int) */
     @Override
-    public synchronized int restore(
+    public int restore(
             String dbName,
             String sourceFileName,
             ProgressObserver observer,
@@ -452,20 +463,115 @@ public final class NativeDB extends DB {
         return restore(
                 stringToUtf8ByteArray(dbName),
                 stringToUtf8ByteArray(sourceFileName),
+                otherFileOpenFlags(sourceFileName, SQLiteOpenMode.READONLY.flag),
                 observer,
                 sleepTimeMillis,
                 nTimeouts,
                 pagesPerStep);
     }
 
-    synchronized native int restore(
+    public synchronized int restore(
             byte[] dbNameUtf8,
-            byte[] sourceFileName,
+            byte[] sourceFileNameUtf8,
+            int otherFileOpenFlags,
             ProgressObserver observer,
             int sleepTimeMillis,
             int nTimeouts,
             int pagesPerStep)
-            throws SQLException;
+            throws SQLException {
+        return driveBackupCopy(
+                backupInit(dbNameUtf8, sourceFileNameUtf8, otherFileOpenFlags, false),
+                observer,
+                sleepTimeMillis,
+                nTimeouts,
+                pagesPerStep);
+    }
+
+    /**
+     * Drives the copy loop of a backup/restore session from Java. Busy waits happen on the Java
+     * side with {@link Thread#sleep}, outside any SQLite native frame, while the monitor of this
+     * DB instance stays held: concurrent use and close() remain excluded exactly as with the
+     * former in-native loop. On JDK 24+ (JEP 491) a virtual thread sleeping here releases its
+     * carrier instead of pinning it; on older JDKs the wait blocks the carrier like the former
+     * native {@code sqlite3_sleep}.
+     *
+     * @param session result of {@link #backupInit}: {@code {resultCode, sessionPointer}}, where
+     *     the pointer is 0 unless the result code is SQLITE_OK
+     * @return SQLITE_OK when the copy completed (SQLITE_DONE), otherwise the last observed result
+     *     code. Unlike the former native loop, which reported the error code of the temporary
+     *     file connection, a restore that was exhausted or aborted while busy with a locked
+     *     source now reports that actual code instead of a possible spurious SQLITE_OK.
+     */
+    private int driveBackupCopy(
+            long[] session,
+            ProgressObserver observer,
+            int sleepTimeMillis,
+            int nTimeouts,
+            int pagesPerStep)
+            throws SQLException {
+        if (session == null) {
+            // backupInit raised a database-closed exception; let it propagate.
+            return SQLITE_MISUSE;
+        }
+        int rc = (int) session[0];
+        if (rc != SQLITE_OK) {
+            return rc;
+        }
+        long pointer = session[1];
+        int nTimeout = 0;
+        try {
+            do {
+                rc = backupStep(pointer, pagesPerStep);
+
+                // after each completed step, report progress
+                if ((rc == SQLITE_OK || rc == SQLITE_DONE) && observer != null) {
+                    int[] progress = backupProgress(pointer);
+                    if (progress != null) {
+                        observer.progress(progress[0], progress[1]);
+                    }
+                }
+
+                if (rc == SQLITE_BUSY || rc == SQLITE_LOCKED) {
+                    if (nTimeout++ >= nTimeouts) break;
+                    Thread.sleep(sleepTimeMillis);
+                }
+            } while (rc == SQLITE_OK || rc == SQLITE_BUSY || rc == SQLITE_LOCKED);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            rc = SQLITE_INTERRUPT;
+        } finally {
+            backupFinish(pointer);
+        }
+        return rc == SQLITE_DONE ? SQLITE_OK : rc;
+    }
+
+    private static int otherFileOpenFlags(String fileName, int baseFlags) {
+        // Case-insensitive to match the former native URI detection.
+        return fileName.regionMatches(true, 0, "file:", 0, 5)
+                ? baseFlags | SQLiteOpenMode.OPEN_URI.flag
+                : baseFlags;
+    }
+
+    /**
+     * Opens the other database file and prepares a copy session.
+     *
+     * @return {@code {resultCode, sessionPointer}}; the pointer is 0 unless the result code is
+     *     SQLITE_OK
+     */
+    private native long[] backupInit(
+            byte[] dbNameUtf8,
+            byte[] otherFileNameUtf8,
+            int otherFileOpenFlags,
+            boolean sessionDbIsBackupSource);
+
+    /** Performs one copy step and returns its result code. */
+    private native int backupStep(long sessionPointer, int pagesPerStep);
+
+    /** Returns {@code {pagesRemaining, pageCount}} after a successful step. */
+    private native int[] backupProgress(long sessionPointer);
+
+    /** Releases the session; an incomplete copy is rolled back. */
+    private native void backupFinish(long sessionPointer);
 
     // COMPOUND FUNCTIONS (for optimisation) /////////////////////////
 

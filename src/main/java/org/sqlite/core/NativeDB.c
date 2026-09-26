@@ -1492,33 +1492,27 @@ void reportProgress(JNIEnv* env, jobject func, int remaining, int pageCount) {
     (*env)->CallVoidMethod(env, func, pobserver_mth_progress, remaining, pageCount);
 }
 
-void updateProgress(JNIEnv *env, sqlite3_backup *pBackup, jobject progress) {
-    if (!progress)
+/*
+** One Java-driven backup/restore session. All resources are owned by the
+** session and released together by backupFinish(). While a session is open,
+** the Java caller holds the monitor of the DB wrapper, so this->pDb cannot be
+** closed or used concurrently.
+*/
+struct BackupSession {
+    sqlite3 *pDb;               /* the connection this NativeDB wraps */
+    sqlite3 *pFile;             /* temporary connection to the other file */
+    sqlite3_backup *pBackup;    /* sqlite3_backup handle */
+};
+
+static void freeBackupSession(struct BackupSession *session) {
+    if (!session)
         return;
-    int remaining = sqlite3_backup_remaining(pBackup);
-    int pagecount = sqlite3_backup_pagecount(pBackup);
-    (*env)->CallVoidMethod(env, progress, pobserver_mth_progress, remaining, pagecount);
-}
-
-void copyLoop(JNIEnv *env, sqlite3_backup *pBackup, jobject progress,
-              int pagesPerStep, int nTimeoutLimit, int sleepTimeMillis) {
-    int rc;
-    int nTimeout = 0;
-
-    do {
-          rc = sqlite3_backup_step(pBackup, pagesPerStep);
-
-          // if the step completed successfully, update progress
-          if (rc == SQLITE_OK || rc == SQLITE_DONE) {
-              updateProgress(env, pBackup, progress);
-          }
-
-          if (rc == SQLITE_BUSY || rc == SQLITE_LOCKED) {
-              if (nTimeout++ >= nTimeoutLimit)
-                 break;
-              sqlite3_sleep(sleepTimeMillis);
-          }
-    } while (rc == SQLITE_OK || rc == SQLITE_BUSY || rc == SQLITE_LOCKED);
+    /* Roll back an interrupted or incomplete copy and release the backup handle. */
+    if (session->pBackup)
+        (void)sqlite3_backup_finish(session->pBackup);
+    if (session->pFile)
+        (void)sqlite3_close(session->pFile);
+    free(session);
 }
 
 /*
@@ -1544,148 +1538,172 @@ void copyLoop(JNIEnv *env, sqlite3_backup *pBackup, jobject progress,
 ** If the backup process is successfully completed, SQLITE_OK is returned.
 ** Otherwise, if an error occurs, an SQLite error code is returned.
 */
-JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_backup(
-  JNIEnv *env, jobject this, 
+JNIEXPORT jlongArray JNICALL Java_org_sqlite_core_NativeDB_backupInit(
+  JNIEnv *env, jobject this,
   jbyteArray zDBName,
   jbyteArray zFilename,       /* Name of file to back up to */
-  jobject observer,           /* Progress function to invoke */
-  jint sleepTimeMillis,        /* number of milliseconds to sleep if DB is busy */
-  jint nTimeoutLimit,          /* max number of SQLite Busy return codes before failing */
-  jint pagesPerStep            /* number of DB pages to copy per step */
+  jint openFlags,             /* open flags for zFilename */
+  jboolean copyFromSessionDb  /* true: copy pDb into zFilename; false: the reverse */
 )
 {
 #if SQLITE_VERSION_NUMBER >= 3006011
-  int rc;                     /* Function return code */
-  sqlite3* pDb;               /* Database to back up */
-  sqlite3* pFile;             /* Database connection opened on zFilename */
-  sqlite3_backup *pBackup;    /* Backup handle used to copy data */
-  char *dFileName;
-  char *dDBName;
+  sqlite3* pDb;               /* Database of this NativeDB */
+  sqlite3* pFile = NULL;      /* Database connection opened on zFilename */
+  sqlite3_backup *pBackup = NULL;
+  struct BackupSession *session = NULL;
+  char *dFileName = NULL;
+  char *dDBName = NULL;
+  int rc = SQLITE_OK;
+  jlong results[2];
+  jlongArray result;
 
   pDb = gethandle(env, this);
   if (!pDb)
   {
     throwex_db_closed(env);
-    return SQLITE_MISUSE;
+    return NULL;
   }
 
   utf8JavaByteArrayToUtf8Bytes(env, zFilename, &dFileName, NULL);
   if (!dFileName)
   {
-    return SQLITE_NOMEM;
+    rc = SQLITE_NOMEM;
   }
 
-  utf8JavaByteArrayToUtf8Bytes(env, zDBName, &dDBName, NULL);
-  if (!dDBName)
+  if (rc == SQLITE_OK)
   {
-    freeUtf8Bytes(dFileName);
-    return SQLITE_NOMEM;
-  }
-
-  /* Open the database file identified by dFileName. */
-  int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-  if (sqlite3_strnicmp(dFileName, "file:", 5) == 0) {
-    flags |= SQLITE_OPEN_URI;
-  }
-  rc = sqlite3_open_v2(dFileName, &pFile, flags, NULL);
-
-  if(rc == SQLITE_OK) {
-
-    /* Open the sqlite3_backup object used to accomplish the transfer */
-    pBackup = sqlite3_backup_init(pFile, "main", pDb, dDBName);
-    if( pBackup ){
-      copyLoop(env, pBackup, observer, pagesPerStep, nTimeoutLimit, sleepTimeMillis);
-
-      /* Release resources allocated by backup_init(). */
-      (void)sqlite3_backup_finish(pBackup);
+    utf8JavaByteArrayToUtf8Bytes(env, zDBName, &dDBName, NULL);
+    if (!dDBName)
+    {
+      rc = SQLITE_NOMEM;
     }
-    rc = sqlite3_errcode(pFile);
   }
 
-  /* Close the database connection opened on database file zFilename
-  ** and return the result of this function. */
-  (void)sqlite3_close(pFile);
+  if (rc == SQLITE_OK)
+  {
+    /* Open the database file identified by dFileName. */
+    rc = sqlite3_open_v2(dFileName, &pFile, openFlags, NULL);
+    if (rc != SQLITE_OK)
+    {
+      rc = sqlite3_errcode(pFile);
+    }
+  }
+
+  if (rc == SQLITE_OK)
+  {
+    /* Open the sqlite3_backup object used to accomplish the transfer */
+    pBackup = copyFromSessionDb
+        ? sqlite3_backup_init(pFile, "main", pDb, dDBName)
+        : sqlite3_backup_init(pDb, dDBName, pFile, "main");
+    if (pBackup)
+    {
+      session = (struct BackupSession*) sqlite3_malloc(sizeof(struct BackupSession));
+      if (session)
+      {
+        session->pDb = pDb;
+        session->pFile = pFile;
+        session->pBackup = pBackup;
+      }
+      else
+      {
+        (void)sqlite3_backup_finish(pBackup);
+        pBackup = NULL;
+        rc = SQLITE_NOMEM;
+      }
+    }
+    else
+    {
+      rc = sqlite3_errcode(pFile);
+    }
+  }
 
   freeUtf8Bytes(dDBName);
   freeUtf8Bytes(dFileName);
 
-  return rc;
+  if (rc != SQLITE_OK)
+  {
+    /* pFile may be partially allocated by a failed open; freeBackupSession closes it. */
+    freeBackupSession(session);
+    session = NULL;
+  }
+
+  results[0] = (jlong) rc;
+  results[1] = (jlong) (intptr_t) session;
+  result = (*env)->NewLongArray(env, 2);
+  if (result)
+  {
+    (*env)->SetLongArrayRegion(env, result, 0, 2, results);
+  }
+  return result;
 #else
-  return SQLITE_INTERNAL;
+  return NULL;
 #endif
-} 
+}
 
-JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_restore(
-  JNIEnv *env, jobject this, 
-  jbyteArray zDBName,
-  jbyteArray zFilename,         /* Name of file to restore from */
-  jobject observer,             /* Progress function to invoke */
-  jint sleepTimeMillis,         /* number of milliseconds to sleep if DB is busy */
-  jint nTimeoutLimit,           /* max number of SQLite Busy return codes before failing */
-  jint pagesPerStep             /* number of DB pages to copy per step */
+/*
+** Performs one sqlite3_backup_step() of a Java-driven session and returns its
+** result code. The Java caller owns all waiting between steps.
+*/
+JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_backupStep(
+  JNIEnv *env, jobject this,
+  jlong sessionPointer,
+  jint pagesPerStep
 )
 {
 #if SQLITE_VERSION_NUMBER >= 3006011
-  int rc;                     /* Function return code */
-  sqlite3* pDb;               /* Database to back up */
-  sqlite3* pFile;             /* Database connection opened on zFilename */
-  sqlite3_backup *pBackup;    /* Backup handle used to copy data */
-  char *dFileName;
-  char *dDBName;
-  int nTimeout = 0;
-
-  pDb = gethandle(env, this);
-  if (!pDb)
+  struct BackupSession *session = (struct BackupSession*) (intptr_t) sessionPointer;
+  if (!session || !session->pBackup)
   {
-    throwex_db_closed(env);
     return SQLITE_MISUSE;
   }
-
-  utf8JavaByteArrayToUtf8Bytes(env, zFilename, &dFileName, NULL);
-  if (!dFileName)
-  {
-    return SQLITE_NOMEM;
-  }
-
-  utf8JavaByteArrayToUtf8Bytes(env, zDBName, &dDBName, NULL);
-  if (!dDBName)
-  {
-    freeUtf8Bytes(dFileName);
-    return SQLITE_NOMEM;
-  }
-
-  /* Open the database file identified by dFileName. */
-  int flags = SQLITE_OPEN_READONLY;
-  if (sqlite3_strnicmp(dFileName, "file:", 5) == 0) {
-    flags |= SQLITE_OPEN_URI;
-  }
-  rc = sqlite3_open_v2(dFileName, &pFile, flags, NULL);
-
-  if (rc == SQLITE_OK) {
-
-    /* Open the sqlite3_backup object used to accomplish the transfer */
-    pBackup = sqlite3_backup_init(pDb, dDBName, pFile, "main");
-    if (pBackup) {
-      copyLoop(env, pBackup, observer, pagesPerStep, nTimeoutLimit, sleepTimeMillis);
-      /* Release resources allocated by backup_init(). */
-      (void)sqlite3_backup_finish(pBackup);
-    }
-    rc = sqlite3_errcode(pFile);
-  }
-
-  /* Close the database connection opened on database file zFilename
-  ** and return the result of this function. */
-  (void)sqlite3_close(pFile);
-
-  freeUtf8Bytes(dDBName);
-  freeUtf8Bytes(dFileName);
-
-  return rc;
+  return sqlite3_backup_step(session->pBackup, pagesPerStep);
 #else
   return SQLITE_INTERNAL;
 #endif
 }
 
+/*
+** Reports { pagesRemaining, pageCount } for a Java-driven session, mirroring
+** the progress update previously issued after every successful step.
+*/
+JNIEXPORT jintArray JNICALL Java_org_sqlite_core_NativeDB_backupProgress(
+  JNIEnv *env, jobject this,
+  jlong sessionPointer
+)
+{
+#if SQLITE_VERSION_NUMBER >= 3006011
+  struct BackupSession *session = (struct BackupSession*) (intptr_t) sessionPointer;
+  jint progress[2];
+  jintArray result;
+
+  progress[0] = session && session->pBackup ? (jint) sqlite3_backup_remaining(session->pBackup) : 0;
+  progress[1] = session && session->pBackup ? (jint) sqlite3_backup_pagecount(session->pBackup) : 0;
+
+  result = (*env)->NewIntArray(env, 2);
+  if (result)
+  {
+    (*env)->SetIntArrayRegion(env, result, 0, 2, progress);
+  }
+  return result;
+#else
+  return NULL;
+#endif
+}
+
+/*
+** Releases a Java-driven session. backup_finish() rolls back an incomplete
+** copy; the final result code is reported by the Java caller from the last
+** observed step.
+*/
+JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_backupFinish(
+  JNIEnv *env, jobject this,
+  jlong sessionPointer
+)
+{
+#if SQLITE_VERSION_NUMBER >= 3006011
+  freeBackupSession((struct BackupSession*) (intptr_t) sessionPointer);
+#endif
+}
 
 // Progress handler
 
