@@ -424,12 +424,8 @@ public final class NativeDB extends DB {
             int nTimeouts,
             int pagesPerStep)
             throws SQLException {
-        return driveBackupCopy(
-                backupInit(dbNameUtf8, destFileNameUtf8, otherFileOpenFlags, true),
-                observer,
-                sleepTimeMillis,
-                nTimeouts,
-                pagesPerStep);
+        return guardedDriveBackupCopy(true, dbNameUtf8, destFileNameUtf8, otherFileOpenFlags,
+                observer, sleepTimeMillis, nTimeouts, pagesPerStep);
     }
 
     /**
@@ -479,13 +475,46 @@ public final class NativeDB extends DB {
             int nTimeouts,
             int pagesPerStep)
             throws SQLException {
-        return driveBackupCopy(
-                backupInit(dbNameUtf8, sourceFileNameUtf8, otherFileOpenFlags, false),
-                observer,
-                sleepTimeMillis,
-                nTimeouts,
-                pagesPerStep);
+        return guardedDriveBackupCopy(false, dbNameUtf8, sourceFileNameUtf8, otherFileOpenFlags,
+                observer, sleepTimeMillis, nTimeouts, pagesPerStep);
     }
+
+    /**
+     * Rejects a nested backup/restore on this connection before entering JNI:
+     * while a session is open the monitor does not stop same-thread reuse, and
+     * using the restore destination through another session is undefined.
+     * Uses of the source connection are still allowed.
+     */
+    private int guardedDriveBackupCopy(
+            boolean sessionDbIsBackupSource,
+            byte[] dbNameUtf8,
+            byte[] otherFileNameUtf8,
+            int otherFileOpenFlags,
+            ProgressObserver observer,
+            int sleepTimeMillis,
+            int nTimeouts,
+            int pagesPerStep)
+            throws SQLException {
+        if (backupSessionActive) {
+            throw new SQLException(
+                    "a backup/restore session is already active on this connection");
+        }
+        backupSessionActive = true;
+        try {
+            return driveBackupCopy(
+                    backupInit(dbNameUtf8, otherFileNameUtf8, otherFileOpenFlags,
+                            sessionDbIsBackupSource),
+                    observer,
+                    sleepTimeMillis,
+                    nTimeouts,
+                    pagesPerStep);
+        } finally {
+            backupSessionActive = false;
+        }
+    }
+
+    /** True while a backup/restore session is being driven on this connection. */
+    private boolean backupSessionActive;
 
     /**
      * Drives the copy loop of a backup/restore session from Java. Busy waits happen on the Java
@@ -540,6 +569,9 @@ public final class NativeDB extends DB {
             Thread.currentThread().interrupt();
             rc = SQLITE_INTERRUPT;
         } finally {
+            // The last observed step result decides the outcome; a finishing
+            // rollback failure after a failed step must not mask it, and the
+            // backup API rolls back incomplete copies on finish.
             backupFinish(pointer);
         }
         return rc == SQLITE_DONE ? SQLITE_OK : rc;
@@ -572,6 +604,20 @@ public final class NativeDB extends DB {
 
     /** Releases the session; an incomplete copy is rolled back. */
     private native void backupFinish(long sessionPointer);
+
+    /**
+     * Test-only hook, present only in native libraries built with
+     * -DSQLITEJDBC_TEST_FAULTS: returns the number of live backup sessions.
+     * Invoking it against the shipped library raises UnsatisfiedLinkError.
+     */
+    native long[] backupTestOutstanding();
+
+    /**
+     * Test-only hook, present only in fault-injection native libraries: selects
+     * the injected backupInit fault (0 none, 1 failed session allocation, 2
+     * failed JNI result-array creation).
+     */
+    native void backupTestSetFaultMode(int mode);
 
     // COMPOUND FUNCTIONS (for optimisation) /////////////////////////
 

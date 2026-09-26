@@ -1504,6 +1504,27 @@ struct BackupSession {
     sqlite3_backup *pBackup;    /* sqlite3_backup handle */
 };
 
+#ifdef SQLITEJDBC_TEST_FAULTS
+/* Test-only fault injection for backupInit resource paths. Compiled only when
+** the native library is built with -DSQLITEJDBC_TEST_FAULTS (make
+** native-faults); the shipped library has no such symbol. Tests select the
+** active fault through backupTestSetFaultMode: 0 none, 1 fail session
+** allocation, 2 fail the JNI result-array creation after the session was
+** fully acquired. Each live session owns exactly one temporary connection, so
+** the outstanding count tracks both resources. */
+static int gTestBackupFaultMode = 0;
+static int gTestBackupSessions = 0;
+
+static int testBackupFaultMode(void) { return gTestBackupFaultMode; }
+
+JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_backupTestSetFaultMode(
+  JNIEnv *env, jobject this, jint mode
+)
+{
+  gTestBackupFaultMode = mode;
+}
+#endif
+
 static void freeBackupSession(struct BackupSession *session) {
     if (!session)
         return;
@@ -1512,7 +1533,10 @@ static void freeBackupSession(struct BackupSession *session) {
         (void)sqlite3_backup_finish(session->pBackup);
     if (session->pFile)
         (void)sqlite3_close(session->pFile);
-    free(session);
+    sqlite3_free(session);
+#ifdef SQLITEJDBC_TEST_FAULTS
+    gTestBackupSessions--;
+#endif
 }
 
 /*
@@ -1581,39 +1605,62 @@ JNIEXPORT jlongArray JNICALL Java_org_sqlite_core_NativeDB_backupInit(
 
   if (rc == SQLITE_OK)
   {
-    /* Open the database file identified by dFileName. */
+    /* Open the database file identified by dFileName. sqlite3_open_v2 may
+    ** leave a partially allocated handle in pFile even on failure, so the
+    ** handle stays locally owned until the session takes it over. */
     rc = sqlite3_open_v2(dFileName, &pFile, openFlags, NULL);
-    if (rc != SQLITE_OK)
+    if (rc == SQLITE_OK)
     {
-      rc = sqlite3_errcode(pFile);
-    }
-  }
-
-  if (rc == SQLITE_OK)
-  {
-    /* Open the sqlite3_backup object used to accomplish the transfer */
-    pBackup = copyFromSessionDb
-        ? sqlite3_backup_init(pFile, "main", pDb, dDBName)
-        : sqlite3_backup_init(pDb, dDBName, pFile, "main");
-    if (pBackup)
-    {
+      /* Allocate the session before any other fallible step and let it own
+      ** pFile from now on, so every failure below has a single cleanup path
+      ** (freeBackupSession) and no temporary connection can leak. */
+#ifdef SQLITEJDBC_TEST_FAULTS
+      if (testBackupFaultMode() == 1)
+      {
+        session = NULL; /* simulated sqlite3_malloc failure */
+      }
+      else
+#endif
       session = (struct BackupSession*) sqlite3_malloc(sizeof(struct BackupSession));
       if (session)
       {
         session->pDb = pDb;
         session->pFile = pFile;
-        session->pBackup = pBackup;
+        session->pBackup = NULL;
+#ifdef SQLITEJDBC_TEST_FAULTS
+        gTestBackupSessions++;
+#endif
       }
       else
       {
-        (void)sqlite3_backup_finish(pBackup);
-        pBackup = NULL;
         rc = SQLITE_NOMEM;
+        sqlite3_close(pFile);
+        pFile = NULL;
       }
     }
     else
     {
       rc = sqlite3_errcode(pFile);
+      sqlite3_close(pFile);
+      pFile = NULL;
+    }
+  }
+
+  if (rc == SQLITE_OK)
+  {
+    /* Open the sqlite3_backup object used to accomplish the transfer. Per
+    ** the backup API, initialization failures are recorded on the
+    ** destination connection: pFile when backing up, pDb when restoring. */
+    pBackup = copyFromSessionDb
+        ? sqlite3_backup_init(pFile, "main", pDb, dDBName)
+        : sqlite3_backup_init(pDb, dDBName, pFile, "main");
+    if (pBackup)
+    {
+      session->pBackup = pBackup;
+    }
+    else
+    {
+      rc = copyFromSessionDb ? sqlite3_errcode(pFile) : sqlite3_errcode(pDb);
     }
   }
 
@@ -1629,10 +1676,26 @@ JNIEXPORT jlongArray JNICALL Java_org_sqlite_core_NativeDB_backupInit(
 
   results[0] = (jlong) rc;
   results[1] = (jlong) (intptr_t) session;
+#ifdef SQLITEJDBC_TEST_FAULTS
+  if (testBackupFaultMode() == 2)
+  {
+    result = NULL; /* simulated NewLongArray failure */
+  }
+  else
+#endif
   result = (*env)->NewLongArray(env, 2);
   if (result)
   {
     (*env)->SetLongArrayRegion(env, result, 0, 2, results);
+  }
+  if (!result || (*env)->ExceptionCheck(env))
+  {
+    /* The session handle never reached Java: release every native resource
+    ** here instead of leaking the backup object and the temporary
+    ** connection. */
+    freeBackupSession(session);
+    session = NULL;
+    result = NULL;
   }
   return result;
 #else
@@ -1704,6 +1767,26 @@ JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_backupFinish(
   freeBackupSession((struct BackupSession*) (intptr_t) sessionPointer);
 #endif
 }
+
+#ifdef SQLITEJDBC_TEST_FAULTS
+/*
+** Test-only: reports the number of live backup sessions (each owning exactly
+** one temporary connection). Present only in fault-injection builds; see
+** freeBackupSession() for the build flag.
+*/
+JNIEXPORT jlongArray JNICALL Java_org_sqlite_core_NativeDB_backupTestOutstanding(
+  JNIEnv *env, jobject this
+)
+{
+  jlong outstanding = (jlong) gTestBackupSessions;
+  jlongArray result = (*env)->NewLongArray(env, 1);
+  if (result)
+  {
+    (*env)->SetLongArrayRegion(env, result, 0, 1, &outstanding);
+  }
+  return result;
+}
+#endif
 
 // Progress handler
 
