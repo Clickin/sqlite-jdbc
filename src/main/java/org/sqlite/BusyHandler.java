@@ -2,6 +2,7 @@ package org.sqlite;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import org.sqlite.core.DB;
 
 /** https://www.sqlite.org/c3ref/busy_handler.html */
 public abstract class BusyHandler {
@@ -61,4 +62,13 @@ public abstract class BusyHandler {
      *     non-zero, then another attempt is made to access the database and the cycle repeats.
      */
     protected abstract int callback(int nbPrevInvok) throws SQLException;
+
+    protected final int callbackFromSQLite(int nbPrevInvok) throws SQLException {
+        DB.enterNativeCallback();
+        try {
+            return callback(nbPrevInvok);
+        } finally {
+            DB.exitNativeCallback();
+        }
+    }
 }

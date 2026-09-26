@@ -17,6 +17,7 @@ import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteConfig.TransactionMode;
 import org.sqlite.SQLiteConnection;
 import org.sqlite.SQLiteOpenMode;
+import org.sqlite.core.ControlStatement;
 
 public abstract class JDBC3Connection extends SQLiteConnection {
     private final AtomicInteger savePoint = new AtomicInteger(0);
@@ -45,8 +46,14 @@ public abstract class JDBC3Connection extends SQLiteConnection {
      * @throws SQLException if a statement has already been executed on this connection, then the
      *     transaction cannot be upgraded to write
      */
+    void recoverTransactionRestartForStatement() throws SQLException {
+        recoverTransactionRestart();
+    }
+
     @SuppressWarnings("deprecation")
     public void tryEnforceTransactionMode() throws SQLException {
+        recoverTransactionRestart();
+
         // important note: read-only mode is only supported when auto-commit is disabled
         if (getDatabase().getConfig().isExplicitReadOnly()
                 && !this.getAutoCommit()
@@ -64,14 +71,16 @@ public abstract class JDBC3Connection extends SQLiteConnection {
                         throw new SQLException(
                                 "A statement has already been executed on this connection; cannot upgrade to write transaction");
                     } else {
-                        // this is the first statement in the transaction; close and create an
-                        // immediate one
-                        getDatabase()._exec("commit; /* need to explicitly upgrade transaction */");
-
-                        // start the write transaction
+                        // This is the first statement in the transaction; close and create an
+                        // immediate one. The COMMIT and the BEGIN are independent pending
+                        // operations with their own wait budgets; surrounding work is never
+                        // retried.
+                        ControlStatement nextBegin = ControlStatement.BEGIN_IMMEDIATE;
+                        getDatabase().execControl(ControlStatement.COMMIT, getAutoCommit(), false);
+                        setTransactionRestartPending(nextBegin);
                         getDatabase()._exec("PRAGMA query_only = false;");
-                        getDatabase()
-                                ._exec("BEGIN IMMEDIATE; /* explicitly upgrade transaction */");
+                        getDatabase().execControl(nextBegin, getAutoCommit(), false);
+                        setTransactionRestartPending(false);
                         setCurrentTransactionMode(TransactionMode.IMMEDIATE);
                     }
                 }
@@ -232,6 +241,7 @@ public abstract class JDBC3Connection extends SQLiteConnection {
     /** @see java.sql.Connection#setSavepoint() */
     public Savepoint setSavepoint() throws SQLException {
         checkOpen();
+        recoverTransactionRestart();
         if (getAutoCommit()) {
             // when a SAVEPOINT is the outermost savepoint and not
             // with a BEGIN...COMMIT then the behavior is the same
@@ -247,6 +257,7 @@ public abstract class JDBC3Connection extends SQLiteConnection {
     /** @see java.sql.Connection#setSavepoint(java.lang.String) */
     public Savepoint setSavepoint(String name) throws SQLException {
         checkOpen();
+        recoverTransactionRestart();
         if (getAutoCommit()) {
             // when a SAVEPOINT is the outermost savepoint and not
             // with a BEGIN...COMMIT then the behavior is the same
@@ -262,6 +273,7 @@ public abstract class JDBC3Connection extends SQLiteConnection {
     /** @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint) */
     public void releaseSavepoint(Savepoint savepoint) throws SQLException {
         checkOpen();
+        recoverTransactionRestart();
         if (getAutoCommit()) {
             throw new SQLException("database in auto-commit mode");
         }
@@ -272,6 +284,7 @@ public abstract class JDBC3Connection extends SQLiteConnection {
     /** @see java.sql.Connection#rollback(java.sql.Savepoint) */
     public void rollback(Savepoint savepoint) throws SQLException {
         checkOpen();
+        recoverTransactionRestart();
         if (getAutoCommit()) {
             throw new SQLException("database in auto-commit mode");
         }

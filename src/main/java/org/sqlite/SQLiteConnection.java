@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import org.sqlite.SQLiteConfig.TransactionMode;
+import org.sqlite.core.ControlStatement;
 import org.sqlite.core.CoreDatabaseMetaData;
 import org.sqlite.core.DB;
 import org.sqlite.core.NativeDB;
@@ -348,15 +349,110 @@ public abstract class SQLiteConnection implements Connection {
         checkOpen();
         if (connectionConfig.isAutoCommit() == ac) return;
 
-        connectionConfig.setAutoCommit(ac);
-        // db.exec(connectionConfig.isAutoCommit() ? "commit;" : this.transactionPrefix(), ac);
-
-        if (this.getConnectionConfig().isAutoCommit()) {
-            db.exec("commit;", ac);
+        // The JDBC-side setting follows a successful control statement: a busy-failed
+        // BEGIN must not leave the connection advertising an open transaction, and a
+        // failed COMMIT must not silently turn auto-commit on (plan 10.2).
+        if (ac) {
+            if (this.isTransactionRestartPending()) {
+                // The native transaction already ended before its follow-up BEGIN failed.
+                this.setTransactionRestartPending(false);
+            } else {
+                db.execControl(ControlStatement.COMMIT, ac, false);
+            }
+            connectionConfig.setAutoCommit(true);
+            this.firstStatementExecuted = false;
             this.currentTransactionMode = null;
+            // COMMIT is complete. A failure in this compatibility probe must not imply that
+            // COMMIT failed or leave JDBC auto-commit disabled.
+            db.ensureAutoCommit(true);
         } else {
-            db.exec(this.transactionPrefix(), ac);
+            db.execControl(beginStatement(), ac, true);
+            this.setTransactionRestartPending(false);
+            connectionConfig.setAutoCommit(false);
             this.currentTransactionMode = this.getConnectionConfig().getTransactionMode();
+            this.firstStatementExecuted = false;
+        }
+    }
+
+    /** The driver-generated BEGIN matching the configured transaction mode. */
+    protected ControlStatement beginStatement() {
+        switch (this.getConnectionConfig().getTransactionMode()) {
+            case IMMEDIATE:
+                return ControlStatement.BEGIN_IMMEDIATE;
+            case EXCLUSIVE:
+                return ControlStatement.BEGIN_EXCLUSIVE;
+            default:
+                return ControlStatement.BEGIN_DEFERRED;
+        }
+    }
+
+    /**
+     * True when a driver-generated BEGIN after a successful COMMIT/ROLLBACK failed: the JDBC
+     * connection is autoCommit=false but the native connection has no transaction. User SQL then
+     * needs an explicit restart before it can run, otherwise each statement would silently
+     * auto-commit (plan 10.3).
+     */
+    private ControlStatement pendingTransactionRestart;
+
+    /** Whether the next user SQL needs the driver-generated BEGIN restarted first. */
+    protected boolean isTransactionRestartPending() {
+        return pendingTransactionRestart != null;
+    }
+
+    protected void setTransactionRestartPending(boolean pending) {
+        pendingTransactionRestart = pending ? beginStatement() : null;
+    }
+
+    protected void setTransactionRestartPending(ControlStatement begin) {
+        pendingTransactionRestart = begin;
+    }
+
+    /**
+     * Restarts the driver-generated BEGIN after a failed one. Single statement, own wait budget;
+     * never replays the preceding COMMIT or ROLLBACK.
+     */
+    protected void restartTransaction() throws SQLException {
+        ControlStatement begin =
+                pendingTransactionRestart == null ? beginStatement() : pendingTransactionRestart;
+        try {
+            db.execControl(begin, getAutoCommit(), false);
+            setTransactionRestartPending(false);
+            this.firstStatementExecuted = false;
+            this.setCurrentTransactionMode(transactionMode(begin));
+        } catch (SQLException restartFailure) {
+            setTransactionRestartPending(begin);
+            throw restartFailure;
+        }
+    }
+
+    private TransactionMode transactionMode(ControlStatement begin) {
+        switch (begin) {
+            case BEGIN_IMMEDIATE:
+                return TransactionMode.IMMEDIATE;
+            case BEGIN_EXCLUSIVE:
+                return TransactionMode.EXCLUSIVE;
+            default:
+                return TransactionMode.DEFERRED;
+        }
+    }
+
+    /**
+     * Recovers a pending transaction restart before another statement runs, or throws a clear error
+     * so user SQL cannot silently auto-commit (plan 10.3).
+     */
+    protected void recoverTransactionRestart() throws SQLException {
+        if (this.isTransactionRestartPending()) {
+            try {
+                restartTransaction();
+            } catch (SQLException restartFailure) {
+                throw new SQLException(
+                        "transaction restart pending: the automatic BEGIN after the last"
+                                + " commit/rollback failed; call rollback() or setAutoCommit() to"
+                                + " recover",
+                        restartFailure.getSQLState(),
+                        restartFailure.getErrorCode(),
+                        restartFailure);
+            }
         }
     }
 
@@ -435,10 +531,30 @@ public abstract class SQLiteConnection implements Connection {
     public void commit() throws SQLException {
         checkOpen();
         if (connectionConfig.isAutoCommit()) throw new SQLException("database in auto-commit mode");
-        db.exec("commit;", getAutoCommit());
-        db.exec(this.transactionPrefix(), getAutoCommit());
+        if (this.isTransactionRestartPending()) {
+            // Nothing native to commit: the previous transaction was already committed. A fresh
+            // BEGIN completes recovery; do not issue a second BEGIN or replay COMMIT.
+            this.restartTransaction();
+            return;
+        }
+        try {
+            db.execControl(ControlStatement.COMMIT, getAutoCommit(), true);
+        } catch (SQLException commitFailure) {
+            // The transaction is still active; a later commit() may retry the COMMIT.
+            throw commitFailure;
+        }
+        ControlStatement nextBegin = beginStatement();
+        try {
+            db.execControl(nextBegin, getAutoCommit(), true);
+            this.setTransactionRestartPending(false);
+        } catch (SQLException beginFailure) {
+            // The data is committed; do not replay the COMMIT. Mark the missing BEGIN so user
+            // SQL cannot silently auto-commit (plan 10.3).
+            this.setTransactionRestartPending(nextBegin);
+            throw beginFailure;
+        }
         this.firstStatementExecuted = false;
-        this.setCurrentTransactionMode(this.getConnectionConfig().getTransactionMode());
+        this.setCurrentTransactionMode(transactionMode(nextBegin));
     }
 
     /** @see java.sql.Connection#rollback() */
@@ -446,10 +562,23 @@ public abstract class SQLiteConnection implements Connection {
     public void rollback() throws SQLException {
         checkOpen();
         if (connectionConfig.isAutoCommit()) throw new SQLException("database in auto-commit mode");
+        if (this.isTransactionRestartPending()) {
+            // There is no native transaction to roll back; restart the BEGIN that originally
+            // failed, without replaying ROLLBACK.
+            this.restartTransaction();
+            return;
+        }
         db.exec("rollback;", getAutoCommit());
-        db.exec(this.transactionPrefix(), getAutoCommit());
+        ControlStatement nextBegin = beginStatement();
+        try {
+            db.execControl(nextBegin, getAutoCommit(), true);
+            this.setTransactionRestartPending(false);
+        } catch (SQLException beginFailure) {
+            this.setTransactionRestartPending(nextBegin);
+            throw beginFailure;
+        }
         this.firstStatementExecuted = false;
-        this.setCurrentTransactionMode(this.getConnectionConfig().getTransactionMode());
+        this.setCurrentTransactionMode(transactionMode(nextBegin));
     }
 
     /**

@@ -462,25 +462,25 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     func_context = (*env)->GetFieldID(env, fclass, "context", "J");
     func_value = (*env)->GetFieldID(env, fclass, "value", "J");
     func_args  = (*env)->GetFieldID(env, fclass, "args", "I");
-    fmethod = (*env)->GetMethodID(env, fclass, "xFunc", "()V");
+    fmethod = (*env)->GetMethodID(env, fclass, "xFuncCallback", "()V");
 
     cclass = (*env)->FindClass(env, "org/sqlite/Collation");
     if (!cclass) return JNI_ERR;
     cclass = (*env)->NewWeakGlobalRef(env, cclass);
-    mth_compare = (*env)->GetMethodID(env, cclass, "xCompare", "(Ljava/lang/String;Ljava/lang/String;)I");
+    mth_compare = (*env)->GetMethodID(env, cclass, "xCompareFromSQLite", "(Ljava/lang/String;Ljava/lang/String;)I");
 
     aclass = (*env)->FindClass(env, "org/sqlite/Function$Aggregate");
     if (!aclass) return JNI_ERR;
     aclass = (*env)->NewWeakGlobalRef(env, aclass);
-    mth_aggr_xstep = (*env)->GetMethodID(env, aclass, "xStep", "()V");
-    mth_aggr_xfinal = (*env)->GetMethodID(env, aclass, "xFinal", "()V");
-    aclone = (*env)->GetMethodID(env, aclass, "clone", "()Ljava/lang/Object;");
+    mth_aggr_xstep = (*env)->GetMethodID(env, aclass, "xStepCallback", "()V");
+    mth_aggr_xfinal = (*env)->GetMethodID(env, aclass, "xFinalCallback", "()V");
+    aclone = (*env)->GetMethodID(env, aclass, "cloneForSQLite", "()Ljava/lang/Object;");
 
     wclass = (*env)->FindClass(env, "org/sqlite/Function$Window");
     if (!wclass) return JNI_ERR;
     wclass = (*env)->NewWeakGlobalRef(env, wclass);
-    w_mth_inverse = (*env)->GetMethodID(env, wclass, "xInverse", "()V");
-    w_mth_xvalue = (*env)->GetMethodID(env, wclass, "xValue", "()V");
+    w_mth_inverse = (*env)->GetMethodID(env, wclass, "xInverseCallback", "()V");
+    w_mth_xvalue = (*env)->GetMethodID(env, wclass, "xValueCallback", "()V");
 
     pobserverclass = (*env)->FindClass(env, "org/sqlite/core/DB$ProgressObserver");
     if(!pobserverclass) return JNI_ERR;
@@ -490,12 +490,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     phandleclass = (*env)->FindClass(env, "org/sqlite/ProgressHandler");
     if(!phandleclass) return JNI_ERR;
     phandleclass = (*env)->NewWeakGlobalRef(env, phandleclass);
-    phandle_mth_progress = (*env)->GetMethodID(env, phandleclass, "progress", "()I");
+    phandle_mth_progress = (*env)->GetMethodID(env, phandleclass, "progressFromSQLite", "()I");
 
     bhandleclass = (*env)->FindClass(env, "org/sqlite/BusyHandler");
     if(!bhandleclass) return JNI_ERR;
     bhandleclass = (*env)->NewWeakGlobalRef(env, bhandleclass);
-    bhandle_mth_callback = (*env)->GetMethodID(env, bhandleclass, "callback", "(I)I");
+    bhandle_mth_callback = (*env)->GetMethodID(env, bhandleclass, "callbackFromSQLite", "(I)I");
 
     exclass = (*env)->FindClass(env, "java/lang/Throwable");
     if(!exclass) return JNI_ERR;
@@ -596,7 +596,9 @@ JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB__1open_1utf8(
     (void) sqlite3_extended_result_codes(db, 1);
 }
 
-JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_interrupt(JNIEnv *env, jobject this)
+static int readBusyTimeout(sqlite3 *db);
+
+JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_interrupt0(JNIEnv *env, jobject this)
 {
     sqlite3 *db = gethandle(env, this);
     if (!db)
@@ -606,6 +608,22 @@ JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_interrupt(JNIEnv *env, jobj
     }
 
     sqlite3_interrupt(db);
+}
+
+/*
+** Reports the currently effective native busy timeout without changing it.
+** Returns -1 when the value cannot be read.
+*/
+JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_busyTimeoutReadback(
+    JNIEnv *env, jobject this)
+{
+    sqlite3 *db = gethandle(env, this);
+    if (!db)
+    {
+        throwex_db_closed(env);
+        return -1;
+    }
+    return (jint) readBusyTimeout(db);
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_busy_1timeout(
@@ -664,6 +682,93 @@ void change_busy_handler(JNIEnv *env, jobject nativeDB, jobject busyHandler)
 JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_busy_1handler(
     JNIEnv *env, jobject nativeDB, jobject busyHandler) {
     change_busy_handler(env, nativeDB, busyHandler);
+}
+
+/*
+** Non-sleeping busy marker used for one native attempt of a driver-generated
+** transaction control statement. It only records that SQLite asked the busy
+** handler; all waiting happens in Java. Per the busy handler contract it never
+** calls back into Java, sleeps, or touches the database.
+*/
+struct BusyAttemptContext {
+    int busyObserved;
+};
+
+/* Test-only one-shot failure for the autocommit compatibility COMMIT probe. */
+#ifdef SQLITEJDBC_TEST_FAULTS
+static int gTestFailNextAutocommitProbeCommit = 0;
+#endif
+
+static int markBusyWithoutWaiting(void *ctx, int previousCalls) {
+    ((struct BusyAttemptContext *) ctx)->busyObserved = 1;
+    return 0;
+}
+
+/*
+** Reads the currently effective busy timeout without changing state. When the
+** default timeout handler is installed this equals its budget (sqlite3.c
+** clears db->busyTimeout in sqlite3_busy_handler and sets it in
+** sqlite3_busy_timeout, so a positive readback means exactly the default
+** timeout handler is active). Returns -1 when the value cannot be read.
+*/
+static int readBusyTimeout(sqlite3 *db) {
+    sqlite3_stmt *stmt = NULL;
+    int timeout = -1;
+    if (sqlite3_prepare_v2(db, "PRAGMA busy_timeout", -1, &stmt, NULL) == SQLITE_OK) {
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            timeout = sqlite3_column_int(stmt, 0);
+        }
+    }
+    sqlite3_finalize(stmt);
+    return timeout;
+}
+
+/*
+** Runs exactly one sqlite3_step of the given prepared statement with a
+** non-sleeping busy marker installed in place of the default timeout handler,
+** then restores the previous timeout policy before returning to Java. The
+** marker context is stack-local and never escapes this call.
+**
+** Returns rc in the low 32 bits and busyObserved in bit 32. The timeout policy
+** is untouched if readback fails; the caller then keeps legacy one-step behavior.
+*/
+JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_attemptNoWaitBusy(
+    JNIEnv *env, jobject this, jlong stmtPtr, jboolean autoCommitProbe)
+{
+    sqlite3 *db = gethandle(env, this);
+    if (!db)
+    {
+        throwex_db_closed(env);
+        return 0;
+    }
+#ifndef SQLITEJDBC_TEST_FAULTS
+    (void) autoCommitProbe;
+#endif
+#ifdef SQLITEJDBC_TEST_FAULTS
+    if (autoCommitProbe && gTestFailNextAutocommitProbeCommit)
+    {
+        gTestFailNextAutocommitProbeCommit = 0;
+        return (jlong) SQLITE_BUSY;
+    }
+#endif
+    sqlite3_stmt *stmt = (sqlite3_stmt *) (intptr_t) stmtPtr;
+
+    struct BusyAttemptContext attempt;
+    attempt.busyObserved = 0;
+
+    int savedTimeout = readBusyTimeout(db);
+    if (savedTimeout > 0)
+    {
+        sqlite3_busy_handler(db, &markBusyWithoutWaiting, &attempt);
+    }
+    int rc = sqlite3_step(stmt);
+    if (savedTimeout > 0)
+    {
+        /* A positive value reinstalls the default timeout handler. */
+        sqlite3_busy_timeout(db, savedTimeout);
+    }
+
+    return (jlong) rc | ((jlong) (savedTimeout > 0 ? attempt.busyObserved : 0) << 32);
 }
 
 JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_prepare_1utf8(
@@ -1522,6 +1627,12 @@ JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_backupTestSetFaultMode(
 )
 {
   gTestBackupFaultMode = mode;
+}
+
+JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_failNextAutocommitProbeCommitForTest(
+    JNIEnv *env, jobject this)
+{
+    gTestFailNextAutocommitProbeCommit = 1;
 }
 #endif
 

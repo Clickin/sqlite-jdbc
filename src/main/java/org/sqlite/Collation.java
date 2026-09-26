@@ -90,4 +90,13 @@ public abstract class Collation {
      *     equal to, or greater than the second, respectively
      */
     protected abstract int xCompare(String str1, String str2);
+
+    protected final int xCompareFromSQLite(String str1, String str2) {
+        DB.enterNativeCallback();
+        try {
+            return xCompare(str1, str2);
+        } finally {
+            DB.exitNativeCallback();
+        }
+    }
 }

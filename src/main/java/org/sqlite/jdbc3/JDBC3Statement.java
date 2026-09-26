@@ -31,6 +31,12 @@ public abstract class JDBC3Statement extends CoreStatement {
         this.queryTimeout = 0;
     }
 
+    private void recoverTransactionRestart() throws SQLException {
+        if (conn instanceof JDBC3Connection) {
+            ((JDBC3Connection) conn).recoverTransactionRestartForStatement();
+        }
+    }
+
     /** @see java.sql.Statement#close() */
     public void close() throws SQLException {
         clearGeneratedKeys();
@@ -43,8 +49,12 @@ public abstract class JDBC3Statement extends CoreStatement {
 
         return this.withConnectionTimeout(
                 () -> {
+                    recoverTransactionRestart();
                     SQLExtension ext = ExtendedCommand.parse(sql);
                     if (ext != null) {
+                        if (conn instanceof JDBC3Connection) {
+                            ((JDBC3Connection) conn).tryEnforceTransactionMode();
+                        }
                         ext.execute(conn.getDatabase());
 
                         return false;
@@ -84,6 +94,7 @@ public abstract class JDBC3Statement extends CoreStatement {
 
         return this.withConnectionTimeout(
                 () -> {
+                    recoverTransactionRestart();
                     conn.getDatabase().prepare(JDBC3Statement.this);
 
                     if (!exec()) {
@@ -125,6 +136,9 @@ public abstract class JDBC3Statement extends CoreStatement {
 
         return this.withConnectionTimeout(
                 () -> {
+                    if (conn instanceof JDBC3Connection) {
+                        ((JDBC3Connection) conn).tryEnforceTransactionMode();
+                    }
                     DB db = conn.getDatabase();
                     long changes = 0;
                     SQLExtension ext = ExtendedCommand.parse(sql);
@@ -234,6 +248,9 @@ public abstract class JDBC3Statement extends CoreStatement {
         // TODO: optimize
         internalClose();
         if (batch == null || batchPos == 0) return new long[] {};
+        if (conn instanceof JDBC3Connection) {
+            ((JDBC3Connection) conn).tryEnforceTransactionMode();
+        }
 
         long[] changes = new long[batchPos];
         DB db = conn.getDatabase();

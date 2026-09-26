@@ -91,6 +91,15 @@ public abstract class DB implements Codes {
     public abstract void interrupt() throws SQLException;
 
     /**
+     * Whether this implementation can snapshot and restore the default busy timeout policy so
+     * transaction control statements may use no-wait native attempts with Java-side waits. The base
+     * implementation cannot; {@link NativeDB} opts in.
+     */
+    public boolean supportsPolicyPreservingBusyWait() {
+        return false;
+    }
+
+    /**
      * Sets a <a href="https://www.sqlite.org/c3ref/busy_handler.html">busy handler</a> that sleeps
      * for a specified amount of time when a table is locked.
      *
@@ -201,6 +210,227 @@ public abstract class DB implements Codes {
         } finally {
             pointer.close();
         }
+    }
+
+    /**
+     * Non-blocking test observation: number of Java-side busy waits entered across this process. An
+     * increment happens just before a wait begins and never blocks, so tests can prove a virtual
+     * thread reached the Java wait without letting test synchronization steal the carrier.
+     */
+    static final java.util.concurrent.atomic.AtomicLong javaWaitObservations =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    /* A nested control wait must not be counted as carrier-unpinning while SQLite is on-stack. */
+    private static final ThreadLocal<int[]> nativeCallbackDepth = new ThreadLocal<>();
+
+    public static void enterNativeCallback() {
+        int[] depth = nativeCallbackDepth.get();
+        if (depth == null) {
+            depth = new int[1];
+            nativeCallbackDepth.set(depth);
+        }
+        depth[0]++;
+    }
+
+    public static void exitNativeCallback() {
+        int[] depth = nativeCallbackDepth.get();
+        if (depth == null || depth[0] == 0) {
+            throw new IllegalStateException("unbalanced SQLite callback scope");
+        }
+        depth[0]--;
+    }
+
+    private static boolean inNativeCallback() {
+        int[] depth = nativeCallbackDepth.get();
+        return depth != null && depth[0] != 0;
+    }
+
+    /**
+     * Per-invocation busy delays of the engine's default busy handler (sqlite3.c
+     * sqliteDefaultBusyCallback); capped at the last entry, and additionally capped to the
+     * statement's remaining wait budget.
+     */
+    private static final int[] ENGINE_BUSY_DELAYS = {1, 2, 5, 10, 15, 20, 25, 25, 25, 50, 50, 100};
+
+    /** Cached SQLITE_ENABLE_SETLK_TIMEOUT result; null means unknown and therefore fallback. */
+    private volatile Boolean setlkTimeoutCapability;
+
+    private volatile boolean setlkTimeoutCapabilityChecked;
+
+    /**
+     * Executes one driver-generated transaction control statement with Java-side busy waits: each
+     * native attempt installs a non-sleeping busy marker instead of the default timeout handler,
+     * and the waiting between attempts happens in Thread.sleep on the calling thread, outside any
+     * SQLite native frame.
+     *
+     * <p>Only the single given statement is retried. Post-processing such as {@link
+     * #ensureAutoCommit(boolean)} runs once, after the statement completed, and its failures are
+     * never interpreted as a reason to re-run the statement.
+     *
+     * @param statement the driver-generated control statement; user SQL never maps to this set
+     * @param autoCommit the auto-commit value passed to post-processing
+     * @param postProcess whether to run the auto-commit compatibility probe after success
+     */
+    public final synchronized void execControl(
+            ControlStatement statement, boolean autoCommit, boolean postProcess)
+            throws SQLException {
+        long cancelGeneration = interruptGeneration();
+        SafeStmtPtr pointer = prepare(statement.sql());
+        try {
+            int rc = stepControl(statement, pointer.safeRun((db, ptr) -> ptr), cancelGeneration);
+            switch (rc) {
+                case SQLITE_DONE:
+                    if (postProcess) {
+                        ensureAutoCommit(autoCommit);
+                    }
+                    return;
+                case SQLITE_ROW:
+                    return;
+                default:
+                    throwex(rc);
+            }
+        } finally {
+            pointer.close();
+        }
+    }
+
+    /**
+     * Steps a prepared driver-generated control statement, retrying with Java-side busy waits while
+     * the policy can be preserved (see {@link #busyWaitEligible()}). Retries only exact {@code
+     * SQLITE_BUSY} results that observed the busy marker; everything else returns immediately. The
+     * statement is never reset between attempts and never re-stepped after {@code SQLITE_DONE}.
+     *
+     * @return the last observed result code
+     */
+    protected final int stepControl(ControlStatement statement, long stmtPointer)
+            throws SQLException {
+        return stepControl(statement, stmtPointer, interruptGeneration());
+    }
+
+    private int stepControl(ControlStatement statement, long stmtPointer, long cancelGeneration)
+            throws SQLException {
+        if (!busyWaitEligible()) {
+            return step(stmtPointer);
+        }
+
+        long budgetMillis = busyTimeoutReadback();
+        // A zero/unknown budget cannot be safely turned into a temporary handler: zero may mean
+        // either no handler or an untracked native callback. Preserve it through the legacy step.
+        if (budgetMillis <= 0) {
+            return step(stmtPointer);
+        }
+        long startedNanos = System.nanoTime();
+        int waits = 0;
+        long sleepBudgetUsedMillis = 0;
+        while (true) {
+            checkControlWaitCancellation(cancelGeneration);
+            if (waits != 0 && Thread.currentThread().isInterrupted()) {
+                throw newSQLException(SQLITE_INTERRUPT, "interrupted during busy wait");
+            }
+            long attempt =
+                    attemptNoWaitBusy(
+                            stmtPointer, statement == ControlStatement.AUTOCOMMIT_PROBE_COMMIT);
+            int rc = (int) attempt;
+            boolean busyObserved = (attempt >>> 32) != 0;
+
+            // A completed statement is final; a BUSY without the marker is a
+            // deadlock-avoidance or unsupported path and must not be slept on.
+            if (rc == SQLITE_DONE || rc != SQLITE_BUSY || !busyObserved) {
+                return rc;
+            }
+
+            checkControlWaitCancellation(cancelGeneration);
+            long elapsedMillis = (System.nanoTime() - startedNanos) / 1_000_000L;
+            // Match SQLite's cumulative requested-sleep budget, with a separate monotonic wall
+            // ceiling for JNI/attempt overhead; scheduling oversleep can shorten later retries.
+            long remainingMillis =
+                    Math.min(budgetMillis - sleepBudgetUsedMillis, budgetMillis - elapsedMillis);
+            if (remainingMillis <= 0) {
+                return rc;
+            }
+            javaWaitObservations.incrementAndGet();
+            try {
+                int delay =
+                        waits < ENGINE_BUSY_DELAYS.length
+                                ? ENGINE_BUSY_DELAYS[waits]
+                                : ENGINE_BUSY_DELAYS[ENGINE_BUSY_DELAYS.length - 1];
+                long sleepMillis = Math.min(delay, remainingMillis);
+                Thread.sleep(sleepMillis);
+                sleepBudgetUsedMillis += sleepMillis;
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw newSQLException(SQLITE_INTERRUPT, "interrupted during busy wait");
+            }
+            waits++;
+        }
+    }
+
+    /** Throws when the connection was canceled since the given generation was captured. */
+    private void checkControlWaitCancellation(long capturedGeneration) throws SQLException {
+        if (interruptGeneration() != capturedGeneration) {
+            throw newSQLException(SQLITE_INTERRUPT, "statement canceled during busy wait");
+        }
+    }
+
+    /**
+     * Whether the current connection may use no-wait native attempts for control statements: the
+     * implementation must support policy-preserving waits, no driver BusyHandler may be installed
+     * (a callback policy cannot be snapshotted and restored by value), and the engine must not
+     * couple sqlite3_busy_timeout to a setlk timeout that the restore cannot rebuild.
+     */
+    private boolean busyWaitEligible() throws SQLException {
+        if (inNativeCallback() || !supportsPolicyPreservingBusyWait() || hasDriverBusyHandler()) {
+            return false;
+        }
+        if (!setlkTimeoutCapabilityChecked) {
+            setlkTimeoutCapability = detectSetlkTimeoutCapability();
+            setlkTimeoutCapabilityChecked = true;
+        }
+        return Boolean.FALSE.equals(setlkTimeoutCapability);
+    }
+
+    /** Probes PRAGMA compile_options once; unreadable capability means legacy fallback. */
+    private Boolean detectSetlkTimeoutCapability() throws SQLException {
+        SafeStmtPtr pointer;
+        try {
+            pointer = prepare("PRAGMA compile_options");
+        } catch (SQLException unsupported) {
+            return null;
+        }
+        try {
+            int rc;
+            while ((rc = pointer.safeRunInt(DB::step)) == SQLITE_ROW) {
+                String option = pointer.safeRun((db, ptr) -> column_text(ptr, 0));
+                if (option != null && option.contains("ENABLE_SETLK_TIMEOUT")) {
+                    return Boolean.TRUE;
+                }
+            }
+            return rc == SQLITE_DONE ? Boolean.FALSE : null;
+        } catch (SQLException unsupported) {
+            return null;
+        } finally {
+            pointer.close();
+        }
+    }
+
+    /** Readback of the currently effective native busy timeout; -1 when unavailable. */
+    protected int busyTimeoutReadback() {
+        return -1;
+    }
+
+    /** One no-wait native step; low 32 bits are rc, bit 32 marks busy callback invocation. */
+    protected long attemptNoWaitBusy(long stmtPointer, boolean autoCommitProbe) {
+        return SQLITE_INTERNAL;
+    }
+
+    /** Current cancellation generation; overridden by {@link NativeDB}. */
+    protected long interruptGeneration() {
+        return 0;
+    }
+
+    /** Whether a driver BusyHandler is installed; unknown implementations fall back. */
+    protected boolean hasDriverBusyHandler() {
+        return true;
     }
 
     /**
@@ -1094,43 +1324,53 @@ public abstract class DB implements Codes {
     }
 
     void onUpdate(int type, String database, String table, long rowId) {
-        Set<SQLiteUpdateListener> listeners;
+        enterNativeCallback();
+        try {
+            Set<SQLiteUpdateListener> listeners;
 
-        synchronized (this) {
-            listeners = new HashSet<>(updateListeners);
-        }
-
-        for (SQLiteUpdateListener listener : listeners) {
-            SQLiteUpdateListener.Type operationType;
-
-            switch (type) {
-                case 18:
-                    operationType = SQLiteUpdateListener.Type.INSERT;
-                    break;
-                case 9:
-                    operationType = SQLiteUpdateListener.Type.DELETE;
-                    break;
-                case 23:
-                    operationType = SQLiteUpdateListener.Type.UPDATE;
-                    break;
-                default:
-                    throw new AssertionError("Unknown type: " + type);
+            synchronized (this) {
+                listeners = new HashSet<>(updateListeners);
             }
 
-            listener.onUpdate(operationType, database, table, rowId);
+            for (SQLiteUpdateListener listener : listeners) {
+                SQLiteUpdateListener.Type operationType;
+
+                switch (type) {
+                    case 18:
+                        operationType = SQLiteUpdateListener.Type.INSERT;
+                        break;
+                    case 9:
+                        operationType = SQLiteUpdateListener.Type.DELETE;
+                        break;
+                    case 23:
+                        operationType = SQLiteUpdateListener.Type.UPDATE;
+                        break;
+                    default:
+                        throw new AssertionError("Unknown type: " + type);
+                }
+
+                listener.onUpdate(operationType, database, table, rowId);
+            }
+        } finally {
+            exitNativeCallback();
         }
     }
 
     void onCommit(boolean commit) {
-        Set<SQLiteCommitListener> listeners;
+        enterNativeCallback();
+        try {
+            Set<SQLiteCommitListener> listeners;
 
-        synchronized (this) {
-            listeners = new HashSet<>(commitListeners);
-        }
+            synchronized (this) {
+                listeners = new HashSet<>(commitListeners);
+            }
 
-        for (SQLiteCommitListener listener : listeners) {
-            if (commit) listener.onCommit();
-            else listener.onRollback();
+            for (SQLiteCommitListener listener : listeners) {
+                if (commit) listener.onCommit();
+                else listener.onRollback();
+            }
+        } finally {
+            exitNativeCallback();
         }
     }
 
@@ -1216,7 +1456,7 @@ public abstract class DB implements Codes {
      *
      * @throws SQLException
      */
-    final void ensureAutoCommit(boolean autoCommit) throws SQLException {
+    public final synchronized void ensureAutoCommit(boolean autoCommit) throws SQLException {
         if (!autoCommit) {
             return;
         }
@@ -1249,13 +1489,22 @@ public abstract class DB implements Codes {
 
     private void ensureAutocommit(long beginPtr, long commitPtr) throws SQLException {
         try {
-            if (step(beginPtr) != SQLITE_DONE) {
+            // Each probe statement gets its own wait boundary; semantics of the
+            // legacy probe (any begin result != DONE means "in a transaction") are
+            // preserved exactly, including on busy-exhaustion.
+            if (stepControl(ControlStatement.AUTOCOMMIT_PROBE_BEGIN, beginPtr) != SQLITE_DONE) {
                 return; // assume we are in a transaction
             }
-            int rc = step(commitPtr);
+            int rc = stepControl(ControlStatement.AUTOCOMMIT_PROBE_COMMIT, commitPtr);
             if (rc != SQLITE_DONE) {
                 reset(commitPtr);
-                throwex(rc);
+                SQLException failure = newSQLException(rc);
+                try {
+                    exec("rollback;", false);
+                } catch (SQLException rollbackFailure) {
+                    failure.addSuppressed(rollbackFailure);
+                }
+                throw failure;
             }
             // throw new SQLException("unable to auto-commit");
         } finally {

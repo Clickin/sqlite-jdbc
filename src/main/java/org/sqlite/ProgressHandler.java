@@ -2,6 +2,7 @@ package org.sqlite;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import org.sqlite.core.DB;
 
 /** https://www.sqlite.org/c3ref/progress_handler.html */
 public abstract class ProgressHandler {
@@ -38,4 +39,13 @@ public abstract class ProgressHandler {
     }
 
     protected abstract int progress() throws SQLException;
+
+    protected final int progressFromSQLite() throws SQLException {
+        DB.enterNativeCallback();
+        try {
+            return progress();
+        } finally {
+            DB.exitNativeCallback();
+        }
+    }
 }
