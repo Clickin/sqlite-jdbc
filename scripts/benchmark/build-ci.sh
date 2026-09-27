@@ -110,6 +110,7 @@ for label in xerial before fork; do
             sha256sum "$shared_obj" > "$out/shared-sqlite-object.sha256"
         else
             run_logged "$label-native-build" "${make_build[@]}" native \
+                -o "$shared_obj" -o "$shared_source/sqlite3.h" \
                 "SQLITE_OBJ=$shared_obj" "SQLITE_SOURCE=$shared_source" \
                 "SQLITE_HEADER=$shared_source/sqlite3.h"
             sha256sum --check "$out/shared-sqlite-object.sha256"

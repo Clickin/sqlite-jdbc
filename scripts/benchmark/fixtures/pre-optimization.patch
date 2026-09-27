@@ -44,7 +44,7 @@
      public boolean supportsPolicyPreservingBusyWait() {
 --- a/src/main/java/org/sqlite/core/NativeDB.c
 +++ b/src/main/java/org/sqlite/core/NativeDB.c
-@@ -751,7 +751,7 @@
+@@ -752,7 +752,7 @@
  ** is untouched if readback fails; the caller then keeps legacy one-step behavior.
  */
  JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_attemptNoWaitBusy(
@@ -53,7 +53,7 @@
  {
      sqlite3 *db = gethandle(env, this);
      if (!db)
-@@ -776,8 +776,7 @@
+@@ -777,8 +777,7 @@
      struct BusyAttemptContext attempt;
      attempt.busyObserved = 0;
  

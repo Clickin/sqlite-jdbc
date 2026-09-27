@@ -135,17 +135,18 @@
     "gradlew.bat": "f17917f8dbe61182b149273ee78090fec1197442c3f38276af907bfa5190db16",
     "settings.gradle.kts": "d9cd5e3be758d9fb056642f782796c9d80ddc26b3907074f2cd0f2a52e7b5a70"
   },
-  "pre_optimization_patch_sha256": "35ba8bf3b96afe4afa4c9a75d33a3e9877b4b1612a078457a7beedde9539d343",
+  "pre_optimization_patch_sha256": "51a0ab17dbcbb5c6a67216f25e4d1057ed0dda33859919a2984cb8bc93197ec3",
   "fork_current_sources": {
     "src/main/java/org/sqlite/core/DB.java": "b675ae245945658efd4b806cdbcc8a9d2dfb1e15b540bb012f1c809183337310",
     "src/main/java/org/sqlite/core/NativeDB.java": "441cbc5a702341db9bd2dc0aceae5e29f7bed3b385e6751f76475aece120951b",
-    "src/main/java/org/sqlite/core/NativeDB.c": "4f920823b8f1097c66eb1c93244c8c803610a65666db4663a1de252923d548ed"
+    "src/main/java/org/sqlite/core/NativeDB.c": "925a35d558c3c7b21adb8c25894ac64b0258b5a83e362f48f7e26e6d08ea325f"
   },
   "fork_before_sources": {
     "src/main/java/org/sqlite/core/DB.java": "99d7da1655701b53d6c9c75b0db49b0f8925c2a4a95663269d91911eeb2c5abd",
     "src/main/java/org/sqlite/core/NativeDB.java": "481d39ca54451a307ddee6120d7f81ae46762c1db4109e4eece5ef501b2579c0",
-    "src/main/java/org/sqlite/core/NativeDB.c": "644e190cbaea55df87bf8e41be2f6215a6eb5f1b41efa9174d508481883f4aa9"
+    "src/main/java/org/sqlite/core/NativeDB.c": "7d62f92af542ec0dedc6b94f27d1d8119a930ac7c7b6f268aa99a9a70169d746"
   },
   "upstream_release_sha": "cab7981c19ce04d691f0675f0b2586afc2bbf803",
-  "publication": "Owner explicitly approved public publication for the same application benchmark. Source/build inputs only; no runtime data or local credentials."
+  "publication": "Owner explicitly approved public publication for the same application benchmark. Source/build inputs only; no runtime data or local credentials.",
+  "portability_adjustment": "Both fork variants include <stdint.h> explicitly; Linux/GCC exposed missing intptr_t declaration. No runtime policy change."
 }
