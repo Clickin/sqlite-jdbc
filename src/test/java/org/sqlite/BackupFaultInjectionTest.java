@@ -98,14 +98,9 @@ public class BackupFaultInjectionTest {
             File destination = new File(tempDir, "dest2.sqlite");
             NativeDBHelper.backupTestSetFaultMode(db, 2);
             try {
-                assertThatThrownBy(
-                                () -> {
-                                    try (Statement stmt = conn.createStatement()) {
-                                        stmt.executeUpdate(
-                                                "backup to " + destination.getAbsolutePath());
-                                    }
-                                })
-                        .isInstanceOf(SQLException.class);
+                assertThatThrownBy(() -> db.backup("main", destination.getAbsolutePath(), null))
+                        .isInstanceOf(OutOfMemoryError.class)
+                        .hasMessageContaining("backup result-array");
             } finally {
                 NativeDBHelper.backupTestSetFaultMode(db, 0);
             }

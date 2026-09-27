@@ -29,6 +29,7 @@
 
 static jclass dbclass = 0;
 static jfieldID dbpointer = 0;
+static jfieldID db_restoreSessionActive = 0;
 static jfieldID db_busyHandler = 0;
 static jfieldID db_commitListener = 0;
 static jfieldID db_updateListener = 0;
@@ -88,16 +89,19 @@ static jlong fromref(void * value)
 
 static void throwex(JNIEnv *env, jobject this)
 {
+    if ((*env)->ExceptionCheck(env)) return;
     (*env)->CallVoidMethod(env, this, mth_throwex);
 }
 
 static void throwex_errorcode(JNIEnv *env, jobject this, int errorCode)
 {
+    if ((*env)->ExceptionCheck(env)) return;
     (*env)->CallVoidMethod(env, this, mth_throwexcode, (jint) errorCode);
 }
 
 static void throwex_msg(JNIEnv *env, const char *str)
 {
+    if ((*env)->ExceptionCheck(env)) return;
     (*env)->CallStaticVoidMethod(env, dbclass, mth_throwexmsg,
                                 (*env)->NewStringUTF(env, str));
 }
@@ -220,8 +224,20 @@ static void freeUtf8Bytes(char* bytes)
     }
 }
 
+/* The restore destination cannot be passed to SQLite until backup_finish. */
+static int checkBackupAccess(JNIEnv *env, jobject nativeDB)
+{
+    if ((*env)->GetBooleanField(env, nativeDB, db_restoreSessionActive))
+    {
+        throwex_msg(env, "the restore destination cannot be used until restore finishes");
+        return 0;
+    }
+    return 1;
+}
+
 static sqlite3 * gethandle(JNIEnv *env, jobject nativeDB)
 {
+    if (!checkBackupAccess(env, nativeDB)) return NULL;
     return (sqlite3 *)toref((*env)->GetLongField(env, nativeDB, dbpointer));
 }
 
@@ -444,6 +460,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     if (!dbclass) return JNI_ERR;
     dbclass = (*env)->NewWeakGlobalRef(env, dbclass);
     dbpointer = (*env)->GetFieldID(env, dbclass, "pointer", "J");
+    db_restoreSessionActive = (*env)->GetFieldID(env, dbclass, "restoreSessionActive", "Z");
     db_busyHandler = (*env)->GetFieldID(env, dbclass, "busyHandler", "J");
     db_commitListener = (*env)->GetFieldID(env, dbclass, "commitListener", "J");
     db_updateListener = (*env)->GetFieldID(env, dbclass, "updateListener", "J");
@@ -571,6 +588,7 @@ JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB__1open_1utf8(
     char *file_bytes;
 
     db = gethandle(env, this);
+    if ((*env)->ExceptionCheck(env)) return;
     if (db) {
         throwex_msg(env, "DB already open");
         sqlite3_close(db);
@@ -733,7 +751,7 @@ static int readBusyTimeout(sqlite3 *db) {
 ** is untouched if readback fails; the caller then keeps legacy one-step behavior.
 */
 JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_attemptNoWaitBusy(
-    JNIEnv *env, jobject this, jlong stmtPtr, jboolean autoCommitProbe)
+    JNIEnv *env, jobject this, jlong stmtPtr, jboolean autoCommitProbe, jint firstAttemptTimeout)
 {
     sqlite3 *db = gethandle(env, this);
     if (!db)
@@ -747,8 +765,10 @@ JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_attemptNoWaitBusy(
 #ifdef SQLITEJDBC_TEST_FAULTS
     if (autoCommitProbe && gTestFailNextAutocommitProbeCommit)
     {
+        int rc = gTestFailNextAutocommitProbeCommit;
         gTestFailNextAutocommitProbeCommit = 0;
-        return (jlong) SQLITE_BUSY;
+        if (rc == SQLITE_INTERRUPT) throwex_errorcode(env, this, rc);
+        return (jlong) rc;
     }
 #endif
     sqlite3_stmt *stmt = (sqlite3_stmt *) (intptr_t) stmtPtr;
@@ -756,7 +776,8 @@ JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_attemptNoWaitBusy(
     struct BusyAttemptContext attempt;
     attempt.busyObserved = 0;
 
-    int savedTimeout = readBusyTimeout(db);
+    /* The first snapshot was read under the same Java DB monitor; retries read live policy. */
+    int savedTimeout = firstAttemptTimeout > 0 ? firstAttemptTimeout : readBusyTimeout(db);
     if (savedTimeout > 0)
     {
         sqlite3_busy_handler(db, &markBusyWithoutWaiting, &attempt);
@@ -885,7 +906,7 @@ JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_total_1changes(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_finalize(
         JNIEnv *env, jobject this, jlong stmt)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -897,7 +918,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_finalize(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_step(
         JNIEnv *env, jobject this, jlong stmt)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -909,7 +930,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_step(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_reset(
         JNIEnv *env, jobject this, jlong stmt)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -921,7 +942,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_reset(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_clear_1bindings(
         JNIEnv *env, jobject this, jlong stmt)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -933,7 +954,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_clear_1bindings(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1parameter_1count(
         JNIEnv *env, jobject this, jlong stmt)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -945,7 +966,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1parameter_1count(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_column_1count(
         JNIEnv *env, jobject this, jlong stmt)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -957,7 +978,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_column_1count(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_column_1type(
         JNIEnv *env, jobject this, jlong stmt, jint col)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -971,7 +992,7 @@ JNIEXPORT jobject JNICALL Java_org_sqlite_core_NativeDB_column_1decltype_1utf8(
 {
     const char *str;
 
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return NULL;
@@ -987,7 +1008,7 @@ JNIEXPORT jobject JNICALL Java_org_sqlite_core_NativeDB_column_1table_1name_1utf
 {
     const char *str;
 
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return NULL;
@@ -1003,7 +1024,7 @@ JNIEXPORT jobject JNICALL Java_org_sqlite_core_NativeDB_column_1name_1utf8(
 {
     const char *str;
 
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return NULL;
@@ -1101,7 +1122,7 @@ JNIEXPORT jbyteArray JNICALL Java_org_sqlite_core_NativeDB_column_1blob(
 JNIEXPORT jdouble JNICALL Java_org_sqlite_core_NativeDB_column_1double(
         JNIEnv *env, jobject this, jlong stmt, jint col)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return 0;
@@ -1113,7 +1134,7 @@ JNIEXPORT jdouble JNICALL Java_org_sqlite_core_NativeDB_column_1double(
 JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_column_1long(
         JNIEnv *env, jobject this, jlong stmt, jint col)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return 0;
@@ -1125,7 +1146,7 @@ JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_column_1long(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_column_1int(
         JNIEnv *env, jobject this, jlong stmt, jint col)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return 0;
@@ -1137,7 +1158,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_column_1int(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1null(
         JNIEnv *env, jobject this, jlong stmt, jint pos)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -1149,7 +1170,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1null(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1int(
         JNIEnv *env, jobject this, jlong stmt, jint pos, jint v)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -1161,7 +1182,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1int(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1long(
         JNIEnv *env, jobject this, jlong stmt, jint pos, jlong v)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -1173,7 +1194,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1long(
 JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1double(
         JNIEnv *env, jobject this, jlong stmt, jint pos, jdouble v)
 {
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -1189,7 +1210,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1text_1utf8(
     char* v_bytes;
     int v_nbytes;
 
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -1211,7 +1232,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_bind_1blob(
     void *a;
     jsize size;
 
-    if (!stmt)
+    if (!stmt || !checkBackupAccess(env, this))
     {
         throwex_stmt_finalized(env);
         return SQLITE_MISUSE;
@@ -1395,6 +1416,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_create_1function_1utf8(
     jint ret = 0;
     char *name_bytes;
     int isAgg = 0, isWindow = 0;
+    if (!checkBackupAccess(env, nativeDB)) return 0;
 
     struct UDFData *udf = (struct UDFData*) malloc(sizeof(struct UDFData));
 
@@ -1445,6 +1467,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_destroy_1function_1utf8(
 {
     jint ret = 0;
     char* name_bytes;
+    if (!checkBackupAccess(env, nativeDB)) return 0;
 
     utf8JavaByteArrayToUtf8Bytes(env, name, &name_bytes, NULL);
     if (!name_bytes) { throwex_outofmemory(env); return 0; }
@@ -1462,6 +1485,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_create_1collation_1utf8(
 {
     jint ret = 0;
     char *name_bytes;
+    if (!checkBackupAccess(env, this)) return 0;
 
     struct CollationData *coll = (struct CollationData*) malloc(sizeof(struct CollationData));
 
@@ -1492,6 +1516,7 @@ JNIEXPORT jint JNICALL Java_org_sqlite_core_NativeDB_destroy_1collation_1utf8(
 {
     jint ret = 0;
     char *name_bytes;
+    if (!checkBackupAccess(env, this)) return 0;
 
     utf8JavaByteArrayToUtf8Bytes(env, name, &name_bytes, NULL);
     if (!name_bytes) { throwex_outofmemory(env); return 0; }
@@ -1630,9 +1655,9 @@ JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_backupTestSetFaultMode(
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_failNextAutocommitProbeCommitForTest(
-    JNIEnv *env, jobject this)
+    JNIEnv *env, jobject this, jint resultCode)
 {
-    gTestFailNextAutocommitProbeCommit = 1;
+    gTestFailNextAutocommitProbeCommit = resultCode;
 }
 #endif
 
@@ -1700,6 +1725,7 @@ JNIEXPORT jlongArray JNICALL Java_org_sqlite_core_NativeDB_backupInit(
   }
 
   utf8JavaByteArrayToUtf8Bytes(env, zFilename, &dFileName, NULL);
+  if ((*env)->ExceptionCheck(env)) goto cleanup;
   if (!dFileName)
   {
     rc = SQLITE_NOMEM;
@@ -1708,6 +1734,7 @@ JNIEXPORT jlongArray JNICALL Java_org_sqlite_core_NativeDB_backupInit(
   if (rc == SQLITE_OK)
   {
     utf8JavaByteArrayToUtf8Bytes(env, zDBName, &dDBName, NULL);
+    if ((*env)->ExceptionCheck(env)) goto cleanup;
     if (!dDBName)
     {
       rc = SQLITE_NOMEM;
@@ -1775,6 +1802,7 @@ JNIEXPORT jlongArray JNICALL Java_org_sqlite_core_NativeDB_backupInit(
     }
   }
 
+cleanup:
   freeUtf8Bytes(dDBName);
   freeUtf8Bytes(dFileName);
 
@@ -1785,11 +1813,19 @@ JNIEXPORT jlongArray JNICALL Java_org_sqlite_core_NativeDB_backupInit(
     session = NULL;
   }
 
+  if ((*env)->ExceptionCheck(env))
+  {
+    freeBackupSession(session);
+    return NULL;
+  }
+
   results[0] = (jlong) rc;
   results[1] = (jlong) (intptr_t) session;
 #ifdef SQLITEJDBC_TEST_FAULTS
   if (testBackupFaultMode() == 2)
   {
+    jclass oom = (*env)->FindClass(env, "java/lang/OutOfMemoryError");
+    if (oom) (*env)->ThrowNew(env, oom, "injected backup result-array allocation failure");
     result = NULL; /* simulated NewLongArray failure */
   }
   else
@@ -2000,6 +2036,7 @@ static void clear_update_listener(JNIEnv *env, jobject nativeDB){
 }
 
 JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_set_1update_1listener(JNIEnv *env, jobject nativeDB, jboolean enabled) {
+    if (!checkBackupAccess(env, nativeDB)) return;
     if (enabled) {
         struct UpdateHandlerContext* update_handler_context = (struct UpdateHandlerContext*) malloc(sizeof(struct UpdateHandlerContext));
         update_handler_context->handler = (*env)->NewGlobalRef(env, nativeDB);
@@ -2047,6 +2084,7 @@ void clear_commit_listener(JNIEnv *env, jobject nativeDB, sqlite3 *db) {
 
 JNIEXPORT void JNICALL Java_org_sqlite_core_NativeDB_set_1commit_1listener(JNIEnv *env, jobject nativeDB, jboolean enabled) {
     sqlite3 *db = gethandle(env, nativeDB);
+    if (!db) return;
     if (enabled) {
         struct CommitHandlerContext *commit_handler_context = (struct CommitHandlerContext*) malloc(sizeof(struct CommitHandlerContext));
         commit_handler_context->handler = (*env)->NewGlobalRef(env, nativeDB);

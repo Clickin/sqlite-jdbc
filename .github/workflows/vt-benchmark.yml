@@ -1,0 +1,105 @@
+name: Fair virtual-thread Gateway benchmark
+
+on:
+  push:
+    branches:
+      - 'ci/vt-benchmark/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      LC_ALL: C.UTF-8
+      TZ: UTC
+    steps:
+      - name: Check out optimized fork
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Check out xerial 3.53.4.0 source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: xerial/sqlite-jdbc
+          ref: cab7981c19ce04d691f0675f0b2586afc2bbf803
+          path: target/ci/upstream
+          persist-credentials: false
+
+      - name: Install identical JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: '25.0.2'
+          java-package: jdk
+
+      - name: Install native source-build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends gcc-13 g++-13 binutils make tcl-dev unzip zip curl perl maven
+
+      - name: Build three drivers and unchanged Gateway
+        run: bash scripts/benchmark/build-ci.sh
+
+      - name: Measure sequential paired runs
+        run: |
+          python3 scripts/benchmark/run-gateway.py \
+            --gateway target/ci/gateway \
+            --output target/vt-wait-evidence/ci-benchmark \
+            --xerial-classes target/ci/upstream/target/classes \
+            --xerial-native-dir target/ci/upstream/target/classes/org/sqlite/native/Linux/x86_64 \
+            --before-classes target/ci/before/target/classes \
+            --repetitions 6 --seconds 30 --clients 12 --carriers 4 \
+            --scenarios 0 4 --backup-pages -1 --warmup-requests 6000 \
+            --require-matching-compile-options --discard-databases \
+            2>&1 | tee target/vt-wait-evidence/ci-benchmark/benchmark.log
+
+      - name: Write benchmark summary
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path = Path('target/vt-wait-evidence/ci-benchmark/summary.json')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('## Gateway benchmark\n\nSame Temurin 25.0.2 / GCC 13; one shared SQLite object. '
+                            '6 runs × 30 seconds, 6,000 warmup requests, 4 carriers, 12 clients.\n\n')
+              if not path.exists():
+                  summary.write('Benchmark did not complete; inspect the uploaded evidence/logs.\n')
+              else:
+                  summary.write('| Backups | Driver | Runs | Median req/s | Median HTTP p99 ms | Median heartbeat p99 ms | Pins | Failures |\n'
+                                '|---:|---|---:|---:|---:|---:|---:|---:|\n')
+                  for row in json.loads(path.read_text()):
+                      summary.write(f"| {row['backups']} | {row['driver']} | {row['runs']} | "
+                                    f"{row['median_rps']:.2f} | {row['median_http_p99_ms']:.2f} | "
+                                    f"{row['median_heartbeat_p99_ms']:.2f} | {row['total_pins']} | {row['total_failures']} |\n")
+          PY
+
+      - name: Upload raw evidence without generated databases
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: gateway-benchmark-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 30
+          if-no-files-found: warn
+          compression-level: 6
+          path: |
+            target/vt-wait-evidence/ci-benchmark/*.log
+            target/vt-wait-evidence/ci-benchmark/*.json
+            target/vt-wait-evidence/ci-benchmark/*.sha256
+            target/vt-wait-evidence/ci-benchmark/*.patch
+            target/vt-wait-evidence/ci-benchmark/gateway-classpath.txt
+            target/vt-wait-evidence/ci-benchmark/classpath.gradle
+            target/vt-wait-evidence/ci-benchmark/gateway-source.zip
+            target/vt-wait-evidence/ci-benchmark/backups-*/*.log
+            target/vt-wait-evidence/ci-benchmark/backups-*/*.json
+            target/vt-wait-evidence/ci-benchmark/backups-*/*.csv
+            target/vt-wait-evidence/ci-benchmark/backups-*/*.jfr
+            scripts/benchmark/fixtures/manifest.json
+            scripts/benchmark/fixtures/pre-optimization.patch
+            !target/vt-wait-evidence/ci-benchmark/**/data/**

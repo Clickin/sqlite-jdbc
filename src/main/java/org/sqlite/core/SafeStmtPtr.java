@@ -50,6 +50,7 @@ public class SafeStmtPtr {
      */
     public int close() throws SQLException {
         synchronized (db) {
+            db.checkBackupAccess();
             return internalClose();
         }
     }
@@ -144,6 +145,7 @@ public class SafeStmtPtr {
     }
 
     private void ensureOpen() throws SQLException {
+        db.checkBackupAccess();
         if (this.closed) {
             throw new SQLException("stmt pointer is closed");
         }

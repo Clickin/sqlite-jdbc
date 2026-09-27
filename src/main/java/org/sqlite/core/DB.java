@@ -99,6 +99,12 @@ public abstract class DB implements Codes {
         return false;
     }
 
+    /** Rejects unsafe access to a connection used as an active restore destination. */
+    protected void checkBackupAccess() throws SQLException {}
+
+    /** Rejects closing a connection while it owns an active backup or restore session. */
+    protected void checkBackupClose() throws SQLException {}
+
     /**
      * Sets a <a href="https://www.sqlite.org/c3ref/busy_handler.html">busy handler</a> that sleeps
      * for a specified amount of time when a table is locked.
@@ -324,12 +330,16 @@ public abstract class DB implements Codes {
         long sleepBudgetUsedMillis = 0;
         while (true) {
             checkControlWaitCancellation(cancelGeneration);
-            if (waits != 0 && Thread.currentThread().isInterrupted()) {
+            if (Thread.currentThread().isInterrupted()) {
                 throw newSQLException(SQLITE_INTERRUPT, "interrupted during busy wait");
             }
+            // The DB monitor excludes policy changes between the initial readback and this step.
+            // Re-read in native code on retries; this is not a connection-level timeout cache.
             long attempt =
                     attemptNoWaitBusy(
-                            stmtPointer, statement == ControlStatement.AUTOCOMMIT_PROBE_COMMIT);
+                            stmtPointer,
+                            statement == ControlStatement.AUTOCOMMIT_PROBE_COMMIT,
+                            waits == 0 ? (int) budgetMillis : -1);
             int rc = (int) attempt;
             boolean busyObserved = (attempt >>> 32) != 0;
 
@@ -418,8 +428,12 @@ public abstract class DB implements Codes {
         return -1;
     }
 
-    /** One no-wait native step; low 32 bits are rc, bit 32 marks busy callback invocation. */
-    protected long attemptNoWaitBusy(long stmtPointer, boolean autoCommitProbe) {
+    /**
+     * One no-wait native step; low 32 bits are rc, bit 32 marks busy callback invocation.
+     * firstAttemptTimeout is the live readback under this DB's monitor, or -1 to read it again.
+     */
+    protected long attemptNoWaitBusy(
+            long stmtPointer, boolean autoCommitProbe, int firstAttemptTimeout) {
         return SQLITE_INTERNAL;
     }
 
@@ -464,6 +478,7 @@ public abstract class DB implements Codes {
      *     href="https://www.sqlite.org/c3ref/close.html">https://www.sqlite.org/c3ref/close.html</a>
      */
     public final synchronized void close() throws SQLException {
+        checkBackupClose();
         // finalize any remaining statements before closing db
         for (SafeStmtPtr element : stmts) {
             element.close();
@@ -1495,18 +1510,20 @@ public abstract class DB implements Codes {
             if (stepControl(ControlStatement.AUTOCOMMIT_PROBE_BEGIN, beginPtr) != SQLITE_DONE) {
                 return; // assume we are in a transaction
             }
-            int rc = stepControl(ControlStatement.AUTOCOMMIT_PROBE_COMMIT, commitPtr);
-            if (rc != SQLITE_DONE) {
-                reset(commitPtr);
-                SQLException failure = newSQLException(rc);
+            try {
+                int rc = stepControl(ControlStatement.AUTOCOMMIT_PROBE_COMMIT, commitPtr);
+                if (rc != SQLITE_DONE) {
+                    throw newSQLException(rc);
+                }
+            } catch (SQLException failure) {
                 try {
+                    reset(commitPtr);
                     exec("rollback;", false);
                 } catch (SQLException rollbackFailure) {
                     failure.addSuppressed(rollbackFailure);
                 }
                 throw failure;
             }
-            // throw new SQLException("unable to auto-commit");
         } finally {
             reset(beginPtr);
             reset(commitPtr);

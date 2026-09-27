@@ -346,31 +346,33 @@ public abstract class SQLiteConnection implements Connection {
     /** @see java.sql.Connection#setAutoCommit(boolean) */
     @Override
     public void setAutoCommit(boolean ac) throws SQLException {
-        checkOpen();
-        if (connectionConfig.isAutoCommit() == ac) return;
+        synchronized (db) {
+            checkOpen();
+            if (connectionConfig.isAutoCommit() == ac) return;
 
-        // The JDBC-side setting follows a successful control statement: a busy-failed
-        // BEGIN must not leave the connection advertising an open transaction, and a
-        // failed COMMIT must not silently turn auto-commit on (plan 10.2).
-        if (ac) {
-            if (this.isTransactionRestartPending()) {
-                // The native transaction already ended before its follow-up BEGIN failed.
-                this.setTransactionRestartPending(false);
+            // The JDBC-side setting follows a successful control statement: a busy-failed
+            // BEGIN must not leave the connection advertising an open transaction, and a
+            // failed COMMIT must not silently turn auto-commit on (plan 10.2).
+            if (ac) {
+                if (this.isTransactionRestartPending()) {
+                    // The native transaction already ended before its follow-up BEGIN failed.
+                    this.setTransactionRestartPending(false);
+                } else {
+                    db.execControl(ControlStatement.COMMIT, ac, false);
+                }
+                connectionConfig.setAutoCommit(true);
+                this.firstStatementExecuted = false;
+                this.currentTransactionMode = null;
+                // COMMIT is complete. A failure in this compatibility probe must not imply that
+                // COMMIT failed or leave JDBC auto-commit disabled.
+                db.ensureAutoCommit(true);
             } else {
-                db.execControl(ControlStatement.COMMIT, ac, false);
+                db.execControl(beginStatement(), ac, true);
+                this.setTransactionRestartPending(false);
+                connectionConfig.setAutoCommit(false);
+                this.currentTransactionMode = this.getConnectionConfig().getTransactionMode();
+                this.firstStatementExecuted = false;
             }
-            connectionConfig.setAutoCommit(true);
-            this.firstStatementExecuted = false;
-            this.currentTransactionMode = null;
-            // COMMIT is complete. A failure in this compatibility probe must not imply that
-            // COMMIT failed or leave JDBC auto-commit disabled.
-            db.ensureAutoCommit(true);
-        } else {
-            db.execControl(beginStatement(), ac, true);
-            this.setTransactionRestartPending(false);
-            connectionConfig.setAutoCommit(false);
-            this.currentTransactionMode = this.getConnectionConfig().getTransactionMode();
-            this.firstStatementExecuted = false;
         }
     }
 
@@ -441,17 +443,19 @@ public abstract class SQLiteConnection implements Connection {
      * so user SQL cannot silently auto-commit (plan 10.3).
      */
     protected void recoverTransactionRestart() throws SQLException {
-        if (this.isTransactionRestartPending()) {
-            try {
-                restartTransaction();
-            } catch (SQLException restartFailure) {
-                throw new SQLException(
-                        "transaction restart pending: the automatic BEGIN after the last"
-                                + " commit/rollback failed; call rollback() or setAutoCommit() to"
-                                + " recover",
-                        restartFailure.getSQLState(),
-                        restartFailure.getErrorCode(),
-                        restartFailure);
+        synchronized (db) {
+            if (this.isTransactionRestartPending()) {
+                try {
+                    restartTransaction();
+                } catch (SQLException restartFailure) {
+                    throw new SQLException(
+                            "transaction restart pending: the automatic BEGIN after the last"
+                                    + " commit/rollback failed; call rollback() or setAutoCommit() to"
+                                    + " recover",
+                            restartFailure.getSQLState(),
+                            restartFailure.getErrorCode(),
+                            restartFailure);
+                }
             }
         }
     }
@@ -529,56 +533,62 @@ public abstract class SQLiteConnection implements Connection {
     /** @see java.sql.Connection#commit() */
     @Override
     public void commit() throws SQLException {
-        checkOpen();
-        if (connectionConfig.isAutoCommit()) throw new SQLException("database in auto-commit mode");
-        if (this.isTransactionRestartPending()) {
-            // Nothing native to commit: the previous transaction was already committed. A fresh
-            // BEGIN completes recovery; do not issue a second BEGIN or replay COMMIT.
-            this.restartTransaction();
-            return;
+        synchronized (db) {
+            checkOpen();
+            if (connectionConfig.isAutoCommit())
+                throw new SQLException("database in auto-commit mode");
+            if (this.isTransactionRestartPending()) {
+                // Nothing native to commit: the previous transaction was already committed. A fresh
+                // BEGIN completes recovery; do not issue a second BEGIN or replay COMMIT.
+                this.restartTransaction();
+                return;
+            }
+            try {
+                db.execControl(ControlStatement.COMMIT, getAutoCommit(), true);
+            } catch (SQLException commitFailure) {
+                // The transaction is still active; a later commit() may retry the COMMIT.
+                throw commitFailure;
+            }
+            ControlStatement nextBegin = beginStatement();
+            try {
+                db.execControl(nextBegin, getAutoCommit(), true);
+                this.setTransactionRestartPending(false);
+            } catch (SQLException beginFailure) {
+                // The data is committed; do not replay the COMMIT. Mark the missing BEGIN so user
+                // SQL cannot silently auto-commit (plan 10.3).
+                this.setTransactionRestartPending(nextBegin);
+                throw beginFailure;
+            }
+            this.firstStatementExecuted = false;
+            this.setCurrentTransactionMode(transactionMode(nextBegin));
         }
-        try {
-            db.execControl(ControlStatement.COMMIT, getAutoCommit(), true);
-        } catch (SQLException commitFailure) {
-            // The transaction is still active; a later commit() may retry the COMMIT.
-            throw commitFailure;
-        }
-        ControlStatement nextBegin = beginStatement();
-        try {
-            db.execControl(nextBegin, getAutoCommit(), true);
-            this.setTransactionRestartPending(false);
-        } catch (SQLException beginFailure) {
-            // The data is committed; do not replay the COMMIT. Mark the missing BEGIN so user
-            // SQL cannot silently auto-commit (plan 10.3).
-            this.setTransactionRestartPending(nextBegin);
-            throw beginFailure;
-        }
-        this.firstStatementExecuted = false;
-        this.setCurrentTransactionMode(transactionMode(nextBegin));
     }
 
     /** @see java.sql.Connection#rollback() */
     @Override
     public void rollback() throws SQLException {
-        checkOpen();
-        if (connectionConfig.isAutoCommit()) throw new SQLException("database in auto-commit mode");
-        if (this.isTransactionRestartPending()) {
-            // There is no native transaction to roll back; restart the BEGIN that originally
-            // failed, without replaying ROLLBACK.
-            this.restartTransaction();
-            return;
+        synchronized (db) {
+            checkOpen();
+            if (connectionConfig.isAutoCommit())
+                throw new SQLException("database in auto-commit mode");
+            if (this.isTransactionRestartPending()) {
+                // There is no native transaction to roll back; restart the BEGIN that originally
+                // failed, without replaying ROLLBACK.
+                this.restartTransaction();
+                return;
+            }
+            db.exec("rollback;", getAutoCommit());
+            ControlStatement nextBegin = beginStatement();
+            try {
+                db.execControl(nextBegin, getAutoCommit(), true);
+                this.setTransactionRestartPending(false);
+            } catch (SQLException beginFailure) {
+                this.setTransactionRestartPending(nextBegin);
+                throw beginFailure;
+            }
+            this.firstStatementExecuted = false;
+            this.setCurrentTransactionMode(transactionMode(nextBegin));
         }
-        db.exec("rollback;", getAutoCommit());
-        ControlStatement nextBegin = beginStatement();
-        try {
-            db.execControl(nextBegin, getAutoCommit(), true);
-            this.setTransactionRestartPending(false);
-        } catch (SQLException beginFailure) {
-            this.setTransactionRestartPending(nextBegin);
-            throw beginFailure;
-        }
-        this.firstStatementExecuted = false;
-        this.setCurrentTransactionMode(transactionMode(nextBegin));
     }
 
     /**
