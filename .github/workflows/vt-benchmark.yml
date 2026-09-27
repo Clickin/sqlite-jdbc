@@ -46,6 +46,7 @@ jobs:
         run: bash scripts/benchmark/build-ci.sh
 
       - name: Measure sequential paired runs
+        shell: bash
         run: |
           python3 scripts/benchmark/run-gateway.py \
             --gateway target/ci/gateway \
@@ -71,6 +72,7 @@ jobs:
                             '6 runs × 30 seconds, 6,000 warmup requests, 4 carriers, 12 clients.\n\n')
               if not path.exists():
                   summary.write('Benchmark did not complete; inspect the uploaded evidence/logs.\n')
+                  raise SystemExit('Incomplete benchmark matrix')
               else:
                   summary.write('| Backups | Driver | Runs | Median req/s | Median HTTP p99 ms | Median heartbeat p99 ms | Pins | Failures |\n'
                                 '|---:|---|---:|---:|---:|---:|---:|---:|\n')

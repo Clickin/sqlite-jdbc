@@ -39,11 +39,12 @@ java_home = Path(os.environ["JAVA_HOME"])
 java, javac = str(java_home / "bin/java"), str(java_home / "bin/javac")
 classpath_file = a.output / "gateway-classpath.txt"
 
-def run(cmd, log, cwd=ROOT, timeout=600):
+def run(cmd, log, cwd=ROOT, timeout=600, check=True):
     with log.open("w") as f:
         completed = subprocess.run(list(map(str, cmd)), cwd=cwd, stdout=f, stderr=subprocess.STDOUT, timeout=timeout)
-    if completed.returncode:
+    if check and completed.returncode:
         raise RuntimeError(f"exit {completed.returncode}: {cmd}; see {log}")
+    return completed.returncode
 
 if a.prepare:
     init = a.output / "classpath.gradle"
@@ -146,15 +147,21 @@ for copies in a.scenarios:
                             f"-Dorg.sqlite.lib.name={native_name}", "-Xlog:library=debug"]
             (out / "command.json").write_text(json.dumps(cmd, indent=2) + "\n")
             print(f"RUN {out.name}", flush=True)
-            run(cmd, out / "stdout.log", timeout=a.seconds + 180)
+            status = run(cmd, out / "stdout.log", timeout=a.seconds + 180, check=False)
+            if not (out / "result.json").is_file():
+                raise RuntimeError(f"Run produced no complete measurement (exit {status}): {out}")
             row = json.loads((out / "result.json").read_text())
+            row["process_exit_code"] = status
+            row["outcome_passed"] = (
+                status == 0 and row["failures"] == 0 and not row["errors"]
+                and row["integrity"] == "ok" and row["source_calls"] == row["successes"])
             if results:
                 if row["sqlite_source_id"] != results[0]["sqlite_source_id"]:
                     raise RuntimeError(f"SQLite source ID differs: {out}")
                 if require_matching_options and sorted(row["compile_options"]) != sorted(results[0]["compile_options"]):
                     raise RuntimeError(f"SQLite compile options differ: {out}")
             row["databases_discarded"] = False
-            if a.discard_databases:
+            if a.discard_databases and row["outcome_passed"]:
                 data = out / "data"
                 if data.is_symlink() or data.resolve() != out.resolve() / "data":
                     raise RuntimeError(f"Refusing to delete unowned data: {data}")
@@ -165,12 +172,14 @@ for copies in a.scenarios:
             results.append(row)
             (a.output / "results.json").write_text(json.dumps(results, indent=2) + "\n")
             print(f"  rps={row['requests_per_second']:.2f} p99={row['http_latency']['p99_ms']:.2f}ms "
-                  f"heartbeat_p99={row['heartbeat_delay']['p99_ms']:.2f}ms pins={row['jfr']['pinned_events']}", flush=True)
+                  f"heartbeat_p99={row['heartbeat_delay']['p99_ms']:.2f}ms pins={row['jfr']['pinned_events']} "
+                  f"failures={row['failures']} exit={status}", flush=True)
 summary = []
 for copies in a.scenarios:
     for label in labels:
         rows = [r for r in results if r["backup_concurrency"] == copies and r["driver"] == label]
         summary.append({"backups": copies, "driver": label, "runs": len(rows),
+            "failed_runs": sum(not r["outcome_passed"] for r in rows),
             "median_rps": statistics.median(r["requests_per_second"] for r in rows),
             "min_rps": min(r["requests_per_second"] for r in rows),
             "max_rps": max(r["requests_per_second"] for r in rows),
@@ -190,3 +199,6 @@ for copies in a.scenarios:
             "total_failures": sum(r["failures"] for r in rows)})
 (a.output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
 print(json.dumps(summary, indent=2))
+failed_runs = sum(not row["outcome_passed"] for row in results)
+if failed_runs:
+    raise SystemExit(f"Completed all {len(results)} measurements; {failed_runs} had failed outcomes. See results.json and summary.json.")
