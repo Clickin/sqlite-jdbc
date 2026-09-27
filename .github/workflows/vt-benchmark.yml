@@ -3,7 +3,7 @@ name: Fair virtual-thread Gateway benchmark
 on:
   push:
     branches:
-      - 'ci/vt-benchmark/**'
+      - 'benchmarks/vt/**'
   workflow_dispatch:
 
 permissions:
