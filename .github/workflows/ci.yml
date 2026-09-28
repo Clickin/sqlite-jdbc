@@ -24,6 +24,7 @@ on:
       - 'dependabot/**'
       - 'benchmarks/vt/**'
       - 'benchmarks/vt-cost/**'
+      - 'benchmarks/vt-lock/**'
     paths:
       - '**.java'
       - '**.xml'

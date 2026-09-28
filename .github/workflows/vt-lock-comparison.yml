@@ -1,0 +1,107 @@
+name: Compare virtual-thread JDBC lock variants
+
+on:
+  push:
+    branches:
+      - 'benchmarks/vt-lock/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      LC_ALL: C.UTF-8
+      TZ: UTC
+    steps:
+      - name: Check out experiment
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check out pinned upstream
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: xerial/sqlite-jdbc
+          ref: cab7981c19ce04d691f0675f0b2586afc2bbf803
+          path: target/ci/upstream
+          persist-credentials: false
+      - name: Install identical JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: '25.0.2'
+          java-package: jdk
+      - name: Install pinned-major native build tools
+        run: |
+          mkdir -p target/vt-wait-evidence/lock-workflow
+          exec > >(tee target/vt-wait-evidence/lock-workflow/tool-install.log) 2>&1
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends gcc-13 g++-13 binutils make tcl-dev unzip zip curl perl maven
+      - name: Build common engine and unchanged application
+        run: bash scripts/benchmark/build-ci.sh
+      - name: Build source-only experimental lock variants
+        run: |
+          python3 scripts/benchmark/build-lock-variants.py \
+            2>&1 | tee target/vt-wait-evidence/lock-workflow/variant-build.log
+      - name: Run correctness then balanced normal and backup-contention matrix
+        run: |
+          python3 scripts/benchmark/run-lock-comparison.py \
+            --seconds 30 --warmup-requests 6000 \
+            2>&1 | tee target/vt-wait-evidence/lock-workflow/comparison.log
+      - name: Summarize complete comparison including failed outcomes
+        if: always()
+        run: |
+          mkdir -p target/vt-wait-evidence/lock-workflow
+          exec > >(tee target/vt-wait-evidence/lock-workflow/summary.log) 2>&1
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path('target/vt-wait-evidence/ci-lock-comparison')
+          path = root / 'summary.json'
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as report:
+              report.write('## Experimental lock comparison\n\n'
+                           'Xerial, current fork, flattened monitors, one non-fair ReentrantLock. '
+                           'Same JDK 25.0.2/GCC 13/common SQLite object; fork variants share the exact JNI binary. '
+                           'Four balanced rotations per scenario; 6,000 warmup HTTP requests and 30-second measurements. '
+                           'Normal load and four controlled contended backups. Full per-run latency/errors/integrity, '
+                           'JFR warmup/measurement inflation stacks, pin-positive-control, and carrier heartbeat evidence are artifacts. '
+                           'No async-profiler or measurement JNI probes. Zero pin events does not prove zero native carrier blocking.\n\n')
+              if not path.exists():
+                  report.write('Incomplete matrix; inspect build/correctness/measurement logs.\n')
+                  raise SystemExit('Missing comparison summary')
+              rows = json.loads(path.read_text())
+              if len(rows) != 8 or any(r['runs'] != 4 or r['complete_runs'] != 4 for r in rows):
+                  report.write('Incomplete measurement cells; inspect results.json.\n')
+                  raise SystemExit('Incomplete comparison cells')
+              report.write('| Backups | Driver | Median req/s | CPU ms/success | HTTP p99 ms | Heartbeat p99 ms | Failed runs |\n'
+                           '|---:|---|---:|---:|---:|---:|---:|\n')
+              for row in rows:
+                  report.write(f"| {row['backups']} | {row['driver']} | {row['median_rps']:.2f} | "
+                               f"{row['median_cpu_ms_per_success']:.3f} | {row['median_http_p99_ms']:.2f} | "
+                               f"{row['median_heartbeat_p99_ms']:.2f} | {row['failed_runs']} |\n")
+          print(json.dumps(rows, indent=2))
+          PY
+      - name: Upload source transformations and all evidence without databases
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: jdbc-lock-comparison-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 30
+          if-no-files-found: warn
+          compression-level: 6
+          path: |
+            target/vt-wait-evidence/lock-workflow/**
+            target/vt-wait-evidence/ci-benchmark/*.log
+            target/vt-wait-evidence/ci-benchmark/*.json
+            target/vt-wait-evidence/ci-benchmark/*.sha256
+            target/vt-wait-evidence/ci-lock-comparison/**
+            target/ci/lock-variants/**
+            !target/vt-wait-evidence/ci-lock-comparison/**/data/**
