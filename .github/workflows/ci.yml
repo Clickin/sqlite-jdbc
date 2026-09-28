@@ -23,6 +23,7 @@ on:
     branches-ignore:
       - 'dependabot/**'
       - 'benchmarks/vt/**'
+      - 'benchmarks/vt-cost/**'
     paths:
       - '**.java'
       - '**.xml'

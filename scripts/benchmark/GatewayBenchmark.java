@@ -72,6 +72,89 @@ public final class GatewayBenchmark {
         return r;
     }
 
+    static Recording profileRecording() {
+        var r = recording();
+        r.enable("jdk.GCPhasePause").withThreshold(Duration.ZERO);
+        r.enable("jdk.SafepointBegin").withThreshold(Duration.ZERO);
+        r.enable("jdk.SafepointStateSynchronization").withThreshold(Duration.ZERO);
+        r.enable("jdk.SafepointEnd").withThreshold(Duration.ZERO);
+        return r;
+    }
+
+    /** Opt-in collectors only; resource order drains request executors before error-path stops. */
+    static final class MeasurementProfile implements AutoCloseable {
+        final Map<String, Object> result;
+        final Path output;
+        final boolean enabled;
+        final Integer mode;
+        final Class<?> probe;
+        final Object profiler;
+        final java.lang.reflect.Method execute;
+        boolean probeStarted, profilerStarted;
+
+        MeasurementProfile(Path output, Map<String, Object> result) throws Exception {
+            this.output = output;
+            this.result = result;
+            String configuredMode = System.getProperty("benchmark.cost.mode");
+            mode = configuredMode == null ? null : Integer.valueOf(configuredMode);
+            probe = mode == null ? null : Class.forName("org.sqlite.core.CostProbe");
+            String library = System.getProperty("benchmark.async.library");
+            enabled = library != null || Boolean.getBoolean("benchmark.cost.profile");
+            if (library == null) {
+                profiler = null; execute = null;
+            } else {
+                Class<?> api = Class.forName("one.profiler.AsyncProfiler");
+                profiler = invoke(api.getMethod("getInstance", String.class), null, library);
+                execute = api.getMethod("execute", String.class);
+            }
+        }
+
+        static Object invoke(java.lang.reflect.Method method, Object receiver, Object... args) throws Exception {
+            try { return method.invoke(receiver, args); }
+            catch (java.lang.reflect.InvocationTargetException e) {
+                if (e.getCause() instanceof Exception cause) throw cause;
+                if (e.getCause() instanceof Error cause) throw cause;
+                throw e;
+            }
+        }
+
+        void start() throws Exception {
+            if (profiler != null) {
+                // record-cpu forces Linux perf_events: event=cpu alone can silently select wall.
+                String command = "start,jfr,event=cpu,record-cpu,interval=1ms,alloc=512k,lock=10ms,cstack=dwarf,file="
+                    + output.resolve("async-profile.jfr");
+                result.put("async_profile", Map.of("file", "async-profile.jfr", "command", command,
+                    "version", invoke(profiler.getClass().getMethod("getVersion"), profiler)));
+                invoke(execute, profiler, command);
+                profilerStarted = true;
+            }
+            if (probe != null) {
+                invoke(probe.getMethod("start", int.class), null, mode);
+                probeStarted = true;
+            }
+        }
+
+        public void close() throws Exception {
+            Exception failure = null;
+            try {
+                if (probeStarted) {
+                    probeStarted = false;
+                    result.put("native_cost", invoke(probe.getMethod("stop"), null));
+                }
+            } catch (Exception e) { failure = e; }
+            finally {
+                if (profilerStarted) {
+                    profilerStarted = false;
+                    try { invoke(execute, profiler, "stop"); }
+                    catch (Exception e) {
+                        if (failure == null) failure = e; else failure.addSuppressed(e);
+                    }
+                }
+            }
+            if (failure != null) throw failure;
+        }
+    }
+
     static void positiveControl(Path out) throws Exception {
         try (var c = DriverManager.getConnection("jdbc:sqlite::memory:"); var r = recording()) {
             Function.create(c, "pin_probe", new Function() {
@@ -153,9 +236,12 @@ public final class GatewayBenchmark {
                 try (var s = holder.createStatement()) { s.execute("pragma journal_mode=DELETE"); s.execute("create table seed(n)"); }
                 holders.add(holder);
             }
-            try (var rec = recording(); var vt = Executors.newVirtualThreadPerTaskExecutor();
+            try (var profile = new MeasurementProfile(out, result);
+                 var rec = profile.enabled ? profileRecording() : recording();
+                 var vt = Executors.newVirtualThreadPerTaskExecutor();
                  var workers = Executors.newFixedThreadPool(clients); var timer = Executors.newSingleThreadScheduledExecutor()) {
                 rec.start();
+                profile.start();
                 long start = System.nanoTime(), deadline = start + TimeUnit.SECONDS.toNanos(seconds);
                 long cpuStart = ProcessHandle.current().info().totalCpuDuration().orElseThrow().toNanos();
                 AtomicLong tick = new AtomicLong(start);
@@ -210,8 +296,11 @@ public final class GatewayBenchmark {
                 timer.shutdown(); timer.awaitTermination(5, TimeUnit.SECONDS);
                 vt.shutdown(); if (!vt.awaitTermination(15, TimeUnit.SECONDS)) throw new AssertionError("VTs did not finish");
                 long end = System.nanoTime();
+                long cpuEnd = ProcessHandle.current().info().totalCpuDuration().orElseThrow().toNanos();
+                profile.close();
+                if (profile.enabled) { rec.stop(); rec.dump(out.resolve("application.jfr")); }
                 result.put("elapsed_seconds", (end - start) / 1e9);
-                result.put("cpu_seconds", (ProcessHandle.current().info().totalCpuDuration().orElseThrow().toNanos() - cpuStart) / 1e9);
+                result.put("cpu_seconds", (cpuEnd - cpuStart) / 1e9);
                 result.put("successes", succeeded.get()); result.put("failures", failures.get());
                 result.put("requests_per_second", succeeded.get() / ((end - start) / 1e9));
                 result.put("source_calls", fixture.sourceCalls.get() - sourceBefore);
@@ -219,7 +308,7 @@ public final class GatewayBenchmark {
                 result.put("http_latency", latency.summary()); result.put("heartbeat_delay", heartbeat.summary());
                 result.put("timer_jitter", timerJitter.summary()); result.put("backup_latency", backupLatency.summary());
                 result.put("errors", errors);
-                rec.stop(); rec.dump(out.resolve("application.jfr"));
+                if (!profile.enabled) { rec.stop(); rec.dump(out.resolve("application.jfr")); }
             } finally {
                 for (var c : holders) c.close(); for (var c : backupSources) c.close();
             }
