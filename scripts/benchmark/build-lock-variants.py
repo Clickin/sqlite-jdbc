@@ -115,8 +115,9 @@ def transform(source, path, variant):
                 action = 'retained-independent-monitor'
             elif variant == 'flat':
                 if expression == 'conn':
-                    edits.append((ts[i + 1][2], ts[last][1], target))
-                    action = 'connection-to-db-monitor'
+                    # All three scopes are inside withConnectionTimeout's existing DB guard.
+                    edits.append((start, ts[body][1], ''))
+                    action = 'remove-redundant-connection-monitor'
                 else:
                     action = 'retained-monitor'
             else:
