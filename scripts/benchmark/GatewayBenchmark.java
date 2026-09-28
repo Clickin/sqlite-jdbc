@@ -69,6 +69,8 @@ public final class GatewayBenchmark {
         r.enable("jdk.NativeMethodSample").withPeriod(Duration.ofMillis(10)).withStackTrace();
         r.enable("jdk.ExecutionSample").withPeriod(Duration.ofMillis(10)).withStackTrace();
         r.enable("jdk.GarbageCollection");
+        if (Boolean.getBoolean("benchmark.monitor.inflation"))
+            r.enable("jdk.JavaMonitorInflate").withThreshold(Duration.ZERO).withStackTrace();
         return r;
     }
 
@@ -174,6 +176,14 @@ public final class GatewayBenchmark {
         if (((Number)recordingSummary(out).get("pinned_events")).longValue() == 0) throw new AssertionError("JFR positive control recorded no pin");
     }
 
+    static Recording warmupMonitorRecording() {
+        if (!Boolean.getBoolean("benchmark.monitor.inflation")) return null;
+        var recording = new Recording();
+        recording.enable("jdk.JavaMonitorInflate").withThreshold(Duration.ZERO).withStackTrace();
+        recording.start();
+        return recording;
+    }
+
     public static void main(String[] args) throws Exception {
         Path out = Path.of(args[0]).toAbsolutePath();
         int seconds = Integer.parseInt(args[1]), clients = Integer.parseInt(args[2]), copies = Integer.parseInt(args[3]);
@@ -190,7 +200,8 @@ public final class GatewayBenchmark {
         result.put("clients", clients); result.put("backup_concurrency", copies); result.put("requested_seconds", seconds);
         result.put("positive_control", recordingSummary(out.resolve("positive-control.jfr")));
         Path data = out.resolve("data");
-        try (var fixture = new GatewayFixture(data, -1); var client = new GatewayHttpClient(fixture.server.getURI())) {
+        try (var warmMonitors = warmupMonitorRecording();
+             var fixture = new GatewayFixture(data, -1); var client = new GatewayHttpClient(fixture.server.getURI())) {
             var thread = client.send("/test/runtime", "GET", null, Map.of());
             if (!Boolean.TRUE.equals(client.object(thread).get("virtual"))) throw new AssertionError("HTTP is not virtual-thread based");
             String token = client.authorize(SecurityFixture.RESOURCE, "A", List.of("clinical.lab.read"));
@@ -223,6 +234,10 @@ public final class GatewayBenchmark {
             result.put("warmup_elapsed_seconds", (System.nanoTime() - warmupStart) / 1e9);
             result.put("warmup_source_calls", fixture.sourceCalls.get() - warmupSourceBefore);
             if (fixture.sourceCalls.get() - warmupSourceBefore != warmupRequests) throw new AssertionError("Warmup source call mismatch");
+            if (warmMonitors != null) {
+                warmMonitors.stop();
+                warmMonitors.dump(out.resolve("warmup-monitors.jfr"));
+            }
             Samples latency = new Samples(), heartbeat = new Samples(), timerJitter = new Samples(), backupLatency = new Samples();
             AtomicLong succeeded = new AtomicLong(), failures = new AtomicLong(), backupSucceeded = new AtomicLong();
             var errors = new ConcurrentHashMap<String, AtomicInteger>();

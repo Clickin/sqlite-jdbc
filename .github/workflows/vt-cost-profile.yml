@@ -5,6 +5,12 @@ on:
     branches:
       - 'benchmarks/vt-cost/**'
   workflow_dispatch:
+    inputs:
+      phase:
+        description: Full attribution or focused monitor inflation check
+        type: choice
+        options: [full, monitors]
+        default: monitors
 
 permissions:
   contents: read
@@ -20,6 +26,7 @@ jobs:
     env:
       LC_ALL: C.UTF-8
       TZ: UTC
+      PROFILE_MODES: ${{ inputs.phase == 'full' && 'stock async probe-off counts sampled' || 'stock async' }}
     steps:
       - name: Check out current fork
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -63,13 +70,16 @@ jobs:
             --profiler-home target/ci/async-profiler \
             --profiler-jar target/ci/async-profiler.jar \
             --repetitions 1 --seconds 4 --warmup-requests 121 \
+            --modes stock async --monitor-inflation \
             2>&1 | tee target/vt-wait-evidence/ci-benchmark/cost-smoke.log
       - name: Run sequential stock, sampler and native-probe controls
         run: |
+          read -ra modes <<< "$PROFILE_MODES"
           python3 scripts/benchmark/run-cost-profile.py \
             --profiler-home target/ci/async-profiler \
             --profiler-jar target/ci/async-profiler.jar \
             --repetitions 3 --seconds 30 --warmup-requests 6000 \
+            --modes "${modes[@]}" --monitor-inflation \
             2>&1 | tee target/vt-wait-evidence/ci-benchmark/cost-profile.log
       - name: Summarize profiling completeness and overhead controls
         if: always()
@@ -82,13 +92,14 @@ jobs:
           path = root / 'summary.json'
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as report:
               report.write('## JDBC cost attribution\n\nSame JDK/GCC/shared SQLite object. Normal load only. '
-                           '6,000 warmup requests; 30 seconds; three repetitions; stock/async/probe-off/counts/sampled. '
+                           '6,000 warmup requests; 30 seconds; three repetitions; selected modes recorded in environment.json. '
                            'Instrumented timing is inclusive and includes probe overhead, not production throughput.\n\n')
               if not path.exists():
                   report.write('Incomplete profile; inspect evidence.\n')
                   raise SystemExit('Missing complete profiling summary')
               rows = json.loads(path.read_text())
-              if len(rows) != 10 or any(row['runs'] != 3 for row in rows):
+              args = json.loads((root / 'environment.json').read_text())['arguments']
+              if len(rows) != 2 * len(args['modes']) or any(row['runs'] != args['repetitions'] for row in rows):
                   raise SystemExit('Incomplete profiling cells')
               report.write('| Mode | Driver | Median req/s | CPU ms/success | Failed runs |\n|---|---|---:|---:|---:|\n')
               for row in rows:

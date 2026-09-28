@@ -20,6 +20,9 @@ p.add_argument('--profiler-jar', type=Path, required=True)
 p.add_argument('--repetitions', type=int, default=3)
 p.add_argument('--seconds', type=int, default=30)
 p.add_argument('--warmup-requests', type=int, default=6000)
+p.add_argument('--modes', nargs='+', choices=['stock', 'async', 'probe-off', 'counts', 'sampled'],
+               default=['stock', 'async', 'probe-off', 'counts', 'sampled'])
+p.add_argument('--monitor-inflation', action='store_true')
 a = p.parse_args()
 if min(a.repetitions, a.seconds) < 1 or a.warmup_requests < 12:
     p.error('Positive repetitions/duration and at least twelve warmup requests required')
@@ -69,7 +72,7 @@ metadata = {
 }
 (out / 'environment.json').write_text(json.dumps(metadata, indent=2) + '\n')
 drivers = {'xerial': ROOT / 'target/ci/upstream/target/classes', 'fork': ROOT / 'target/classes'}
-modes = ['stock', 'async', 'probe-off', 'counts', 'sampled']
+modes = a.modes
 rows = []
 identity = None
 analysis_jobs = []
@@ -87,10 +90,12 @@ for rep in range(1, a.repetitions + 1):
                        '-Dio.netty.eventLoopThreads=4', f'-Dlogback.configurationFile={logback}',
                        f'-Dorg.sqlite.lib.path={native}', '-Dorg.sqlite.lib.name=libsqlitejdbc.so',
                        '-Xlog:library=debug']
+            if a.monitor_inflation:
+                command.append('-Dbenchmark.monitor.inflation=true')
             if mode == 'async':
                 command += [f'-agentpath:{ap_library}', f'-Dbenchmark.async.library={ap_library}']
             if mode in ['probe-off', 'counts', 'sampled']:
-                command += [f'-Dbenchmark.cost.mode={dict(zip(modes[2:], [0, 1, 2]))[mode]}']
+                command += [f'-Dbenchmark.cost.mode={dict(zip(["probe-off", "counts", "sampled"], [0, 1, 2]))[mode]}']
             command += ['-cp', cp, 'io.gateway.GatewayBenchmark', str(directory), str(a.seconds), '12', '0', '-1', str(a.warmup_requests)]
             (directory / 'command.json').write_text(json.dumps(command, indent=2) + '\n')
             print(f'RUN {directory.name}', flush=True)
@@ -126,6 +131,8 @@ for rep in range(1, a.repetitions + 1):
                     raise RuntimeError(f'Missing CPU/allocation profile: {directory}')
                 analysis_jobs.append((cp, directory / 'async-profile.jfr', directory / 'async-summary.json'))
             analysis_jobs.append((cp, directory / 'application.jfr', directory / 'jfr-summary.json'))
+            if a.monitor_inflation:
+                analysis_jobs.append((cp, directory / 'warmup-monitors.jfr', directory / 'warmup-monitors-summary.json'))
             (directory / 'result.json').write_text(json.dumps(row, indent=2) + '\n')
             rows.append(row)
             (out / 'results.json').write_text(json.dumps(rows, indent=2) + '\n')

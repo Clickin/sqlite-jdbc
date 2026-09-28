@@ -113,6 +113,8 @@ public final class ProfileSummary {
         var monitorStacks = new TreeMap<String, Map<String, Long>>();
         var parkClasses = new TreeMap<String, Map<String, Long>>();
         var parkStacks = new TreeMap<String, Map<String, Long>>();
+        var inflationClasses = new TreeMap<String, Map<String, Long>>();
+        var inflationStacks = new TreeMap<String, Map<String, Long>>();
         var pauses = new TreeMap<String, Map<String, Long>>();
         long cpuSamples = 0, allocationSamples = 0, cpuMissingStacks = 0;
         try (var recording = new RecordingFile(path)) {
@@ -152,6 +154,12 @@ public final class ProfileSummary {
                         if (sizeField != null && event.getValue(sizeField) instanceof Number size)
                             metric(bucket, key, "recorded_" + sizeField + "_bytes", size.longValue());
                     }
+                } else if (type.equals("jdk.JavaMonitorInflate")) {
+                    String klass = className(event, "monitorClass");
+                    String cause = event.getString("cause");
+                    String key = klass + " :: " + cause;
+                    metric(inflationClasses, key, "events", 1);
+                    metric(inflationStacks, key + " :: " + String.join(" <- ", frames(event)), "events", 1);
                 } else if (type.equals("jdk.JavaMonitorEnter") || type.equals("jdk.ThreadPark")) {
                     if (field(event, "duration") == null) {
                         errors.add("Missing wait duration in " + type); continue;
@@ -194,6 +202,8 @@ public final class ProfileSummary {
             "semantics", "Byte sampling estimates: weight/tlabSize is sample weight; allocationSize is the recorded object size. AP 4.5 sampled allocations use ObjectAllocationInNewTLAB, with tlabSize=max(object size, interval), not an actual TLAB size."));
         result.put("monitor_waits", Map.of("by_class", monitorClasses, "by_class_and_stack", monitorStacks));
         result.put("thread_parks", Map.of("by_class", parkClasses, "by_class_and_stack", parkStacks));
+        result.put("monitor_inflations", Map.of("by_class_and_cause", inflationClasses,
+            "by_class_cause_and_stack", inflationStacks));
         result.put("gc_and_safepoints", pauses);
         result.put("duration_semantics", "Wait/park durations are not CPU time; sampled AP waits are not a full census. GC/safepoint event types can overlap: do not sum types or recordings together.");
         result.put("errors", errors);
@@ -205,12 +215,12 @@ public final class ProfileSummary {
         if (value == null) return "null";
         if (value instanceof Number || value instanceof Boolean) return value.toString();
         if (value instanceof Map<?, ?> map) {
-            var join = new StringJoiner(",", "{", "}");
+            var join = new StringJoiner(",\n", "{\n", "\n}");
             map.forEach((key, item) -> join.add(json(key.toString()) + ":" + json(item)));
             return join.toString();
         }
         if (value instanceof Collection<?> collection) {
-            var join = new StringJoiner(",", "[", "]");
+            var join = new StringJoiner(",\n", "[\n", "\n]");
             collection.forEach(item -> join.add(json(item)));
             return join.toString();
         }
