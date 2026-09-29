@@ -27,6 +27,7 @@ on:
       - 'benchmarks/vt-lock/**'
       - 'benchmarks/vt-lock-cause/**'
       - 'benchmarks/vt-overload/**'
+      - 'benchmarks/vt-lock-safety/**'
     paths:
       - '**.java'
       - '**.xml'

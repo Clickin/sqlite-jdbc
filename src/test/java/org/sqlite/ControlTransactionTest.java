@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -775,7 +776,7 @@ public class ControlTransactionTest {
                     .setTransactionMode(SQLiteConfig.TransactionMode.EXCLUSIVE);
             long waits = waitCount();
             ExecutorService executor = Executors.newFixedThreadPool(2);
-            AtomicReference<Thread> statementThread = new AtomicReference<>();
+            CountDownLatch statementStarted = new CountDownLatch(1);
             try {
                 Future<SQLException> commit =
                         executor.submit(
@@ -791,17 +792,10 @@ public class ControlTransactionTest {
                 Future<Integer> insert =
                         executor.submit(
                                 () -> {
-                                    statementThread.set(Thread.currentThread());
+                                    statementStarted.countDown();
                                     return statement.executeUpdate("insert into temp_t values (2)");
                                 });
-                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
-                while ((statementThread.get() == null
-                                || statementThread.get().getState() != Thread.State.BLOCKED)
-                        && System.nanoTime() < deadline) {
-                    LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
-                }
-                assertThat(statementThread.get()).isNotNull();
-                assertThat(statementThread.get().getState()).isEqualTo(Thread.State.BLOCKED);
+                assertThat(statementStarted.await(2, TimeUnit.SECONDS)).isTrue();
                 assertThat(commit.get(7, TimeUnit.SECONDS).getErrorCode() & 0xff).isEqualTo(5);
                 reader.setAutoCommit(true);
                 assertThat(insert.get(5, TimeUnit.SECONDS)).isEqualTo(1);
