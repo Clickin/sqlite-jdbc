@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# Build only; run-gateway.py owns the sequential measurements.
+# Build only; benchmark runners own sequential measurements.
 set -euo pipefail
+build_gateway=1
+if (( $# )); then
+    [[ $# == 1 && "$1" == --drivers-only ]] || { echo 'Usage: build-ci.sh [--drivers-only]' >&2; exit 2; }
+    build_gateway=0
+fi
+export BENCHMARK_BUILD_GATEWAY=$build_gateway
 
 root=$(git rev-parse --show-toplevel)
 cd "$root"
@@ -121,6 +127,7 @@ for label in xerial before fork; do
 done
 
 # Build the unchanged production application and its existing test fixtures, not tests.
+if (( build_gateway )); then
 cat > "$out/classpath.gradle" <<'GRADLE'
 gradle.projectsEvaluated {
     def backend = rootProject.project(':backend')
@@ -137,6 +144,7 @@ GRADLE
         :backend:benchmarkClasspath
     run_logged gateway-stop ./gradlew --stop
 )
+fi
 
 # Capture hashes of source inputs and outputs, plus actual toolchain/runner identity.
 python3 - "$root" "$out" "$shared_obj" "$shared_source" <<'PY'
@@ -158,6 +166,7 @@ def capture(*args):
     return subprocess.check_output(args, text=True, stderr=subprocess.STDOUT).strip()
 
 identity = {
+    'gateway_built': os.environ['BENCHMARK_BUILD_GATEWAY'] == '1',
     'fork_revision': capture('git', '-C', str(root), 'rev-parse', 'HEAD'),
     'upstream_revision': capture('git', '-C', str(ci / 'upstream'), 'rev-parse', 'HEAD'),
     'jdk': capture(str(Path(os.environ['JAVA_HOME']) / 'bin/java'), '-version'),

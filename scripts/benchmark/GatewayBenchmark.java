@@ -184,7 +184,57 @@ public final class GatewayBenchmark {
         return recording;
     }
 
+    enum Outcome { SUCCESS, ADMISSION_REJECTION, OTHER_FAILURE }
+
+    static Outcome overloadOutcome(int httpStatus, Map<String, Object> response) {
+        if (httpStatus != 200 || !"2.0".equals(response.get("jsonrpc")) || response.containsKey("error")
+                || !(response.get("id") instanceof Number id) || id.longValue() != 1
+                || !(response.get("result") instanceof Map<?, ?> call)
+                || !(call.get("structuredContent") instanceof Map<?, ?> outcome)
+                || !"PREPARED".equals(outcome.get("responseOutcome")))
+            return Outcome.OTHER_FAILURE;
+        if (Boolean.TRUE.equals(call.get("isError")) && "FAILED".equals(outcome.get("status"))
+                && "FAILED".equals(outcome.get("businessOutcome"))
+                && outcome.get("error") instanceof Map<?, ?> error
+                && "HTTP_CONCURRENCY_LIMIT".equals(error.get("code")))
+            return Outcome.ADMISSION_REJECTION;
+        if (Boolean.FALSE.equals(call.get("isError")) && "SUCCEEDED".equals(outcome.get("status"))
+                && "SUCCEEDED".equals(outcome.get("businessOutcome")) && !outcome.containsKey("error")
+                && outcome.get("data") instanceof Map<?, ?> data && "합성 정상 결과".equals(data.get("answer")))
+            return Outcome.SUCCESS;
+        return Outcome.OTHER_FAILURE;
+    }
+
+    static void checkOverloadClassification() {
+        // Same JSON-RPC/MCP envelope emitted by McpSdkBridge and GatewayExecutionService.
+        var json = tools.jackson.databind.json.JsonMapper.builder().build();
+        String rejected = """
+            {"jsonrpc":"2.0","id":1,"result":{"content":[{"type":"text","text":"FAILED"}],"isError":true,
+            "structuredContent":{"executionId":"fixture","status":"FAILED","businessOutcome":"FAILED",
+            "responseOutcome":"PREPARED","error":{"code":"HTTP_CONCURRENCY_LIMIT"}}}}
+            """;
+        String success = """
+            {"jsonrpc":"2.0","id":1,"result":{"content":[{"type":"text","text":"SUCCEEDED"}],"isError":false,
+            "structuredContent":{"executionId":"fixture","status":"SUCCEEDED","businessOutcome":"SUCCEEDED",
+            "responseOutcome":"PREPARED","data":{"answer":"합성 정상 결과","recordText":"synthetic"},"references":[]}}}
+            """;
+        Map<String, Object> rejection = json.readValue(rejected, Map.class);
+        if (overloadOutcome(200, rejection) != Outcome.ADMISSION_REJECTION
+                || overloadOutcome(429, rejection) != Outcome.OTHER_FAILURE
+                || overloadOutcome(200, json.readValue(success, Map.class)) != Outcome.SUCCESS
+                || overloadOutcome(200, json.readValue(rejected.replace("HTTP_CONCURRENCY_LIMIT", "AUDIT_UNAVAILABLE"), Map.class)) != Outcome.OTHER_FAILURE
+                || overloadOutcome(200, json.readValue(rejected.replace("\"responseOutcome\":\"PREPARED\"", "\"responseOutcome\":\"FAILED\""), Map.class)) != Outcome.OTHER_FAILURE
+                || overloadOutcome(200, Map.of("message", "HTTP_CONCURRENCY_LIMIT SUCCEEDED 합성 정상 결과")) != Outcome.OTHER_FAILURE)
+            throw new AssertionError("Overload classification mismatch");
+        System.out.println("OVERLOAD_CLASSIFICATION_OK");
+    }
+
     public static void main(String[] args) throws Exception {
+        if (args.length == 1 && args[0].equals("--check-overload-classification")) {
+            checkOverloadClassification();
+            return;
+        }
+        boolean overload = Boolean.getBoolean("benchmark.overload");
         Path out = Path.of(args[0]).toAbsolutePath();
         int seconds = Integer.parseInt(args[1]), clients = Integer.parseInt(args[2]), copies = Integer.parseInt(args[3]);
         int backupPages = Integer.parseInt(args[4]);
@@ -199,9 +249,21 @@ public final class GatewayBenchmark {
         result.put("backup_pages_per_step", backupPages);
         result.put("clients", clients); result.put("backup_concurrency", copies); result.put("requested_seconds", seconds);
         result.put("positive_control", recordingSummary(out.resolve("positive-control.jfr")));
+        if (overload) result.put("overload_mode", true);
         Path data = out.resolve("data");
         try (var warmMonitors = warmupMonitorRecording();
              var fixture = new GatewayFixture(data, -1); var client = new GatewayHttpClient(fixture.server.getURI())) {
+            if (overload) {
+                var source = (io.gateway.definitions.Definitions.HttpSource)fixture.datasource.detail();
+                var workflow = (io.gateway.definitions.Definitions.Workflow)fixture.workflow.detail();
+                var repository = fixture.server.getApplicationContext().getBean(io.gateway.definitions.DefinitionRepository.class);
+                var graph = repository.resolve(fixture.workflow.object().id());
+                var operation = (io.gateway.definitions.Definitions.HttpOperation)graph.require(workflow.stages().getFirst().operationObjectId()).detail();
+                result.put("source_http_policy", Map.of("pool_max_total", source.poolMaxTotal(),
+                    "pool_max_per_route", source.poolMaxPerRoute(), "connect_timeout_ms", source.connectTimeoutMs(),
+                    "max_concurrent", source.maxConcurrent(), "queue_timeout_ms", source.queueTimeoutMs(),
+                    "operation_timeout_ms", operation.timeoutMs(), "redirect_policy", source.redirectPolicy()));
+            }
             var thread = client.send("/test/runtime", "GET", null, Map.of());
             if (!Boolean.TRUE.equals(client.object(thread).get("virtual"))) throw new AssertionError("HTTP is not virtual-thread based");
             String token = client.authorize(SecurityFixture.RESOURCE, "A", List.of("clinical.lab.read"));
@@ -216,6 +278,8 @@ public final class GatewayBenchmark {
             // Warm both HTTP and database paths; startup/authentication are not timed.
             long warmupStart = System.nanoTime();
             int warmupSourceBefore = fixture.sourceCalls.get();
+            AtomicLong warmupSucceeded = new AtomicLong(), warmupRejected = new AtomicLong();
+            var warmupErrors = new ConcurrentHashMap<String, AtomicInteger>();
             try (var warm = Executors.newFixedThreadPool(clients)) {
                 List<Future<?>> futures = new ArrayList<>();
                 for (int i = 0; i < clients; i++) {
@@ -223,7 +287,16 @@ public final class GatewayBenchmark {
                     futures.add(warm.submit(() -> {
                         for (int n = 0; n < count; n++) {
                             try { var response = client.call(token, ARGUMENTS);
-                                if (response.statusCode() != 200 || !response.body().contains("SUCCEEDED")) throw new AssertionError(response.body());
+                                if (overload) {
+                                    Outcome outcome = overloadOutcome(response.statusCode(), client.object(response));
+                                    if (outcome == Outcome.ADMISSION_REJECTION) {
+                                        warmupRejected.incrementAndGet();
+                                        warmupErrors.computeIfAbsent("HTTP " + response.statusCode() + ":" + response.body(),
+                                            k -> new AtomicInteger()).incrementAndGet();
+                                    }
+                                    else if (outcome == Outcome.SUCCESS) warmupSucceeded.incrementAndGet();
+                                    else throw new AssertionError(response.body());
+                                } else if (response.statusCode() != 200 || !response.body().contains("SUCCEEDED")) throw new AssertionError(response.body());
                             } catch (Exception e) { throw new RuntimeException(e); }
                         }
                     }));
@@ -233,13 +306,20 @@ public final class GatewayBenchmark {
             result.put("warmup_requests", warmupRequests);
             result.put("warmup_elapsed_seconds", (System.nanoTime() - warmupStart) / 1e9);
             result.put("warmup_source_calls", fixture.sourceCalls.get() - warmupSourceBefore);
-            if (fixture.sourceCalls.get() - warmupSourceBefore != warmupRequests) throw new AssertionError("Warmup source call mismatch");
+            if (overload) {
+                result.put("warmup_successes", warmupSucceeded.get());
+                result.put("warmup_admission_rejections", warmupRejected.get());
+                result.put("warmup_errors", warmupErrors);
+            }
+            if (fixture.sourceCalls.get() - warmupSourceBefore != (overload ? warmupSucceeded.get() : warmupRequests))
+                throw new AssertionError("Warmup source call mismatch");
             if (warmMonitors != null) {
                 warmMonitors.stop();
                 warmMonitors.dump(out.resolve("warmup-monitors.jfr"));
             }
             Samples latency = new Samples(), heartbeat = new Samples(), timerJitter = new Samples(), backupLatency = new Samples();
             AtomicLong succeeded = new AtomicLong(), failures = new AtomicLong(), backupSucceeded = new AtomicLong();
+            AtomicLong admissionRejected = new AtomicLong(), backupErrors = new AtomicLong();
             var errors = new ConcurrentHashMap<String, AtomicInteger>();
             int sourceBefore = fixture.sourceCalls.get();
             List<Connection> backupSources = new ArrayList<>(), holders = new ArrayList<>();
@@ -289,7 +369,10 @@ public final class GatewayBenchmark {
                             for (var h : holders) try (var s = h.createStatement()) { s.execute("ROLLBACK"); }
                             for (var f : tasks) f.get(10, TimeUnit.SECONDS);
                         }
-                    } catch (Throwable e) { errors.computeIfAbsent("backup:" + e, k -> new AtomicInteger()).incrementAndGet(); }
+                    } catch (Throwable e) {
+                        backupErrors.incrementAndGet();
+                        errors.computeIfAbsent("backup:" + e, k -> new AtomicInteger()).incrementAndGet();
+                    }
                 });
                 List<Future<?>> requests = new ArrayList<>();
                 for (int i = 0; i < clients; i++) requests.add(workers.submit(() -> {
@@ -297,7 +380,12 @@ public final class GatewayBenchmark {
                         long t = System.nanoTime();
                         try {
                             var response = client.call(token, ARGUMENTS);
-                            if (response.statusCode() != 200 || !response.body().contains("SUCCEEDED") || !response.body().contains("합성 정상 결과"))
+                            if (overload) {
+                                Outcome outcome = overloadOutcome(response.statusCode(), client.object(response));
+                                if (outcome == Outcome.ADMISSION_REJECTION) admissionRejected.incrementAndGet();
+                                if (outcome != Outcome.SUCCESS)
+                                    throw new IllegalStateException("HTTP " + response.statusCode() + ":" + response.body());
+                            } else if (response.statusCode() != 200 || !response.body().contains("SUCCEEDED") || !response.body().contains("합성 정상 결과"))
                                 throw new IllegalStateException("HTTP " + response.statusCode() + ":" + response.body());
                             succeeded.incrementAndGet();
                         } catch (Throwable e) { failures.incrementAndGet(); errors.computeIfAbsent(e.toString(), k -> new AtomicInteger()).incrementAndGet(); }
@@ -323,6 +411,19 @@ public final class GatewayBenchmark {
                 result.put("http_latency", latency.summary()); result.put("heartbeat_delay", heartbeat.summary());
                 result.put("timer_jitter", timerJitter.summary()); result.put("backup_latency", backupLatency.summary());
                 result.put("errors", errors);
+                if (overload) {
+                    long attempts = succeeded.get() + failures.get();
+                    result.put("completed_attempts", attempts);
+                    result.put("admission_rejections", admissionRejected.get());
+                    result.put("other_failures", failures.get() - admissionRejected.get());
+                    result.put("backup_errors", backupErrors.get());
+                    result.put("success_fraction", attempts == 0 ? 0.0 : (double)succeeded.get() / attempts);
+                    result.put("admission_rejection_fraction", attempts == 0 ? 0.0 : (double)admissionRejected.get() / attempts);
+                    result.put("attempts_per_second", attempts / ((end - start) / 1e9));
+                    result.put("admission_rejections_per_second", admissionRejected.get() / ((end - start) / 1e9));
+                    result.put("http_latency_population", "all completed attempts, including admission rejections and other failures");
+                    result.put("application_all_requests_success", failures.get() == 0);
+                }
                 if (!profile.enabled) { rec.stop(); rec.dump(out.resolve("application.jfr")); }
             } finally {
                 for (var c : holders) c.close(); for (var c : backupSources) c.close();
@@ -338,7 +439,12 @@ public final class GatewayBenchmark {
             result.put("integrity", "ok");
             Files.writeString(out.resolve("result.json"), client.json.writerWithDefaultPrettyPrinter().writeValueAsString(result));
             System.out.println("BENCHMARK_RESULT " + client.json.writeValueAsString(result));
-            if (failures.get() != 0 || !errors.isEmpty() || fixture.sourceCalls.get() - sourceBefore != succeeded.get())
+            if (overload) {
+                if (failures.get() != admissionRejected.get() || backupErrors.get() != 0
+                        || fixture.sourceCalls.get() - sourceBefore != succeeded.get()
+                        || backupSucceeded.get() != (long)copies * ((seconds - 1) / 2))
+                    throw new AssertionError("Invalid overload observation");
+            } else if (failures.get() != 0 || !errors.isEmpty() || fixture.sourceCalls.get() - sourceBefore != succeeded.get())
                 throw new AssertionError("Application outcome mismatch");
         }
     }

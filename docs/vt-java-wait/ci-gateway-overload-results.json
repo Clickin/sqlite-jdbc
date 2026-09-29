@@ -1,14 +1,12 @@
 {
-  "purpose": "Compare existing fork, minimal monitor-scope changes, and one nonfair ReentrantLock using real Gateway on GitHub Actions.",
+  "purpose": "Historical Gateway application overload observations, including source HTTP admission rejection; not an isolated JDBC lock-cost experiment.",
   "production_driver_modified": false,
   "branch": "benchmarks/vt-lock/20260928-comparison",
   "conclusions": [
-    "Removing the three already-guarded inner connection monitors eliminated observed DB monitor inflation in all eight final flat JVM runs, including warmup.",
-    "ReentrantLock likewise eliminated observed DB monitor inflation; the generated JNI bridge subclass prevents isolating the lock primitive alone.",
-    "Normal-load CPU/success fell for final flat relative to fork in all four paired repetitions (0.92% to 4.03%); the median-of-cell CPU reduction was 2.01%.",
-    "Throughput superiority is not established: initial low-variance run ReentrantLock median RPS +0.21% vs fork; final run has normal-load within-cell RPS CV 14.15% to 21.58%.",
-    "Both workflow failures are preserved application outcome failures, not incomplete matrices. Initial stress: xerial 192 failures, fork variants zero. Final stress: xerial 93, fork 5, flat 2, reentrant 4.",
-    "No full lock migration is recommended from these measurements; flat removal is the smaller candidate, not a production-approved performance win."
+    "HTTP_CONCURRENCY_LIMIT is a source HTTP admission timeout, not evidence of JDBC correctness failure.",
+    "The original workflow failure statuses and all numerical observations are preserved below; they are not retroactively relabelled as successful jobs.",
+    "Use these observations for application completion/rejection rates, latency and carrier-availability behavior under the recorded limits.",
+    "Do not use CPU/success, successful throughput, or these whole-Gateway differences to isolate lock-strategy costs. The earlier lock-adoption interpretation is withdrawn."
   ],
   "metric_semantics": {
     "summary": "Median of four per-JVM values; p99 columns are medians of per-JVM p99, not pooled quantiles.",
