@@ -793,6 +793,61 @@ JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_attemptNoWaitBusy(
     return (jlong) rc | ((jlong) (savedTimeout > 0 ? attempt.busyObserved : 0) << 32);
 }
 
+/* Result phases of autocommitProbe, stored in bits 32..63; keep in sync with DB.java. */
+#define AUTOCOMMIT_PROBE_COMPLETE 0
+#define AUTOCOMMIT_PROBE_BEGIN_RESULT 1
+#define AUTOCOMMIT_PROBE_COMMIT_RESULT 2
+#define AUTOCOMMIT_PROBE_COMMIT_NEEDS_WAIT 3
+
+/*
+** The auto-commit compatibility probe ("begin;" then "commit;") in one call.
+**
+** A deferred BEGIN acquires no lock, so it never invokes the busy handler. The
+** following COMMIT can wait on a lock only when some database is in a write
+** transaction; that case is returned to Java without stepping COMMIT, so the
+** Java wait boundary handles it exactly as before. Otherwise both statements
+** complete without any busy callback, and are reset here on success.
+**
+** Returns rc in the low 32 bits and the phase in bits 32..63. Statements are
+** left un-reset for every phase except AUTOCOMMIT_PROBE_COMPLETE.
+*/
+JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_autocommitProbe(
+    JNIEnv *env, jobject this, jlong beginPtr, jlong commitPtr)
+{
+    if (!beginPtr || !commitPtr)
+    {
+        throwex_stmt_finalized(env);
+        return SQLITE_MISUSE;
+    }
+    sqlite3_stmt *begin = toref(beginPtr);
+    sqlite3_stmt *commit = toref(commitPtr);
+
+    int rc = sqlite3_step(begin);
+    if (rc != SQLITE_DONE)
+    {
+        return (jlong) rc | ((jlong) AUTOCOMMIT_PROBE_BEGIN_RESULT << 32);
+    }
+#ifdef SQLITEJDBC_TEST_FAULTS
+    /* The injected COMMIT fault is consumed by the Java wait boundary. */
+    if (gTestFailNextAutocommitProbeCommit)
+    {
+        return (jlong) AUTOCOMMIT_PROBE_COMMIT_NEEDS_WAIT << 32;
+    }
+#endif
+    if (sqlite3_txn_state(sqlite3_db_handle(commit), NULL) >= SQLITE_TXN_WRITE)
+    {
+        return (jlong) AUTOCOMMIT_PROBE_COMMIT_NEEDS_WAIT << 32;
+    }
+    rc = sqlite3_step(commit);
+    if (rc != SQLITE_DONE)
+    {
+        return (jlong) rc | ((jlong) AUTOCOMMIT_PROBE_COMMIT_RESULT << 32);
+    }
+    sqlite3_reset(begin);
+    sqlite3_reset(commit);
+    return (jlong) SQLITE_DONE;
+}
+
 JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_prepare_1utf8(
         JNIEnv *env, jobject this, jbyteArray sql)
 {
