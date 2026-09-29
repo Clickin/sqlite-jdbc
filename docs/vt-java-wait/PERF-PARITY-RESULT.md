@@ -263,3 +263,55 @@ Raw evidence: `target/vt-wait-evidence/perf-parity-v3/` — `macos/perf-*-summar
 
 - 이전 `pre-optimization.patch` 방식의 before는 새 소스에 적용되지 않는다. 비교 기준으로서도 의미를 잃어서 `3d424fc6` 리비전으로 대체했다.
 - Linux x86_64 판정은 `benchmarks/vt-lock/…`(`vt-lock-comparison.yml`: single/private16/shared4/shared16)와 `benchmarks/vt/…`(`vt-benchmark.yml`: Gateway HTTP, 백업 스트레스) 브랜치 push로 실행한다.
+
+### CI 결과 (Linux x86_64)
+
+처리량 비율은 fork/xerial 중앙값이다. hosted runner의 CPU 세대가 run마다 달라서, 서로 다른 run의 수치를 직접 비교하지 않는다.
+
+| Run | 대상 | runner CPU | single | private16 | shared4 | shared16 | 판정 |
+|---|---|---|---:|---:|---:|---:|---|
+| 36573127724 lock comparison | `42b88073` | EPYC 7763 (Zen 3) | 0.975 | 0.982 | **0.568** | **0.575** | 실패 |
+| 36584178780 lock comparison | `b2b0f928` (fast path) | EPYC 9V45 (Zen 5) | 0.996 | 0.993 | 1.054 | 0.986 | 통과 (shared CV 5–19%, noisy) |
+| 36585068320 lock-cause | `db0d9586` | 기록 없음 (4 vCPU) | 0.988 | 0.970 | 1.037 | 1.028 | 격차 없음 |
+
+- 첫 run의 JFR에서 fork FJP carrier park 수는 9,137이고 xerial은 4,762였다. shared connection monitor 경합으로 VT가 unmount된 흔적이다.
+- `b2b0f928` fast path: `tryEnforceTransactionMode`가 강제할 것이 없으면 DB monitor를 잡지 않는다. 이러면 statement 한 번의 monitor 획득 횟수가 upstream과 같아진다.
+  - fast path 이후 두 run 모두 shared 격차가 나타나지 않았다.
+  - 다만 runner가 달라서 개선이 fast path 덕분인지 하드웨어 차이 때문인지는 분리되지 않는다.
+  - 로컬 Linux arm64 docker에서는 fast path 적용 전에도 fork가 11–18% 빨라서 격차가 재현되지 않았다.
+- lock-cause(`db0d9586`)의 다른 셀:
+  - carrier 1개인 `shared4-vt-c1`은 0.947이다.
+  - carrier 2/8개, platform thread, shared2/8, outer-op 셀은 모두 0.99–1.13이다.
+  - xerial/fork의 async CPU profile과 JFR은 artifact에 있다.
+- Gateway HTTP 36573132854(`42b88073`):
+  - 일반 부하: fork 172.5 rps, xerial 174.8 rps(0.987), before 166.3 rps.
+  - 백업 스트레스: fork 129.3 rps, xerial 76.0 rps. xerial은 6회 모두 요청 실패가 있어(총 253건) workflow가 설계대로 실패로 끝났다.
+
+### CI 테스트 정리
+
+- 첫 CI(36573127048)는 non-macOS native가 새 JNI 심볼(`autocommitProbe`)을 갖고 있지 않아 `UnsatisfiedLinkError`로 실패했다.
+  - `04547712`: Build Native를 `natives/**` push로 실행하게 했다. workflow_dispatch는 기본 브랜치에 workflow가 없어 쓸 수 없다.
+  - `73f0f26c`: 그 결과 봇이 native 24개를 갱신했다.
+- native 갱신 후 CI(36585066825)에서는 `VtCarrierProgressTest`만 실패했다. 이 브랜치에서 전체 테스트가 CI에서 끝까지 돈 것은 처음이다. `dac81757`이 테스트의 환경 가정을 고쳤다.
+  - JDK 21: JEP 491 이전에는 monitor 안에서 기다리는 VT가 carrier를 pin한다. 그래서 independent-progress 시나리오를 JDK 24+로 한정했다. exclusion 시나리오는 계속 실행한다.
+  - GraalVM native image: child JVM을 띄울 수 없어 `@DisabledInNativeImage`를 붙였다.
+  - QEMU riscv64: busy budget 1.5s가 lock 해제보다 먼저 끝났다. budget을 10s로 늘렸다. 대기는 lock 해제 시점에 끝나므로 빠른 host에서는 비용이 없다.
+  - QEMU 에뮬레이션 job에서는 테스트를 skip한다(`SKIP_TEST_MULTIARCH`).
+    - aarch64 alpine: JFR recording이 0바이트로 기록됐다. 같은 JDK 패키지를 native arm64 alpine에서 돌리면 정상이다(`PINNED=0`).
+    - riscv64: child JVM이 `libjvm.so`(`frame::interpreter_frame_method`)에서 SIGSEGV로 죽었다. 직전 run에서는 같은 테스트가 통과했다.
+    - 같은 증명은 네이티브 runner(ubuntu x86_64/arm64, macOS, Windows)에서 계속 실행된다.
+- GraalVM native image 18개 job이 모두 실패했다(`06bc3b90`에서 수정).
+  - 원인: `NativeDB.c`는 이 브랜치에서 JNI 진입점 이름을 `*FromSQLite`/`*Callback` wrapper로 바꾸고 `restoreSessionActive` 필드를 추가했다. 그런데 `SqliteJdbcFeature`는 옛 이름을 등록하고 있었다.
+  - 결과: native image의 `JNI_OnLoad`가 `NoSuchMethodError`로 실패해 연결을 열 수 없었다. native image 사용자에게는 실제로 드라이버가 동작하지 않는 결함이다.
+  - `NativeImageJniRegistrationTest`를 추가했다. `NativeDB.c`가 조회하는 멤버와 Feature 등록을 JVM 단위 테스트로 대조하고, 이전 Feature에서는 누락된 10개 멤버를 모두 보고한다.
+
+### CI 시간 정리
+
+- 이전 run의 전체 시간 29분 중 대부분은 QEMU job이 차지했다: riscv64 29분, aarch64 15분, ppc64le 12분, armv7 10분, alpine 9분.
+- GraalVM job은 18개였고, 각각 2–5분이 걸렸다.
+- 바꾼 점(`ci.yml`):
+  - 같은 브랜치에 새로 push하면 이전 run을 취소한다(master는 제외).
+  - GraalVM·QEMU job은 lint와 기본 test가 통과한 뒤에만 실행한다.
+  - master 이외 브랜치 push에서는 GraalVM을 ubuntu·JDK 25의 2개 job만 돌리고 QEMU job은 생략한다. PR, 수동 실행, master에서는 전체 매트릭스를 돌린다.
+  - glibc aarch64는 QEMU 대신 네이티브 `ubuntu-24.04-arm` runner에서 test job으로 실행한다.
+- `scripts/ci-local-check.sh`로 push 전에 spotless(JDK 17)와 JDK 25/21 전체 테스트를 돌린다. 로컬에서 약 1분 걸린다. `--native`와 `GRAALVM_HOME`을 주면 native image 테스트도 돌린다.
