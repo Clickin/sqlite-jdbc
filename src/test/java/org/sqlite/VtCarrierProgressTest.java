@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -37,6 +38,12 @@ import org.junit.jupiter.api.io.TempDir;
  * run another virtual thread until the wait ends. The exclusion scenarios run on JDK 19+.
  */
 @DisabledInNativeImage // spawns child JVMs from java.home
+@DisabledIfEnvironmentVariable(
+        named = "SKIP_TEST_MULTIARCH",
+        matches = "true",
+        disabledReason =
+                "timing proof with JFR; under QEMU the child JVM crashed (riscv64) and"
+                        + " wrote empty recordings (aarch64 alpine)")
 public class VtCarrierProgressTest {
 
     @TempDir File tempDir;
@@ -158,14 +165,7 @@ public class VtCarrierProgressTest {
         }
     }
 
-    /**
-     * Reads jdk.VirtualThreadPinned events with a dedicated reader JVM; -1 when unavailable.
-     *
-     * <p>Under QEMU user-mode emulation (the multiarch CI jobs set SKIP_TEST_MULTIARCH) the reader
-     * has failed on recordings that the same JDK reads natively, so there a reader failure is
-     * recorded as evidence instead of failing the test. The child progress markers remain the
-     * primary proof everywhere.
-     */
+    /** Reads jdk.VirtualThreadPinned events with a dedicated reader JVM; -1 when unavailable. */
     private int readPinnedEventCount(Path evidenceDir, String recordingName) throws Exception {
         Path recording = evidenceDir.resolve(recordingName);
         if (!Files.exists(recording)) {
@@ -196,12 +196,6 @@ public class VtCarrierProgressTest {
         Files.write(
                 evidenceDir.resolve(recordingName + "-reader.txt"),
                 String.join("\n", output).getBytes(StandardCharsets.UTF_8));
-        if (Boolean.parseBoolean(System.getenv("SKIP_TEST_MULTIARCH"))) {
-            System.out.println(
-                    "JFR reader failed under emulation (informational): "
-                            + String.join("\n", output));
-            return -1;
-        }
         // The reader JVM must be able to read recordings on verification JDKs; do not swallow.
         if (jdkFeatureVersion() >= 21) {
             throw new AssertionError("JFR reader failed: " + String.join("\n", output));
