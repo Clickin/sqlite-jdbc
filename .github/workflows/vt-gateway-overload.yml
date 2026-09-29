@@ -1,0 +1,113 @@
+name: Observe Gateway admission overload
+
+on:
+  push:
+    branches:
+      - 'benchmarks/vt-overload/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      LC_ALL: C.UTF-8
+      TZ: UTC
+    steps:
+      - name: Check out experiment
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check out pinned upstream
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: xerial/sqlite-jdbc
+          ref: cab7981c19ce04d691f0675f0b2586afc2bbf803
+          path: target/ci/upstream
+          persist-credentials: false
+      - name: Install identical JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: '25.0.2'
+          java-package: jdk
+      - name: Install pinned-major native build tools
+        run: |
+          mkdir -p target/vt-wait-evidence/gateway-overload-workflow
+          exec > >(tee target/vt-wait-evidence/gateway-overload-workflow/tool-install.log) 2>&1
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends gcc-13 g++-13 binutils make tcl-dev unzip zip curl perl maven
+      - name: Build common engine and unchanged application
+        run: bash scripts/benchmark/build-ci.sh
+      - name: Build source-only experimental lock variants
+        run: |
+          python3 scripts/benchmark/build-lock-variants.py \
+            2>&1 | tee target/vt-wait-evidence/gateway-overload-workflow/variant-build.log
+      - name: Observe normal and backup-contention application load
+        run: |
+          python3 scripts/benchmark/run-gateway-overload.py \
+            --seconds 30 --warmup-requests 6000 \
+            2>&1 | tee target/vt-wait-evidence/gateway-overload-workflow/observation.log
+      - name: Summarize observation validity and application outcomes separately
+        if: always()
+        run: |
+          mkdir -p target/vt-wait-evidence/gateway-overload-workflow
+          exec > >(tee target/vt-wait-evidence/gateway-overload-workflow/summary.log) 2>&1
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path('target/vt-wait-evidence/ci-gateway-overload')
+          path = root / 'summary.json'
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as report:
+              report.write('## Gateway admission overload observation\n\n'
+                           'Xerial, current fork, flattened monitors, one non-fair ReentrantLock. '
+                           'Same JDK 25.0.2/GCC 13/common SQLite object; fork variants share exact JNI. '
+                           'Four balanced rotations per scenario; 6,000 warmup HTTP requests and 30-second measurements. '
+                           'Normal load and four controlled contended backups. This is not an equal-work lock-cost comparison. '
+                           'HTTP_CONCURRENCY_LIMIT is source HTTP semaphore admission timeout, not necessarily client HTTP 429. '
+                           'Admission rejection is a valid overload observation, not by itself a JDBC regression. '
+                           'Unexpected request/backup errors, incomplete accounting/instrumentation, identity or integrity failures invalidate runs. '
+                           'All-requests-success is reported separately; no application SLO threshold is configured. '
+                           'CPU totals and CPU/attempt include backup and failed/rejected work. HTTP p99 includes all attempts. '
+                           'Completion fraction means successful requests / completed attempts. '
+                           'Raw responses/errors, JFR and carrier heartbeat evidence are artifacts; zero pins does not prove no native blocking.\n\n')
+              if not path.exists():
+                  report.write('Incomplete matrix; inspect build/correctness/measurement logs.\n')
+                  raise SystemExit('Missing overload observation summary')
+              rows = json.loads(path.read_text())
+              if len(rows) != 8 or any(r['runs'] != 4 or r['complete_runs'] != 4 for r in rows):
+                  report.write('Incomplete measurement cells; inspect results.json.\n')
+                  raise SystemExit('Incomplete overload observation cells')
+              report.write('| Backups | Driver | Median success/s | Total CPU s | CPU ms/attempt | Completion | Rejection | All-attempt HTTP p99 ms | All-success runs | Invalid runs |\n'
+                           '|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|\n')
+              for row in rows:
+                  report.write(f"| {row['backups']} | {row['driver']} | {row['median_successes_per_second']:.2f} | "
+                               f"{row['total_cpu_seconds']:.3f} | {row['cpu_ms_per_attempt']:.3f} | "
+                               f"{row['overall_completion_fraction']:.2%} | {row['overall_rejection_fraction']:.2%} | "
+                               f"{row['median_all_attempt_http_p99_ms']:.2f} | {row['all_requests_success_runs']} | {row['invalid_runs']} |\n")
+          print(json.dumps(rows, indent=2))
+          PY
+      - name: Upload source transformations and all evidence without databases
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ci-gateway-overload-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 30
+          if-no-files-found: warn
+          compression-level: 6
+          path: |
+            target/vt-wait-evidence/gateway-overload-workflow/**
+            target/vt-wait-evidence/ci-benchmark/*.log
+            target/vt-wait-evidence/ci-benchmark/*.json
+            target/vt-wait-evidence/ci-benchmark/*.sha256
+            target/vt-wait-evidence/ci-gateway-overload/**
+            target/ci/lock-variants/**
+            !target/vt-wait-evidence/ci-gateway-overload/**/data/**

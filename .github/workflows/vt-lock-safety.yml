@@ -1,0 +1,90 @@
+name: Verify prepared-update lock-scope safety
+
+on:
+  push:
+    branches:
+      - 'benchmarks/vt-lock-safety/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  safety:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      LC_ALL: C.UTF-8
+      TZ: UTC
+    steps:
+      - name: Check out experiment
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check out pinned upstream engine
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: xerial/sqlite-jdbc
+          ref: cab7981c19ce04d691f0675f0b2586afc2bbf803
+          path: target/ci/upstream
+          persist-credentials: false
+      - name: Install identical JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: '25.0.2'
+          java-package: jdk
+      - name: Install native build tools
+        run: |
+          mkdir -p target/vt-wait-evidence/lock-safety-workflow
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends gcc-13 g++-13 binutils make tcl-dev unzip zip curl perl maven
+      - name: Build normal drivers without Gateway
+        run: bash scripts/benchmark/build-ci.sh --drivers-only
+      - name: Build separate existing fault-injection JNI
+        run: python3 scripts/benchmark/build-lock-safety-faults.py
+      - name: Build primitive and scope variants without production source changes
+        run: |
+          python3 scripts/benchmark/build-lock-variants.py
+          python3 scripts/benchmark/build-lock-scope-variants.py
+      - name: Evaluate differential behavior and existing regression adoption gate
+        run: |
+          python3 scripts/benchmark/run-lock-safety.py \
+            --repetitions 2 --fault-library target/ci/lock-safety-faults/libsqlitejdbc.so \
+            2>&1 | tee target/vt-wait-evidence/lock-safety-workflow/review.log
+      - name: Publish completed observations separately from adoption decision
+        if: always()
+        run: |
+          if [[ -f target/vt-wait-evidence/ci-lock-safety/summary.md ]]; then
+            cat target/vt-wait-evidence/ci-lock-safety/summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Safety verification incomplete; no adoption approval.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Preserve all findings and deadlock evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: jdbc-lock-safety-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 30
+          if-no-files-found: warn
+          compression-level: 6
+          path: |
+            target/vt-wait-evidence/lock-safety-workflow/**
+            target/vt-wait-evidence/ci-benchmark/*.log
+            target/vt-wait-evidence/ci-benchmark/*.json
+            target/vt-wait-evidence/ci-lock-safety/**
+            !target/vt-wait-evidence/ci-lock-safety/**/data/**
+            !target/vt-wait-evidence/ci-lock-safety/regression-work/**
+            target/ci/lock-safety-faults/**
+            target/ci/lock-scope-variants/**
+            target/ci/lock-variants/**
+            scripts/benchmark/*Safety*.java
+            scripts/benchmark/Scope*Cases.java
+            scripts/benchmark/*lock-safety*.py
+            scripts/benchmark/build-lock-scope-variants.py
+            src/test/java/org/sqlite/ControlTransactionTest.java

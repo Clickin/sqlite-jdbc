@@ -22,6 +22,12 @@ on:
   push:
     branches-ignore:
       - 'dependabot/**'
+      - 'benchmarks/vt/**'
+      - 'benchmarks/vt-cost/**'
+      - 'benchmarks/vt-lock/**'
+      - 'benchmarks/vt-overload/**'
+      - 'benchmarks/vt-lock-cause/**'
+      - 'benchmarks/vt-lock-safety/**'
     paths:
       - '**.java'
       - '**.xml'
