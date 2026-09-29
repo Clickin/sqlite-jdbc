@@ -174,3 +174,92 @@ Linux에서 `jni_GetBooleanField`, `GetBooleanField`, `ThreadInVMfromNative` 이
 
 Raw evidence: `target/vt-wait-evidence/perf-parity-guard-isolation/` — `macos/performance-summary.json`, `macos/profile-summary.json`, per-run `command.json`/`result.json`/`stdout.log`/`cpu.collapsed`; Linux 대응 자료는 `linux-arm64-local/`에 있다. Linux CI run URL은 없다.
 
+## A′·B·C′·D. monitor inflation 제거 (지시서 v3)
+
+작성일: 2026-09-29. 기존 절은 수정하지 않았다. 측정 환경은 §A와 같다: macOS arm64, Temurin 25.0.2+10, 같은 harness, fork 후보는 같은 `sqlite3.o`(`2f0fa135…`)에 링크했다. **Linux x86_64 CI는 아직 실행하지 않았다. 최종 합격 판정은 아니다.**
+
+### A′. 메커니즘 확인
+
+- `cstack=vm` 프로파일에서 fork의 `NativeDB.reset/busyTimeoutReadback` 아래에 `SharedRuntime::complete_monitor_locking_C` → `pthread_jit_write_protect_np`가 직접 나타났다. `monitor_enter_helper`/`monitor_exit_helper`/`ObjectMonitor::*` sample은 fork에만 있었다. v3 가설인 "inflate된 NativeDB monitor에서 `synchronized native` wrapper가 VM slow path를 탄다"는 채택한다.
+- JFR `jdk.JavaMonitorInflate` 결과로 가설을 한 단계 수정한다. inflation 원인은 두 가지다.
+  1. **non-top 재진입:** `withConnectionTimeout`이 `db → conn`을 잡은 뒤 `DB.prepare/execute`가 다시 `db`에 들어가는 경로다. 연결 초기화의 `SQLiteConfig.apply`에서 일어나며, 원인은 커밋되지 않은 작업 트리의 리뷰 수정이다.
+  2. **lock stack overflow:** JDK 25 lightweight locking의 per-thread lock stack 용량은 8이다. 같은 monitor에 재귀적으로 들어갈 때마다 슬롯을 하나씩 쓴다. `no-inflate`/`conn-db` 단독 변형은 probe의 `stepControl` 경로에서 깊이가 8을 넘었고, JFR cause는 `VM Internal`이었다. 그래서 단독으로는 개선되지 않았다(1,768 ns/op).
+- xerial도 측정 후 검증 쿼리에서 NativeDB inflation 1건이 있었다. 핵심은 inflation 여부 자체가 아니라, **hot path 이전에 inflate되는지와 hot path의 재귀 깊이**다.
+
+| 후보 (3M/1M, 1회 smoke) | CPU ns/op |
+|---|---:|
+| xerial | 671.6 |
+| fork | 1,758.1 |
+| probe-plain | 1,180.0 |
+| no-inflate / conn-db | 1,230.0 / 1,768.3 |
+| probe-plain + no-inflate / + conn-db | 732.1 / 719.1 |
+
+### 구현
+
+| 항목 | 변경 |
+|---|---|
+| B (P0-1/2) | 새 native `autocommitProbe(begin, commit)`. deferred BEGIN과 COMMIT을 plain step 후 둘 다 reset한다. 호출 1회로 xerial의 step·step·reset·reset 4회를 대신한다. BEGIN 뒤 `sqlite3_txn_state(db, NULL) >= SQLITE_TXN_WRITE`일 때만 COMMIT을 step하지 않고 Java `stepControl`(기존 wait boundary)로 넘긴다. fault build의 probe COMMIT 주입도 이 경로로 넘겨 T12 계약을 유지한다. |
+| C′-1 | `withConnectionTimeout`: `conn → db` 순서(upstream과 같은 순서)로 잡고, 실행 lambda의 내부 `synchronized(conn)` 3곳을 제거했다. `DB.statementExecutionOwner`: 같은 스레드의 중첩 실행(generated keys의 `SELECT last_insert_rowid()`, callback)은 monitor에 다시 들어가지 않는다. `executeLargeBatch`도 owner를 표시해, batch 안의 확장 hook이 `db → conn` 역전을 만들지 않게 했다. |
+| C′-1 (깊이) | `SafeStmtPtr.pointerForMonitorOwner`: 이미 같은 DB monitor를 보유한 `DB.execute/executeUpdate/ensureAutoCommit`에서 `safeRun*`의 중복 재귀 진입을 없앴다. 검사 순서(restore guard → closed)는 같다. 소유 DB가 다르면 기존 `safeRun*` 경로를 탄다. `DB.execute(long, Object[])`의 중복 `synchronized`를 제거했다. prepared UPDATE hot path의 최대 재귀 깊이는 xerial 7, 이전 fork 8+, 현재 6이다. |
+| D | `recoverTransactionRestartForStatement`: DB monitor를 보유한 호출자에서 pending이 없으면 재진입 없이 반환한다. setlk capability를 로드된 native library 단위의 static으로 공유한다(읽기 실패는 캐시하지 않음). |
+
+**하지 않은 것**
+
+- **P0-3의 "PRAGMA stmt 캐시"는 잘못된 설계라 적용하지 않았다.** `PRAGMA busy_timeout`은 prepare 시점 값을 `OP_Int64` 상수로 굳힌다(`sqlite3.c` `returnSingleInt(v, db->busyTimeout)`). readback과 첫 시도의 병합도 보류했다. 절감은 control statement당 JNI 1회뿐인데, 인터럽트와 timeout 0의 기존 순서 계약을 유지하려면 분기가 늘어난다.
+- **C′-2(Java synchronized wrapper)도 하지 않았다.** C′-1 후 비경합 경로에서 sqlite monitor inflation이 0이고, shared 시나리오가 이미 xerial을 넘는다. 모든 플랫폼 native 재빌드 비용에 비해 근거가 부족하다.
+
+### 락 획득 순서
+
+| 경로 | 순서 |
+|---|---|
+| Statement/PreparedStatement execute·executeQuery·executeUpdate | conn → db (owner 표시) |
+| 같은 스레드의 중첩 실행 (owner) | 새로 획득 없음 |
+| `Statement.executeLargeBatch` | db (owner 표시) |
+| commit/rollback/setAutoCommit/savepoint/tryEnforceTransactionMode/prepareStatement | db |
+| DatabaseMetaData 조회 | metadata → conn → db |
+| ResultSet close | db |
+| getTypeMap/setTypeMap | conn |
+
+- 새로 생긴 `db → conn` 간선은 없다. 남은 이론적 간선은 commit/update hook 안에서 같은 연결로 JDBC statement를 실행하는 경우다. 이는 SQLite가 금지하는 사용이고, upstream에도 같은 간선이 있다.
+- 외부 `synchronized(connection)`과의 관계는 upstream과 같다. statement 실행 중 connection monitor를 보유한다.
+
+### 검증
+
+- JDK 25 전체: **521 tests, 0 failures, 0 errors, 13 skipped**. 증가한 테스트 수는 작업 트리의 기존 테스트 추가분이다.
+- `make test-faults`: BackupFaultInjectionTest 3개와 T12 2개 모두 통과.
+- lock-safety 29개 시나리오 × {변경 전 작업 트리, 변경 후} × 2회는 모두 유효했고, 관측 차이는 **0**이다. metadata lock cycle, external connection/db monitor, generated keys, restart pending, query timeout race를 포함한다. 러너는 `run-lock-safety.py`와 같은 `LockScopeSafety` case를 두 classpath로 실행했다.
+- JFR(`final`): 측정 구간에서 sqlite 클래스의 monitor inflation 0건. `cstack=vm` 프로파일의 monitor slow-path frame 0.
+- JDK 8 smoke(`scripts/vt-java8-smoke.sh`, Amazon Corretto 8.0.472): `JAVA8-SMOKE-PASS`. 다른 플랫폼 native 빌드는 아직 확인하지 않았다.
+
+### macOS 측정 (3회, 순서 회전)
+
+CPU는 ns/op 중앙값(min–max), 처리량은 ops/s 중앙값이다. single은 10M/2M, 나머지는 4M/1M이다.
+
+| 시나리오 | xerial CPU | fork CPU | final CPU | final/xerial CPU | xerial ops/s | final ops/s | final/xerial 처리량 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| single | 683.7 (679.0–688.8) | 1,752.3 | 703.4 (697.6–704.8) | 1.029 | 1,473,173 | 1,430,029 | 0.971 |
+| private16 | 748.8 (727.9–778.9) | 2,121.0 | 755.5 (720.5–983.6) | 1.009 | 5,319,681 | 5,208,615 | 0.979 |
+| shared4 | 3,125.0 (3,083.2–3,152.1) | 4,051.1 | 2,782.6 (2,774.3–2,802.4) | 0.890 | 571,980 | 628,848 | **1.099** |
+| shared16 | 3,179.2 (3,170.9–3,207.3) | 4,807.8 | 2,911.1 (2,880.1–2,921.6) | 0.916 | 558,364 | 606,271 | **1.086** |
+
+B 단독(`b-probe`)의 single은 1,060.4 ns/op였다. macOS에서는 v1 §4 기준(single/private16 CPU ≤ ×1.03이고 처리량 ≥ ×0.97, shared 처리량 ≥ ×0.97)을 모두 충족한다. single은 경계값에 가깝다. **Linux x86_64 CI와 Gateway HTTP 측정 전에는 합격을 주장하지 않는다.**
+
+Raw evidence: `target/vt-wait-evidence/perf-parity-v3/` — `macos/perf-*-summary.json`, 실행별 `command.json`/`result.json`/`stdout.log`, `macos/vmprof-*`/`prof-*`(cpu.collapsed), `macos/smoke*-*/rec.jfr`, `lock-safety/c1c-summary.json`, 후보 classes(`java/*/source.diff` 포함)와 natives.
+
+### 커밋과 CI
+
+리뷰하기 쉽도록 기존 미커밋 작업과 v3 작업을 분리했다. 커밋마다 해당 단계 소스로 macOS native를 다시 빌드해 함께 넣었다. 첫 두 커밋의 dylib은 해당 단계를 새로 빌드한 결과와 바이트 단위로 같다.
+
+| 커밋 | 내용 |
+|---|---|
+| `f09534dd` fix | 기존 리뷰 수정: restore guard, 트랜잭션 재시작 원자성, pre-interrupt 거부 |
+| `3d424fc6` perf | 기존 최적화: 첫 readback snapshot 재사용. **v3 비교 기준(before) 리비전** |
+| `892c7196` ci | 벤치마크·lock·cost workflow와 harness |
+| `356007b1` docs | CI 증거 문서, 지시서 v1–v3, P0-0/§A 결과 |
+| `5ea96528` perf | B: `autocommitProbe` |
+| `d6c1ee4a` perf | C′-1: monitor inflation 제거 |
+| `670f8798` perf | D: 재시작 fast path, setlk 공유 |
+| `42b88073` ci | before를 `3d424fc6`에서 빌드하고 source pin을 갱신한다. lock comparison은 xerial/fork만 비교한다(flat/reentrant 변형은 폐기) |
+
+- 이전 `pre-optimization.patch` 방식의 before는 새 소스에 적용되지 않는다. 비교 기준으로서도 의미를 잃어서 `3d424fc6` 리비전으로 대체했다.
+- Linux x86_64 판정은 `benchmarks/vt-lock/…`(`vt-lock-comparison.yml`: single/private16/shared4/shared16)와 `benchmarks/vt/…`(`vt-benchmark.yml`: Gateway HTTP, 백업 스트레스) 브랜치 push로 실행한다.

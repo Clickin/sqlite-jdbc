@@ -22,6 +22,8 @@ The first native attempt reuses the live timeout snapshot just read for that con
 
 The DB monitor remains held during Java sleep. Other connections can progress; another thread using or closing the same connection waits. On a BEGIN failure, the JDBC auto-commit setting remains unchanged. If COMMIT/ROLLBACK succeeded but its following BEGIN failed, the driver records the exact pending BEGIN and blocks user SQL until only that BEGIN is recovered. It never replays the completed COMMIT, ROLLBACK, DML, or batch entry.
 
+The auto-commit compatibility probe runs as one native call: a deferred BEGIN takes no lock, and the following COMMIT is stepped plainly unless a write transaction is pending, in which case it goes through the same Java wait boundary as before. Statement execution holds the connection monitor and then the DB monitor, the order upstream used; statements run from inside an execution on the same thread (generated keys, callbacks, batch hooks) do not re-enter either monitor. This keeps the NativeDB monitor uninflated on uncontended paths, so `synchronized native` calls stay on the JVM fast path.
+
 ## Runtime behavior
 
 | Runtime | Java `Thread.sleep` while holding the DB monitor |
