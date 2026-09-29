@@ -1,0 +1,96 @@
+name: Analyze isolated JDBC lock CPU causes
+
+on:
+  push:
+    branches:
+      - 'benchmarks/vt-lock-cause/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  cause:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      LC_ALL: C.UTF-8
+      TZ: UTC
+    steps:
+      - name: Check out experiment
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Check out pinned native-only upstream
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: xerial/sqlite-jdbc
+          ref: cab7981c19ce04d691f0675f0b2586afc2bbf803
+          path: target/ci/upstream
+          persist-credentials: false
+      - name: Install identical JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: '25.0.2'
+          java-package: jdk
+      - name: Install pinned native toolchain and allow CPU sampling
+        run: |
+          mkdir -p target/vt-wait-evidence/lock-cause-workflow
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends gcc-13 g++-13 binutils make tcl-dev unzip zip curl perl maven
+          sudo sysctl -w kernel.perf_event_paranoid=1
+          sudo sysctl -w kernel.kptr_restrict=0
+          sysctl kernel.perf_event_paranoid kernel.kptr_restrict > target/vt-wait-evidence/lock-cause-workflow/profiler-permissions.log
+      - name: Build drivers with one common SQLite engine, without Gateway
+        run: bash scripts/benchmark/build-ci.sh --drivers-only
+      - name: Build exact-native lock variants
+        run: |
+          python3 scripts/benchmark/build-lock-variants.py \
+            2>&1 | tee target/vt-wait-evidence/lock-cause-workflow/variant-build.log
+      - name: Download SHA-pinned async-profiler 4.5
+        run: |
+          mkdir -p target/ci/async-profiler
+          curl --fail --location --retry 3 https://github.com/async-profiler/async-profiler/releases/download/v4.5/async-profiler-4.5-linux-x64.tar.gz -o target/ci/async-profiler.tar.gz
+          echo '89546fbb9ee0fc5496c7edd4099b0709489bc78b0d8057ccbb4b801f6b032b62  target/ci/async-profiler.tar.gz' | sha256sum --check
+          tar -xzf target/ci/async-profiler.tar.gz --strip-components=1 -C target/ci/async-profiler
+          curl --fail --location --retry 3 https://github.com/async-profiler/async-profiler/releases/download/v4.5/async-profiler.jar -o target/ci/async-profiler.jar
+          echo '81d6cae9971d41af140b1c627f40d511182e004b491307dc3c7de3b199ebcbbb  target/ci/async-profiler.jar' | sha256sum --check
+      - name: Run stock controls, separate CPU profiles and JFR diagnostics sequentially
+        run: |
+          python3 scripts/benchmark/run-lock-cause.py \
+            --operations 2000000 --warmup-operations 500000 --repetitions 3 \
+            --profiler-home target/ci/async-profiler \
+            --profiler-jar target/ci/async-profiler.jar \
+            2>&1 | tee target/vt-wait-evidence/lock-cause-workflow/cause.log
+      - name: Publish validation and stock-only summary, not an automatic cause claim
+        if: always()
+        run: |
+          if [[ -f target/vt-wait-evidence/ci-lock-cause/summary.md ]]; then
+            cat target/vt-wait-evidence/ci-lock-cause/summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Lock-cause evidence incomplete; no CPU root-cause conclusion. Inspect the artifact.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Preserve profiles, exact sources, native libraries and logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: jdbc-lock-cause
+          retention-days: 30
+          if-no-files-found: warn
+          compression-level: 6
+          path: |
+            target/vt-wait-evidence/lock-cause-workflow/**
+            target/vt-wait-evidence/ci-benchmark/*.log
+            target/vt-wait-evidence/ci-benchmark/*.json
+            target/vt-wait-evidence/ci-benchmark/*.sha256
+            target/vt-wait-evidence/ci-lock-cause/**
+            target/ci/lock-variants/**
+            target/classes/org/sqlite/native/**
+            scripts/benchmark/**
+            .github/workflows/vt-lock-cause.yml

@@ -25,6 +25,7 @@ on:
       - 'benchmarks/vt/**'
       - 'benchmarks/vt-cost/**'
       - 'benchmarks/vt-lock/**'
+      - 'benchmarks/vt-lock-cause/**'
       - 'benchmarks/vt-overload/**'
     paths:
       - '**.java'

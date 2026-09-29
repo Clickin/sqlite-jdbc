@@ -15,12 +15,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import jdk.jfr.Recording;
 
 /** Fixed total work, real JDBC, no application lock or admission layer. */
 public final class JdbcLockBenchmark {
     static final OperatingSystemMXBean OS =
             (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+    static final String WORKER_KIND = System.getProperty("benchmark.worker.kind", "virtual");
+    static final String GRANULARITY = System.getProperty("benchmark.lock.granularity", "jdbc");
+    static final AtomicLong BUSY_WAITS = busyWaitCounter();
+
+    static AtomicLong busyWaitCounter() {
+        try {
+            var field = Class.forName("org.sqlite.core.DB").getDeclaredField("javaWaitObservations");
+            field.setAccessible(true);
+            return (AtomicLong) field.get(null);
+        } catch (NoSuchFieldException unavailableOnUpstream) {
+            return null;
+        } catch (ReflectiveOperationException failure) {
+            throw new ExceptionInInitializerError(failure);
+        }
+    }
+
+    static Object outerGuard(PreparedStatement statement) throws Exception {
+        if (GRANULARITY.equals("jdbc")) return null;
+        Object db = ((org.sqlite.SQLiteConnection) statement.getConnection()).getDatabase();
+        try {
+            return db.getClass().getField("connectionLock").get(db);
+        } catch (NoSuchFieldException monitorVariant) {
+            return db;
+        }
+    }
 
     static void check(boolean condition, String message) {
         if (!condition) throw new AssertionError(message);
@@ -42,15 +69,36 @@ public final class JdbcLockBenchmark {
         for (int i = 0; i < workers; i++) {
             final int worker = i;
             final long planned = share(total, workers, worker);
-            threads[i] = Thread.ofVirtual().name("jdbc-lock-" + i).start(() -> {
+            final Object guard = outerGuard(statements[worker]);
+            threads[i] = (WORKER_KIND.equals("virtual") ? Thread.ofVirtual() : Thread.ofPlatform())
+                    .name("jdbc-lock-" + i).start(() -> {
                 long count = 0;
                 try {
                     ready.countDown();
                     start.await();
                     starts[worker] = System.nanoTime();
-                    for (; count < planned; count++) {
-                        if (statements[worker].executeUpdate() != 1)
-                            throw new AssertionError("UPDATE did not affect exactly one row: worker " + worker);
+                    if (guard == null) {
+                        for (; count < planned; count++) {
+                            if (statements[worker].executeUpdate() != 1)
+                                throw new AssertionError("UPDATE did not affect exactly one row: worker " + worker);
+                        }
+                    } else if (guard instanceof ReentrantLock lock) {
+                        for (; count < planned; count++) {
+                            lock.lock();
+                            try {
+                                if (statements[worker].executeUpdate() != 1)
+                                    throw new AssertionError("UPDATE did not affect exactly one row: worker " + worker);
+                            } finally {
+                                lock.unlock();
+                            }
+                        }
+                    } else {
+                        for (; count < planned; count++) {
+                            synchronized (guard) {
+                                if (statements[worker].executeUpdate() != 1)
+                                    throw new AssertionError("UPDATE did not affect exactly one row: worker " + worker);
+                            }
+                        }
                     }
                 } catch (Throwable failure) {
                     errors[worker] = failure;
@@ -62,6 +110,7 @@ public final class JdbcLockBenchmark {
             });
         }
         check(ready.await(timeoutSeconds, TimeUnit.SECONDS), "worker readiness timeout");
+        long busyStart = BUSY_WAITS == null ? -1 : BUSY_WAITS.get();
         long cpuStart = OS.getProcessCpuTime();
         long wallStart = System.nanoTime();
         long deadline = wallStart + TimeUnit.SECONDS.toNanos(timeoutSeconds);
@@ -84,6 +133,7 @@ public final class JdbcLockBenchmark {
         check(Arrays.stream(completed).sum() == total, "total completed/planned mismatch");
         return Map.of("planned_operations", total, "completed_operations", total,
                 "wall_ns", wallNs, "process_cpu_ns", cpuNs, "workers", details,
+                "java_busy_waits", busyStart < 0 ? -1 : BUSY_WAITS.get() - busyStart,
                 "startup_spread_ns", Arrays.stream(starts).max().orElseThrow()
                         - Arrays.stream(starts).min().orElseThrow());
     }
@@ -109,7 +159,7 @@ public final class JdbcLockBenchmark {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 6) throw new IllegalArgumentException(
-                "Usage: JdbcLockBenchmark output-dir single|private16|shared4|shared16 operations warmup-operations timeout-seconds performance|diagnostic");
+                "Usage: JdbcLockBenchmark output-dir single|private16|shared2|shared4|shared8|shared16 operations warmup-operations timeout-seconds performance|diagnostic");
         Path output = Path.of(args[0]);
         Files.createDirectories(output);
         var result = new LinkedHashMap<String, Object>();
@@ -118,7 +168,9 @@ public final class JdbcLockBenchmark {
             String scenario = args[1];
             int workers = switch (scenario) {
                 case "single" -> 1;
+                case "shared2" -> 2;
                 case "shared4" -> 4;
+                case "shared8" -> 8;
                 case "private16", "shared16" -> 16;
                 default -> throw new IllegalArgumentException("Unknown scenario: " + scenario);
             };
@@ -135,11 +187,27 @@ public final class JdbcLockBenchmark {
             result.put("warmup_operations", warmup);
             result.put("worker_count", workers);
             result.put("connection_count", shared ? 1 : workers);
+            check(WORKER_KIND.equals("virtual") || WORKER_KIND.equals("platform"), "invalid worker kind");
+            check(GRANULARITY.equals("jdbc") || GRANULARITY.equals("outer-op"), "invalid lock granularity");
+            result.put("worker_kind", WORKER_KIND);
+            result.put("lock_granularity", GRANULARITY);
+            result.put("java_busy_counter_available", BUSY_WAITS != null);
+            result.put("scheduler_parallelism", System.getProperty("jdk.virtualThreadScheduler.parallelism"));
+            result.put("scheduler_max_pool_size", System.getProperty("jdk.virtualThreadScheduler.maxPoolSize"));
             result.put("jdk", Map.of("runtime_version", System.getProperty("java.runtime.version"),
                     "vm_name", System.getProperty("java.vm.name"), "vendor", System.getProperty("java.vendor"),
                     "java_home", System.getProperty("java.home"),
                     "vm_arguments", ManagementFactory.getRuntimeMXBean().getInputArguments()));
             Class.forName("org.sqlite.JDBC");
+            Object profiler = null;
+            java.lang.reflect.Method profilerExecute = null;
+            String profilerLibrary = System.getProperty("benchmark.async.library");
+            if (profilerLibrary != null) {
+                check(!diagnostic, "async CPU and diagnostic JFR use separate JVMs");
+                Class<?> api = Class.forName("one.profiler.AsyncProfiler");
+                profiler = api.getMethod("getInstance", String.class).invoke(null, profilerLibrary);
+                profilerExecute = api.getMethod("execute", String.class);
+            }
             // Include connection initialization: it can inflate a monitor before the first UPDATE.
             var warmupRecording = diagnostic ? monitors() : null;
             Connection[] connections = new Connection[shared ? 1 : workers];
@@ -177,8 +245,20 @@ public final class JdbcLockBenchmark {
                 warmupRecording.dump(output.resolve("warmup-monitors.jfr"));
                 warmupRecording.close();
             }
-            Map<String, Object> measured = recordedPhase(statements, operations, timeout,
-                    diagnostic ? output.resolve("measurement-monitors.jfr") : null);
+            if (profiler != null) {
+                String command = "start,jfr,event=cpu,record-cpu,interval=1ms,alloc=512k,lock=10ms,cstack=dwarf,file="
+                        + output.resolve("async-profile.jfr");
+                result.put("async_profile", Map.of("file", "async-profile.jfr", "command", command,
+                        "version", profiler.getClass().getMethod("getVersion").invoke(profiler)));
+                profilerExecute.invoke(profiler, command);
+            }
+            Map<String, Object> measured;
+            try {
+                measured = recordedPhase(statements, operations, timeout,
+                        diagnostic ? output.resolve("measurement-monitors.jfr") : null);
+            } finally {
+                if (profiler != null) profilerExecute.invoke(profiler, "stop");
+            }
             result.put("measurement", measured);
             var counters = new ArrayList<Map<String, Object>>();
             for (int i = 0; i < workers; i++) {

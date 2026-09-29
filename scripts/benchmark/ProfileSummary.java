@@ -104,6 +104,7 @@ public final class ProfileSummary {
         result.put("seen_event_types", seen);
         result.put("event_fields", schemas);
         var leaves = new HashMap<String, Long>();
+        var leafLocations = new HashMap<String, Long>();
         var inclusive = new HashMap<String, Long>();
         var stacks = new HashMap<String, Long>();
         var allocationClasses = new TreeMap<String, Map<String, Long>>();
@@ -126,6 +127,11 @@ public final class ProfileSummary {
                     cpuSamples++;
                     if (event.getStackTrace() == null || event.getStackTrace().getFrames().isEmpty()) cpuMissingStacks++;
                     add(leaves, frames.getFirst(), 1);
+                    if (event.getStackTrace() != null && !event.getStackTrace().getFrames().isEmpty()) {
+                        var leaf = event.getStackTrace().getFrames().getFirst();
+                        add(leafLocations, frames.getFirst() + " line=" + leaf.getLineNumber()
+                                + " bci=" + leaf.getBytecodeIndex(), 1);
+                    }
                     // Inclusive samples count each frame once, even when recursion repeats it.
                     for (String frame : new HashSet<>(frames)) add(inclusive, frame, 1);
                     add(stacks, String.join(" <- ", frames), 1);
@@ -190,6 +196,7 @@ public final class ProfileSummary {
         cpuResult.put("samples", cpuSamples);
         cpuResult.put("samples_without_stack", cpuMissingStacks);
         cpuResult.put("leaf_frames", sorted(leaves));
+        cpuResult.put("leaf_locations", sorted(leafLocations));
         cpuResult.put("inclusive_frames", sorted(inclusive));
         cpuResult.put("stacks_leaf_first", sorted(stacks));
         cpuResult.put("units", "CPU samples, not nanoseconds; normalize against this run's successful requests separately");
