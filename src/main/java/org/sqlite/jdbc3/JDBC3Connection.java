@@ -29,6 +29,10 @@ public abstract class JDBC3Connection extends SQLiteConnection {
         super(url, fileName, prop);
     }
 
+    void recoverTransactionRestartForStatement() throws SQLException {
+        recoverTransactionRestart();
+    }
+
     /**
      * This will try to enforce the transaction mode if SQLiteConfig#isExplicitReadOnly is true and
      * auto commit is disabled.
@@ -46,42 +50,42 @@ public abstract class JDBC3Connection extends SQLiteConnection {
      * @throws SQLException if a statement has already been executed on this connection, then the
      *     transaction cannot be upgraded to write
      */
-    void recoverTransactionRestartForStatement() throws SQLException {
-        recoverTransactionRestart();
-    }
-
     @SuppressWarnings("deprecation")
     public void tryEnforceTransactionMode() throws SQLException {
-        recoverTransactionRestart();
+        synchronized (getDatabase()) {
+            recoverTransactionRestart();
 
-        // important note: read-only mode is only supported when auto-commit is disabled
-        if (getDatabase().getConfig().isExplicitReadOnly()
-                && !this.getAutoCommit()
-                && this.getCurrentTransactionMode() != null) {
-            if (isReadOnly()) {
-                // this is a read-only transaction, make sure all writing operations are rejected by
-                // the DB
-                // (note: this pragma is evaluated on a per-transaction basis by SQLite)
-                getDatabase()._exec("PRAGMA query_only = true;");
-            } else {
-                if (getCurrentTransactionMode() == TransactionMode.DEFERRED) {
-                    if (isFirstStatementExecuted()) {
-                        // first statement was already executed; cannot upgrade to write
-                        // transaction!
-                        throw new SQLException(
-                                "A statement has already been executed on this connection; cannot upgrade to write transaction");
-                    } else {
-                        // This is the first statement in the transaction; close and create an
-                        // immediate one. The COMMIT and the BEGIN are independent pending
-                        // operations with their own wait budgets; surrounding work is never
-                        // retried.
-                        ControlStatement nextBegin = ControlStatement.BEGIN_IMMEDIATE;
-                        getDatabase().execControl(ControlStatement.COMMIT, getAutoCommit(), false);
-                        setTransactionRestartPending(nextBegin);
-                        getDatabase()._exec("PRAGMA query_only = false;");
-                        getDatabase().execControl(nextBegin, getAutoCommit(), false);
-                        setTransactionRestartPending(false);
-                        setCurrentTransactionMode(TransactionMode.IMMEDIATE);
+            // important note: read-only mode is only supported when auto-commit is disabled
+            if (getDatabase().getConfig().isExplicitReadOnly()
+                    && !this.getAutoCommit()
+                    && this.getCurrentTransactionMode() != null) {
+                if (isReadOnly()) {
+                    // this is a read-only transaction, make sure all writing operations are
+                    // rejected by
+                    // the DB
+                    // (note: this pragma is evaluated on a per-transaction basis by SQLite)
+                    getDatabase()._exec("PRAGMA query_only = true;");
+                } else {
+                    if (getCurrentTransactionMode() == TransactionMode.DEFERRED) {
+                        if (isFirstStatementExecuted()) {
+                            // first statement was already executed; cannot upgrade to write
+                            // transaction!
+                            throw new SQLException(
+                                    "A statement has already been executed on this connection; cannot upgrade to write transaction");
+                        } else {
+                            // This is the first statement in the transaction; close and create an
+                            // immediate one. The COMMIT and the BEGIN are independent pending
+                            // operations with their own wait budgets; surrounding work is never
+                            // retried.
+                            ControlStatement nextBegin = ControlStatement.BEGIN_IMMEDIATE;
+                            getDatabase()
+                                    .execControl(ControlStatement.COMMIT, getAutoCommit(), false);
+                            setTransactionRestartPending(nextBegin);
+                            getDatabase()._exec("PRAGMA query_only = false;");
+                            getDatabase().execControl(nextBegin, getAutoCommit(), false);
+                            setTransactionRestartPending(false);
+                            setCurrentTransactionMode(TransactionMode.IMMEDIATE);
+                        }
                     }
                 }
             }
@@ -240,58 +244,68 @@ public abstract class JDBC3Connection extends SQLiteConnection {
 
     /** @see java.sql.Connection#setSavepoint() */
     public Savepoint setSavepoint() throws SQLException {
-        checkOpen();
-        recoverTransactionRestart();
-        if (getAutoCommit()) {
-            // when a SAVEPOINT is the outermost savepoint and not
-            // with a BEGIN...COMMIT then the behavior is the same
-            // as BEGIN DEFERRED TRANSACTION
-            // https://www.sqlite.org/lang_savepoint.html
-            getConnectionConfig().setAutoCommit(false);
+        synchronized (getDatabase()) {
+            checkOpen();
+            recoverTransactionRestart();
+            if (getAutoCommit()) {
+                // when a SAVEPOINT is the outermost savepoint and not
+                // with a BEGIN...COMMIT then the behavior is the same
+                // as BEGIN DEFERRED TRANSACTION
+                // https://www.sqlite.org/lang_savepoint.html
+                getConnectionConfig().setAutoCommit(false);
+            }
+            Savepoint sp = new JDBC3Savepoint(savePoint.incrementAndGet());
+            getDatabase().exec(String.format("SAVEPOINT %s", sp.getSavepointName()), false);
+            return sp;
         }
-        Savepoint sp = new JDBC3Savepoint(savePoint.incrementAndGet());
-        getDatabase().exec(String.format("SAVEPOINT %s", sp.getSavepointName()), false);
-        return sp;
     }
 
     /** @see java.sql.Connection#setSavepoint(java.lang.String) */
     public Savepoint setSavepoint(String name) throws SQLException {
-        checkOpen();
-        recoverTransactionRestart();
-        if (getAutoCommit()) {
-            // when a SAVEPOINT is the outermost savepoint and not
-            // with a BEGIN...COMMIT then the behavior is the same
-            // as BEGIN DEFERRED TRANSACTION
-            // https://www.sqlite.org/lang_savepoint.html
-            getConnectionConfig().setAutoCommit(false);
+        synchronized (getDatabase()) {
+            checkOpen();
+            recoverTransactionRestart();
+            if (getAutoCommit()) {
+                // when a SAVEPOINT is the outermost savepoint and not
+                // with a BEGIN...COMMIT then the behavior is the same
+                // as BEGIN DEFERRED TRANSACTION
+                // https://www.sqlite.org/lang_savepoint.html
+                getConnectionConfig().setAutoCommit(false);
+            }
+            Savepoint sp = new JDBC3Savepoint(savePoint.incrementAndGet(), name);
+            getDatabase().exec(String.format("SAVEPOINT %s", sp.getSavepointName()), false);
+            return sp;
         }
-        Savepoint sp = new JDBC3Savepoint(savePoint.incrementAndGet(), name);
-        getDatabase().exec(String.format("SAVEPOINT %s", sp.getSavepointName()), false);
-        return sp;
     }
 
     /** @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint) */
     public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-        checkOpen();
-        recoverTransactionRestart();
-        if (getAutoCommit()) {
-            throw new SQLException("database in auto-commit mode");
+        synchronized (getDatabase()) {
+            checkOpen();
+            recoverTransactionRestart();
+            if (getAutoCommit()) {
+                throw new SQLException("database in auto-commit mode");
+            }
+            getDatabase()
+                    .exec(
+                            String.format("RELEASE SAVEPOINT %s", savepoint.getSavepointName()),
+                            false);
         }
-        getDatabase()
-                .exec(String.format("RELEASE SAVEPOINT %s", savepoint.getSavepointName()), false);
     }
 
     /** @see java.sql.Connection#rollback(java.sql.Savepoint) */
     public void rollback(Savepoint savepoint) throws SQLException {
-        checkOpen();
-        recoverTransactionRestart();
-        if (getAutoCommit()) {
-            throw new SQLException("database in auto-commit mode");
+        synchronized (getDatabase()) {
+            checkOpen();
+            recoverTransactionRestart();
+            if (getAutoCommit()) {
+                throw new SQLException("database in auto-commit mode");
+            }
+            getDatabase()
+                    .exec(
+                            String.format("ROLLBACK TO SAVEPOINT %s", savepoint.getSavepointName()),
+                            getAutoCommit());
         }
-        getDatabase()
-                .exec(
-                        String.format("ROLLBACK TO SAVEPOINT %s", savepoint.getSavepointName()),
-                        getAutoCommit());
     }
 
     public Struct createStruct(String t, Object[] attr) throws SQLException {

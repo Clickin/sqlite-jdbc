@@ -92,6 +92,7 @@ public final class NativeDB extends DB {
     /** @see org.sqlite.core.DB#_exec(java.lang.String) */
     @Override
     public synchronized int _exec(String sql) throws SQLException {
+        checkBackupAccess();
         logger.trace(
                 () ->
                         MessageFormat.format(
@@ -168,6 +169,7 @@ public final class NativeDB extends DB {
     /** @see org.sqlite.core.DB#prepare(java.lang.String) */
     @Override
     protected synchronized SafeStmtPtr prepare(String sql) throws SQLException {
+        checkBackupAccess();
         logger.trace(
                 () ->
                         MessageFormat.format(
@@ -457,7 +459,7 @@ public final class NativeDB extends DB {
                 pagesPerStep);
     }
 
-    public synchronized int backup(
+    private synchronized int backup(
             byte[] dbNameUtf8,
             byte[] destFileNameUtf8,
             int otherFileOpenFlags,
@@ -515,7 +517,7 @@ public final class NativeDB extends DB {
                 pagesPerStep);
     }
 
-    public synchronized int restore(
+    private synchronized int restore(
             byte[] dbNameUtf8,
             byte[] sourceFileNameUtf8,
             int otherFileOpenFlags,
@@ -555,23 +557,41 @@ public final class NativeDB extends DB {
         }
         backupSessionActive = true;
         try {
-            return driveBackupCopy(
+            long[] session =
                     backupInit(
                             dbNameUtf8,
                             otherFileNameUtf8,
                             otherFileOpenFlags,
-                            sessionDbIsBackupSource),
-                    observer,
-                    sleepTimeMillis,
-                    nTimeouts,
-                    pagesPerStep);
+                            sessionDbIsBackupSource);
+            restoreSessionActive =
+                    !sessionDbIsBackupSource && session != null && session[0] == SQLITE_OK;
+            return driveBackupCopy(session, observer, sleepTimeMillis, nTimeouts, pagesPerStep);
         } finally {
+            restoreSessionActive = false;
             backupSessionActive = false;
         }
     }
 
     /** True while a backup/restore session is being driven on this connection. */
     private boolean backupSessionActive;
+
+    /** Also read by JNI entry points that do not go through SafeStmtPtr. */
+    private volatile boolean restoreSessionActive;
+
+    @Override
+    protected void checkBackupAccess() throws SQLException {
+        if (restoreSessionActive) {
+            throw new SQLException("the restore destination cannot be used until restore finishes");
+        }
+    }
+
+    @Override
+    protected void checkBackupClose() throws SQLException {
+        if (backupSessionActive) {
+            throw new SQLException(
+                    "cannot close a connection with an active backup/restore session");
+        }
+    }
 
     /**
      * Drives the copy loop of a backup/restore session from Java. Busy waits happen on the Java
@@ -596,7 +616,7 @@ public final class NativeDB extends DB {
             int pagesPerStep)
             throws SQLException {
         if (session == null) {
-            // backupInit raised a database-closed exception; let it propagate.
+            // A pending JNI exception propagates before this method is entered.
             return SQLITE_MISUSE;
         }
         int rc = (int) session[0];
@@ -637,7 +657,7 @@ public final class NativeDB extends DB {
 
     private static int otherFileOpenFlags(String fileName, int baseFlags) {
         // Case-insensitive to match the former native URI detection.
-        return fileName.regionMatches(true, 0, "file:", 0, 5)
+        return fileName != null && fileName.regionMatches(true, 0, "file:", 0, 5)
                 ? baseFlags | SQLiteOpenMode.OPEN_URI.flag
                 : baseFlags;
     }
@@ -672,12 +692,12 @@ public final class NativeDB extends DB {
 
     /**
      * Test-only hook, present only in fault-injection native libraries: selects the injected
-     * backupInit fault (0 none, 1 failed session allocation, 2 failed JNI result-array creation).
+     * backupInit fault (0 none, 1 session allocation, 2 JNI result-array creation).
      */
     native void backupTestSetFaultMode(int mode);
 
     /** Test-only hook, present only in -DSQLITEJDBC_TEST_FAULTS native libraries. */
-    native void failNextAutocommitProbeCommitForTest();
+    native void failNextAutocommitProbeCommitForTest(int resultCode);
 
     // COMPOUND FUNCTIONS (for optimisation) /////////////////////////
 

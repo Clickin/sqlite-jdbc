@@ -173,7 +173,7 @@ native-faults: $(SQLITE_OUT)/$(LIBNAME)
 
 test-faults: native-faults
 	mvn -Dtest=BackupFaultInjectionTest test
-	mvn -Dtest=ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml test
+	mvn '-Dtest=ControlTransactionTest#t12_*' test
 	cp $(SQLITE_OUT)/$(LIBNAME) $(NATIVE_DLL)
 	cp $(SQLITE_OUT)/$(LIBNAME) $(NATIVE_TARGET_DIR)/$(LIBNAME)
 

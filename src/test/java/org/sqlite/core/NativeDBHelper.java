@@ -60,6 +60,11 @@ public class NativeDBHelper {
 
     /** Test-only hook that fails the next autocommit compatibility COMMIT step. */
     public static void failNextAutocommitProbeCommit(DB nativeDB) {
-        ((NativeDB) nativeDB).failNextAutocommitProbeCommitForTest();
+        ((NativeDB) nativeDB).failNextAutocommitProbeCommitForTest(Codes.SQLITE_BUSY);
+    }
+
+    /** Test-only hook that throws during the next autocommit compatibility COMMIT step. */
+    public static void interruptNextAutocommitProbeCommit(DB nativeDB) {
+        ((NativeDB) nativeDB).failNextAutocommitProbeCommitForTest(Codes.SQLITE_INTERRUPT);
     }
 }

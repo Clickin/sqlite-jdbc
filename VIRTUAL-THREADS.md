@@ -8,6 +8,8 @@ The driver moves backup/restore step waits and a narrow set of driver-generated 
 
 `NativeDB` exposes backup session init/step/progress/finish JNI calls. Java drives the existing retry loop. The DB monitor stays held through every step, observer callback, wait, and finish, preserving same-connection exclusion. An incomplete restore continues to report its last BUSY/LOCKED/INTERRUPT result rather than a temporary connection's error code.
 
+The monitor is reentrant, so callbacks are also guarded explicitly: closing the connection that owns an active backup/restore session or starting a nested copy on it throws `SQLException`. A restore destination rejects SQL, existing prepared-statement access, and native connection operations until the session is finished; a backup observer may still query its source. Rejected access does not finalize the prepared statement or close the connection. JNI initialization failures retain their original Java exception and release resources before returning. The public String overloads retain native argument behavior, including the `SQLITE_NOMEM` result for a null filename.
+
 ### Generated transaction controls
 
 The closed internal allowlist is BEGIN DEFERRED/IMMEDIATE/EXCLUSIVE, COMMIT, and the compatibility BEGIN probe in `DB.ensureAutoCommit`. The same boundary covers `SQLiteConnection.setAutoCommit`, `commit`, `rollback`'s following BEGIN, and `JDBC3Connection.tryEnforceTransactionMode`'s generated COMMIT/BEGIN IMMEDIATE. COMMIT and its following BEGIN are separate operations with independent timeout budgets.
