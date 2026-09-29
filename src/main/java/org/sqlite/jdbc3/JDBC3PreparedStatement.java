@@ -55,13 +55,12 @@ public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
                 () -> {
                     boolean success = false;
                     try {
-                        synchronized (conn) {
-                            resultsWaiting =
-                                    conn.getDatabase().execute(JDBC3PreparedStatement.this, batch);
-                            updateGeneratedKeys();
-                            success = true;
-                            updateCount = getDatabase().changes();
-                        }
+                        // The connection monitor is held by withConnectionTimeout.
+                        resultsWaiting =
+                                conn.getDatabase().execute(JDBC3PreparedStatement.this, batch);
+                        updateGeneratedKeys();
+                        success = true;
+                        updateCount = getDatabase().changes();
                         return 0 != columnCount;
                     } finally {
                         if (!success && !pointer.isClosed()) pointer.safeRunConsume(DB::reset);
@@ -124,13 +123,10 @@ public abstract class JDBC3PreparedStatement extends CorePreparedStatement {
 
         return this.withConnectionTimeout(
                 () -> {
-                    synchronized (conn) {
-                        long rc =
-                                conn.getDatabase()
-                                        .executeUpdate(JDBC3PreparedStatement.this, batch);
-                        updateGeneratedKeys();
-                        return rc;
-                    }
+                    // The connection monitor is held by withConnectionTimeout.
+                    long rc = conn.getDatabase().executeUpdate(JDBC3PreparedStatement.this, batch);
+                    updateGeneratedKeys();
+                    return rc;
                 });
     }
 

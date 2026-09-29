@@ -251,6 +251,29 @@ public abstract class DB implements Codes {
         return depth != null && depth[0] != 0;
     }
 
+    /** Thread running a JDBC statement execution on this connection; written under this monitor. */
+    private Thread statementExecutionOwner;
+
+    /**
+     * Whether the current thread is already running a statement execution on this connection, and
+     * therefore holds its connection and DB monitors. Only the owner itself can observe its own
+     * thread here, so an unsynchronized read is exact for that question.
+     */
+    public final boolean isStatementExecutionOwner() {
+        return statementExecutionOwner == Thread.currentThread();
+    }
+
+    /**
+     * Records the thread running a statement execution; the caller holds this monitor.
+     *
+     * @return the previous owner, to be restored when the execution ends
+     */
+    public final Thread setStatementExecutionOwner(Thread owner) {
+        Thread previous = statementExecutionOwner;
+        statementExecutionOwner = owner;
+        return previous;
+    }
+
     /**
      * Per-invocation busy delays of the engine's default busy handler (sqlite3.c
      * sqliteDefaultBusyCallback); capped at the last entry, and additionally capped to the
@@ -1219,7 +1242,11 @@ public abstract class DB implements Codes {
      */
     public final synchronized boolean execute(CoreStatement stmt, Object[] vals)
             throws SQLException {
-        int statusCode = stmt.pointer.safeRunInt((db, ptr) -> execute(ptr, vals));
+        long ownedPtr = stmt.pointer.pointerForMonitorOwner(this);
+        int statusCode =
+                ownedPtr != 0
+                        ? execute(ownedPtr, vals)
+                        : stmt.pointer.safeRunInt((db, ptr) -> execute(ptr, vals));
         switch (statusCode & 0xFF) {
             case SQLITE_DONE:
                 ensureAutoCommit(stmt.conn.getAutoCommit());
@@ -1237,7 +1264,8 @@ public abstract class DB implements Codes {
         }
     }
 
-    private synchronized int execute(long ptr, Object[] vals) throws SQLException {
+    /** Callers hold this DB's monitor. */
+    private int execute(long ptr, Object[] vals) throws SQLException {
         if (vals != null) {
             final int params = bind_parameter_count(ptr);
             if (params > vals.length) {
@@ -1304,7 +1332,12 @@ public abstract class DB implements Codes {
             }
         } finally {
             if (!stmt.pointer.isClosed()) {
-                stmt.pointer.safeRunInt(DB::reset);
+                long ownedPtr = stmt.pointer.pointerForMonitorOwner(this);
+                if (ownedPtr != 0) {
+                    reset(ownedPtr);
+                } else {
+                    stmt.pointer.safeRunInt(DB::reset);
+                }
             }
         }
         return changes();
@@ -1478,11 +1511,8 @@ public abstract class DB implements Codes {
 
         ensureBeginAndCommit();
 
-        begin.safeRunConsume(
-                (db, beginPtr) -> {
-                    commit.safeRunConsume(
-                            (db2, commitPtr) -> ensureAutocommit(beginPtr, commitPtr));
-                });
+        // begin and commit are prepared by this DB, whose monitor is held here.
+        ensureAutocommit(begin.pointerForMonitorOwner(this), commit.pointerForMonitorOwner(this));
     }
 
     private void ensureBeginAndCommit() throws SQLException {

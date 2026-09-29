@@ -60,14 +60,13 @@ public abstract class JDBC3Statement extends CoreStatement {
                     }
 
                     JDBC3Statement.this.sql = sql;
-                    synchronized (conn) {
-                        conn.getDatabase().prepare(JDBC3Statement.this);
-                        boolean result = exec();
-                        updateGeneratedKeys();
-                        updateCount = getDatabase().changes();
-                        exhaustedResults = false;
-                        return result;
-                    }
+                    // The connection monitor is held by withConnectionTimeout.
+                    conn.getDatabase().prepare(JDBC3Statement.this);
+                    boolean result = exec();
+                    updateGeneratedKeys();
+                    updateCount = getDatabase().changes();
+                    exhaustedResults = false;
+                    return result;
                 });
     }
 
@@ -250,34 +249,45 @@ public abstract class JDBC3Statement extends CoreStatement {
         long[] changes = new long[batchPos];
         DB db = conn.getDatabase();
         synchronized (db) {
-            if (conn instanceof JDBC3Connection) {
-                ((JDBC3Connection) conn).tryEnforceTransactionMode();
-            }
+            // Statements run on this thread from inside the batch (callbacks, extension hooks)
+            // must not take the connection monitor while the DB monitor is held.
+            Thread previousOwner = db.setStatementExecutionOwner(Thread.currentThread());
             try {
-                for (int i = 0; i < changes.length; i++) {
-                    try {
-                        this.sql = (String) batch[i];
-                        db.prepare(this);
-                        changes[i] = db.executeUpdate(this, null);
-                    } catch (SQLException e) {
-                        // don't use the constructor with long because of
-                        // https://github.com/xerial/sqlite-jdbc/issues/1378
-                        throw new BatchUpdateException(
-                                "batch entry " + i + ": " + e.getMessage(),
-                                null,
-                                0,
-                                Arrays.stream(changes).mapToInt(l -> (int) l).toArray(),
-                                e);
-                    } finally {
-                        if (pointer != null) pointer.close();
-                    }
+                if (conn instanceof JDBC3Connection) {
+                    ((JDBC3Connection) conn).tryEnforceTransactionMode();
                 }
+                executeBatchEntries(db, changes);
             } finally {
-                clearBatch();
+                db.setStatementExecutionOwner(previousOwner);
             }
         }
 
         return changes;
+    }
+
+    private void executeBatchEntries(DB db, long[] changes) throws SQLException {
+        try {
+            for (int i = 0; i < changes.length; i++) {
+                try {
+                    this.sql = (String) batch[i];
+                    db.prepare(this);
+                    changes[i] = db.executeUpdate(this, null);
+                } catch (SQLException e) {
+                    // don't use the constructor with long because of
+                    // https://github.com/xerial/sqlite-jdbc/issues/1378
+                    throw new BatchUpdateException(
+                            "batch entry " + i + ": " + e.getMessage(),
+                            null,
+                            0,
+                            Arrays.stream(changes).mapToInt(l -> (int) l).toArray(),
+                            e);
+                } finally {
+                    if (pointer != null) pointer.close();
+                }
+            }
+        } finally {
+            clearBatch();
+        }
     }
 
     /** @see java.sql.Statement#setCursorName(java.lang.String) */
@@ -469,23 +479,49 @@ public abstract class JDBC3Statement extends CoreStatement {
         throw unsupported();
     }
 
+    /**
+     * Runs a statement execution holding the connection monitor and then the DB monitor, the same
+     * order the execution bodies used before the DB monitor was added here. Execution bodies must
+     * not re-enter the connection monitor: entering an outer monitor again while an inner one is
+     * held inflates it, and every later native call on the connection pays the monitor slow path.
+     */
     protected <T> T withConnectionTimeout(SQLCallable<T> callable) throws SQLException {
-        synchronized (conn.getDatabase()) {
-            int origBusyTimeout = conn.getBusyTimeout();
-            if (queryTimeout > 0) {
-                // SQLite handles busy timeout in milliseconds, JDBC in seconds
-                conn.setBusyTimeout(1000 * queryTimeout);
+        DB db = conn.getDatabase();
+        if (db.isStatementExecutionOwner()) {
+            // A statement executed from inside another execution on this thread (generated keys,
+            // callbacks) already holds both monitors and has recovered any pending restart.
+            return withQueryTimeout(callable, false);
+        }
+        synchronized (conn) {
+            synchronized (db) {
+                Thread previousOwner = db.setStatementExecutionOwner(Thread.currentThread());
+                try {
+                    return withQueryTimeout(callable, true);
+                } finally {
+                    db.setStatementExecutionOwner(previousOwner);
+                }
             }
-            try {
+        }
+    }
+
+    private <T> T withQueryTimeout(SQLCallable<T> callable, boolean recoverRestart)
+            throws SQLException {
+        int origBusyTimeout = conn.getBusyTimeout();
+        if (queryTimeout > 0) {
+            // SQLite handles busy timeout in milliseconds, JDBC in seconds
+            conn.setBusyTimeout(1000 * queryTimeout);
+        }
+        try {
+            if (recoverRestart) {
                 // Recheck after acquiring the monitor: another thread may have completed a
                 // COMMIT but failed its following BEGIN while this statement was blocked.
                 recoverTransactionRestart();
-                return callable.call();
-            } finally {
-                if (queryTimeout > 0) {
-                    // reset connection timeout to the original value
-                    conn.setBusyTimeout(origBusyTimeout);
-                }
+            }
+            return callable.call();
+        } finally {
+            if (queryTimeout > 0) {
+                // reset connection timeout to the original value
+                conn.setBusyTimeout(origBusyTimeout);
             }
         }
     }

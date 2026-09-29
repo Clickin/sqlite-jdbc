@@ -144,6 +144,22 @@ public class SafeStmtPtr {
         }
     }
 
+    /**
+     * Returns the open pointer for a caller that already holds the monitor of {@code owner}, with
+     * the same checks as the safeRun methods. Entering the monitor again would only add a recursive
+     * lock-stack entry; deep recursion overflows the JVM lock stack and inflates the monitor.
+     *
+     * @return the pointer, or 0 when {@code owner} is not this pointer's DB; the caller must then
+     *     use a safeRun method
+     */
+    long pointerForMonitorOwner(DB owner) throws SQLException {
+        if (owner != db) {
+            return 0;
+        }
+        this.ensureOpen();
+        return ptr;
+    }
+
     private void ensureOpen() throws SQLException {
         db.checkBackupAccess();
         if (this.closed) {
