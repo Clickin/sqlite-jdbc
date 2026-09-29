@@ -2,6 +2,10 @@ name: Build Native
 
 on:
   workflow_dispatch:
+  # Dispatch needs the workflow on the default branch; a natives/* push builds a feature branch.
+  push:
+    branches:
+      - 'natives/**'
 
 jobs:
   matrix:
@@ -52,6 +56,8 @@ jobs:
   push:
     name: Push new native libraries to branch
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: [ build ]
     steps:
       - uses: actions/checkout@v7
