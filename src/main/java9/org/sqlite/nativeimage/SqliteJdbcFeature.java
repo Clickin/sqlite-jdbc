@@ -84,7 +84,8 @@ public class SqliteJdbcFeature implements Feature {
                         "busyHandler",
                         "commitListener",
                         "updateListener",
-                        "progressHandler"));
+                        "progressHandler",
+                        "restoreSessionActive"));
         RuntimeJNIAccess.register(
                 method(DB.class, "onUpdate", int.class, String.class, String.class, long.class));
         RuntimeJNIAccess.register(method(DB.class, "onCommit", boolean.class));
@@ -96,22 +97,22 @@ public class SqliteJdbcFeature implements Feature {
         // Function JNI calls
         RuntimeJNIAccess.register(Function.class);
         RuntimeJNIAccess.register(fields(Function.class, "context", "value", "args"));
-        RuntimeJNIAccess.register(method(Function.class, "xFunc"));
+        RuntimeJNIAccess.register(method(Function.class, "xFuncCallback"));
 
         // Collation JNI calls
         RuntimeJNIAccess.register(Collation.class);
-        RuntimeJNIAccess.register(method(Collation.class, "xCompare", String.class, String.class));
+        RuntimeJNIAccess.register(method(Collation.class, "xCompareFromSQLite", String.class, String.class));
 
         // Function$Aggregate JNI calls
         RuntimeJNIAccess.register(Function.Aggregate.class);
-        RuntimeJNIAccess.register(method(Function.Aggregate.class, "xStep"));
-        RuntimeJNIAccess.register(method(Function.Aggregate.class, "xFinal"));
-        RuntimeJNIAccess.register(method(Function.Aggregate.class, "clone"));
+        RuntimeJNIAccess.register(method(Function.Aggregate.class, "xStepCallback"));
+        RuntimeJNIAccess.register(method(Function.Aggregate.class, "xFinalCallback"));
+        RuntimeJNIAccess.register(method(Function.Aggregate.class, "cloneForSQLite"));
 
         // Function&Window JNI calls
         RuntimeJNIAccess.register(Function.Window.class);
-        RuntimeJNIAccess.register(method(Function.Window.class, "xInverse"));
-        RuntimeJNIAccess.register(method(Function.Window.class, "xValue"));
+        RuntimeJNIAccess.register(method(Function.Window.class, "xInverseCallback"));
+        RuntimeJNIAccess.register(method(Function.Window.class, "xValueCallback"));
 
         // DB&ProgressObserver JNI calls
         RuntimeJNIAccess.register(DB.ProgressObserver.class);
@@ -120,11 +121,11 @@ public class SqliteJdbcFeature implements Feature {
 
         // ProgressHandler JNI calls
         RuntimeJNIAccess.register(ProgressHandler.class);
-        RuntimeJNIAccess.register(method(ProgressHandler.class, "progress"));
+        RuntimeJNIAccess.register(method(ProgressHandler.class, "progressFromSQLite"));
 
         // BusyHandler JNI calls
         RuntimeJNIAccess.register(BusyHandler.class);
-        RuntimeJNIAccess.register(method(BusyHandler.class, "callback", int.class));
+        RuntimeJNIAccess.register(method(BusyHandler.class, "callbackFromSQLite", int.class));
 
         // Throwable JNI calls
         RuntimeJNIAccess.register(Throwable.class);

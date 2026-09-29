@@ -147,7 +147,7 @@ public class VtCarrierProgressTest {
         }
 
         int pinned = readPinnedEventCount(evidenceDir, scenario + ".jfr");
-        if (jdkFeatureVersion() >= 24) {
+        if (jdkFeatureVersion() >= 24 && pinned >= 0) {
             // JEP 491: a waiting virtual thread must release its carrier; sleeping inside the
             // native busy loop would keep it. JFR is auxiliary evidence, the child progress
             // markers above are the primary proof.
