@@ -137,16 +137,17 @@
   },
   "pre_optimization_patch_sha256": "51a0ab17dbcbb5c6a67216f25e4d1057ed0dda33859919a2984cb8bc93197ec3",
   "fork_current_sources": {
+    "src/main/java/org/sqlite/core/DB.java": "fd09f05122bd7e478f44922b1df6ee2f311735d34beee38aabb2a555238266c0",
+    "src/main/java/org/sqlite/core/NativeDB.java": "45ebb228b4e675cdee97c41e65c0fca70f76039df944e50c81482fb74d38f2b5",
+    "src/main/java/org/sqlite/core/NativeDB.c": "34e665437020e153eab4e30e5839515e9fbb12e189bbed01c4a02713a11c1b3a"
+  },
+  "fork_before_sources": {
     "src/main/java/org/sqlite/core/DB.java": "b675ae245945658efd4b806cdbcc8a9d2dfb1e15b540bb012f1c809183337310",
     "src/main/java/org/sqlite/core/NativeDB.java": "441cbc5a702341db9bd2dc0aceae5e29f7bed3b385e6751f76475aece120951b",
     "src/main/java/org/sqlite/core/NativeDB.c": "925a35d558c3c7b21adb8c25894ac64b0258b5a83e362f48f7e26e6d08ea325f"
   },
-  "fork_before_sources": {
-    "src/main/java/org/sqlite/core/DB.java": "99d7da1655701b53d6c9c75b0db49b0f8925c2a4a95663269d91911eeb2c5abd",
-    "src/main/java/org/sqlite/core/NativeDB.java": "481d39ca54451a307ddee6120d7f81ae46762c1db4109e4eece5ef501b2579c0",
-    "src/main/java/org/sqlite/core/NativeDB.c": "7d62f92af542ec0dedc6b94f27d1d8119a930ac7c7b6f268aa99a9a70169d746"
-  },
   "upstream_release_sha": "cab7981c19ce04d691f0675f0b2586afc2bbf803",
   "publication": "Owner explicitly approved public publication for the same application benchmark. Source/build inputs only; no runtime data or local credentials.",
-  "portability_adjustment": "Both fork variants include <stdint.h> explicitly; Linux/GCC exposed missing intptr_t declaration. No runtime policy change."
+  "portability_adjustment": "Both fork variants include <stdint.h> explicitly; Linux/GCC exposed missing intptr_t declaration. No runtime policy change.",
+  "fork_before_revision": "3d424fc6a644c36cd77301e15999fe1023f2149e"
 }

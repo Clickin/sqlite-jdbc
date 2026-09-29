@@ -17,6 +17,8 @@ before="$ci/before"
 gateway="$ci/gateway"
 fixtures="$root/scripts/benchmark/fixtures"
 upstream_revision=cab7981c19ce04d691f0675f0b2586afc2bbf803
+# The fork before the performance-parity changes (probe and monitor-inflation fixes).
+before_revision=3d424fc6a644c36cd77301e15999fe1023f2149e
 
 # Never delete a prior build/run to make a rerun appear fresh.
 for path in "$out" "$before" "$gateway" "$root/target/classes" "$upstream/target"; do
@@ -33,9 +35,10 @@ export CC=gcc-13 CXX=g++-13 LC_ALL=C.UTF-8 TZ=UTC
 [[ "$(git -C "$upstream" rev-parse HEAD)" == "$upstream_revision" ]]
 [[ -f "$fixtures/gateway-source.zip" && -f "$fixtures/pre-optimization.patch" ]]
 
-# Archive tracked HEAD, not a recursive copy containing target/ or checkout credentials.
-git archive HEAD | tar -x -C "$before"
-(cd "$before" && git init --quiet && git apply -p1 "$fixtures/pre-optimization.patch")
+# Archive a tracked revision, not a recursive copy containing target/ or checkout credentials.
+# Requires a full-history checkout (fetch-depth: 0).
+git archive "$before_revision" | tar -x -C "$before"
+(cd "$before" && git init --quiet)
 unzip -q "$fixtures/gateway-source.zip" -d "$gateway"
 chmod +x "$gateway/gradlew"
 python3 - "$root" "$before" "$gateway" "$fixtures" <<'PY'

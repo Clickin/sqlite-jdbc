@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Check out pinned upstream
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -45,13 +46,12 @@ jobs:
           sudo apt-get install --yes --no-install-recommends gcc-13 g++-13 binutils make tcl-dev unzip zip curl perl maven
       - name: Build drivers with one common SQLite engine, without Gateway
         run: bash scripts/benchmark/build-ci.sh --drivers-only
-      - name: Build exact-native lock variants
-        run: |
-          python3 scripts/benchmark/build-lock-variants.py \
-            2>&1 | tee target/vt-wait-evidence/lock-workflow/variant-build.log
+      # The flat/reentrant experiment variants are generated from a pinned source tree and
+      # were retired after the monitor-inflation fix; compare upstream with the current fork.
       - name: Run correctness, fixed-work lock matrix and separate diagnostics
         run: |
           python3 scripts/benchmark/run-lock-comparison.py \
+            --variants xerial fork \
             --operations 5000000 --warmup-operations 1000000 --repetitions 4 \
             2>&1 | tee target/vt-wait-evidence/lock-workflow/comparison.log
       - name: Publish measured fixed-work summary
