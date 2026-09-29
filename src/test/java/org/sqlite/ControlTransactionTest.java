@@ -58,6 +58,13 @@ public class ControlTransactionTest {
         }
     }
 
+    /**
+     * Budget for a waiter that must succeed once the blocker releases: the wait ends at the
+     * release, so a long budget costs nothing on fast hosts and absorbs slow CI runners (Windows
+     * GraalVM timed out at 1s before the blocker's commit).
+     */
+    private static final int WAIT_UNTIL_RELEASE_MS = 10_000;
+
     private long waitCount() {
         return VtWaitProbe.javaWaitObservations();
     }
@@ -74,7 +81,10 @@ public class ControlTransactionTest {
     void t01_beginImmediateRetriesOnlyUntilWriterReleases() throws Exception {
         try (Connection blocker = open("begin.db", 500, SQLiteConfig.TransactionMode.DEFERRED);
                 Connection waiter =
-                        open("begin.db", 1000, SQLiteConfig.TransactionMode.IMMEDIATE)) {
+                        open(
+                                "begin.db",
+                                WAIT_UNTIL_RELEASE_MS,
+                                SQLiteConfig.TransactionMode.IMMEDIATE)) {
             createTable(blocker);
             blocker.setAutoCommit(false);
             insert(blocker, 1);
@@ -130,7 +140,10 @@ public class ControlTransactionTest {
     @Test
     void t04_commitRetriesWithoutRepeatingDml() throws Exception {
         try (Connection writer =
-                        open("commit-retry.db", 1000, SQLiteConfig.TransactionMode.DEFERRED);
+                        open(
+                                "commit-retry.db",
+                                WAIT_UNTIL_RELEASE_MS,
+                                SQLiteConfig.TransactionMode.DEFERRED);
                 Connection reader =
                         open("commit-retry.db", 100, SQLiteConfig.TransactionMode.DEFERRED)) {
             createTable(writer);
@@ -274,7 +287,10 @@ public class ControlTransactionTest {
     void t16_attachedDatabaseUsesTheSameGeneratedBeginBoundary() throws Exception {
         String auxiliary = tempDir.resolve("auxiliary.db").toString().replace("'", "''");
         try (Connection waiter =
-                        open("attached-main.db", 1000, SQLiteConfig.TransactionMode.IMMEDIATE);
+                        open(
+                                "attached-main.db",
+                                WAIT_UNTIL_RELEASE_MS,
+                                SQLiteConfig.TransactionMode.IMMEDIATE);
                 Connection blocker =
                         open("attached-main.db", 100, SQLiteConfig.TransactionMode.DEFERRED)) {
             try (Statement statement = waiter.createStatement()) {
