@@ -89,8 +89,8 @@ def main():
             or args.operations + args.warmup_operations > 2**63 - 1
             or len(set(args.variants)) != len(args.variants)):
         parser.error('Require positive operations/repetitions/timeout, nonnegative warmup, long-sized totals, unique variants')
-    if hosted and (args.skip_profiles or set(args.variants) != set(VARIANTS)):
-        parser.error('Hosted evidence requires both variants and all profiles')
+    if hosted and (args.skip_profiles or not {'xerial', 'fork'} <= set(args.variants)):
+        parser.error('Hosted evidence requires xerial and fork variants and all profiles')
     if not args.skip_profiles and (not args.profiler_home or not args.profiler_jar):
         parser.error('Require --profiler-home and --profiler-jar, or --skip-profiles for local smoke')
     out = args.output.resolve()
