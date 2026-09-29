@@ -55,6 +55,12 @@ public abstract class JDBC3Connection extends SQLiteConnection {
      */
     @SuppressWarnings("deprecation")
     public void tryEnforceTransactionMode() throws SQLException {
+        // Nothing to enforce: do not add a DB monitor acquisition, which contends on a shared
+        // connection. A restart that becomes pending after this unsynchronized read is still
+        // recovered under the monitor by the statement execution that follows.
+        if (!getDatabase().getConfig().isExplicitReadOnly() && !isTransactionRestartPending()) {
+            return;
+        }
         synchronized (getDatabase()) {
             recoverTransactionRestart();
 
