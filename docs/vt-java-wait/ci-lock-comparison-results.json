@@ -1,0 +1,2843 @@
+{
+  "purpose": "Isolated fixed-work real JDBC lock-strategy comparison; no HTTP/admission/pool/disk/backup runtime.",
+  "run_id": 36509360919,
+  "run_url": "https://github.com/Clickin/sqlite-jdbc/actions/runs/36509360919",
+  "measured_commit": "d92dac2eef1ec294cbaf912abcfea8e74c038f4a",
+  "branch": "benchmarks/vt-lock/20260929-isolated",
+  "github_conclusion": "success",
+  "callback": {
+    "id": 36509360919,
+    "head_sha": "d92dac2eef1ec294cbaf912abcfea8e74c038f4a",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Clickin/sqlite-jdbc/actions/runs/36509360919",
+    "run_attempt": 1,
+    "rest_requests": 42,
+    "observer_elapsed_seconds": 1867.3,
+    "notification": "single background-process completion callback; REST polling internally"
+  },
+  "artifact": {
+    "id": 11009204048,
+    "name": "jdbc-isolated-lock-36509360919-1",
+    "github_digest": "sha256:f92335f7d93168ad4ceb1ba7bf8c615a3bd27161c6eabe70227eb21eaabdab0d",
+    "size_bytes": 32306849,
+    "retention_days": 30
+  },
+  "environment": {
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "vcpus": 4,
+    "jdk": "openjdk version \"25.0.2\" 2026-01-20 LTS\nOpenJDK Runtime Environment Temurin-25.0.2+10 (build 25.0.2+10-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.2+10 (build 25.0.2+10-LTS, mixed mode, sharing)\n",
+    "javac": "javac 25.0.2\n",
+    "build_identity": {
+      "gateway_built": false,
+      "fork_revision": "d92dac2eef1ec294cbaf912abcfea8e74c038f4a",
+      "upstream_revision": "cab7981c19ce04d691f0675f0b2586afc2bbf803",
+      "jdk": "openjdk version \"25.0.2\" 2026-01-20 LTS\nOpenJDK Runtime Environment Temurin-25.0.2+10 (build 25.0.2+10-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.2+10 (build 25.0.2+10-LTS, mixed mode, sharing)",
+      "javac": "javac 25.0.2",
+      "gcc": "Using built-in specs.\nCOLLECT_GCC=gcc-13\nCOLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-linux-gnu/13/lto-wrapper\nOFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa\nOFFLOAD_TARGET_DEFAULT=1\nTarget: x86_64-linux-gnu\nConfigured with: ../src/configure -v --with-pkgversion='Ubuntu 13.3.0-6ubuntu2~24.04.1' --with-bugurl=file:///usr/share/doc/gcc-13/README.Bugs --enable-languages=c,ada,c++,go,d,fortran,objc,obj-c++,m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-13 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/libexec --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-libstdcxx-backtrace --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-13-EldibY/gcc-13-13.3.0/debian/tmp-nvptx/usr,amdgcn-amdhsa=/build/gcc-13-EldibY/gcc-13-13.3.0/debian/tmp-gcn/usr --enable-offload-defaulted --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2\nThread model: posix\nSupported LTO compression algorithms: zlib zstd\ngcc version 13.3.0 (Ubuntu 13.3.0-6ubuntu2~24.04.1)",
+      "maven": "\u001b[1mApache Maven 3.8.7\u001b[m\nMaven home: /usr/share/maven\nJava version: 25.0.2, vendor: Eclipse Adoptium, runtime: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/25.0.2-10.0.LTS/x64\nDefault locale: en, platform encoding: UTF-8\nOS name: \"linux\", version: \"6.17.0-1022-azure\", arch: \"amd64\", family: \"unix\"",
+      "compiler_plugin": "org.apache.maven.plugins:maven-compiler-plugin:3.16.0:compile",
+      "java_release": 8,
+      "native_flags": "Unmodified Linux-x86_64 Makefile flags; full commands in *-native-build.log",
+      "sqlite_object": {
+        "path": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/upstream/target/sqlite-3.53.4-Linux-x86_64/sqlite3.o",
+        "sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de"
+      },
+      "sqlite_source_sha256": "6a2805f8c1ef020a7086e62258519323cf98b219e9fe87a42065d916cfebaefc",
+      "sqlite_header_sha256": "919e7f2e8ed1d8f56ac17b412b8971c76aa5d1a879752cc6058f75e7d5910e1d",
+      "runner": {
+        "GITHUB_REPOSITORY": "Clickin/sqlite-jdbc",
+        "GITHUB_SHA": "d92dac2eef1ec294cbaf912abcfea8e74c038f4a",
+        "GITHUB_RUN_ID": "36509360919",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "RUNNER_NAME": "GitHub Actions 1000007636",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20260920.314.1"
+      },
+      "fixtures": {
+        "gateway-source.zip": "267ef05e0114a77d366373df38859933a85ad4b0b8a390caacea036e8341d11c",
+        "manifest.json": "662421beac4419257290f0f5edb2518fe226fdfca0ac78d82656648b24491417",
+        "pre-optimization.patch": "51a0ab17dbcbb5c6a67216f25e4d1057ed0dda33859919a2984cb8bc93197ec3"
+      },
+      "benchmark_sources": {
+        "build-ci.sh": "b79862b5545083e0f8be178a1536ae1c823cfaccf343e35ec83489acc1f6a9bd",
+        "LockCorrectness.java": "add5d93a5d6cb3cf23ccd8fa12c85a32d87ddf45a1ecf4ffd8cacfa3cfa4262d",
+        "run-lock-comparison.py": "b7553d82bf1d7846cc59380433d26e892818ed27a87adc640281ac9f63cc416e",
+        "native-cost-probe.h": "ae57a53f8208950f61b87e934341ca93af8f5f0b84011bcc5f8d92928b4fe2be",
+        "run-gateway-overload.py": "bddfe93bb8eb7cbac9fd46c05842609015724bd2807b7ce6cf2291690661f0d3",
+        "build-lock-variants.py": "f2dbbf8e933f5d74b830b1fe9dcc91495278ec724c1ef3c15bb287186384f219",
+        "wait-actions.py": "3fe8531af9603d4feb36b239f59100df5dcce76d6382ae06ca6c65f171921142",
+        "run-cost-profile.py": "a191f7c4649cff717d46ab5ca2fab37f9c37a3b0e13f2e8f38ad8bf291953366",
+        "run-gateway.py": "18ba54a6fcdbbe1b20e968b90a5852dc614157b9952c8084a946598afa5475a1",
+        "ProfileSummary.java": "4340761054376995ecd3647861c832d76d00a96e55fa709542cc4ab9838dcf57",
+        "JdbcLockBenchmark.java": "94425845f919884685430cbacb6435d04b325b85a8fa86e758e0a34de12e9876",
+        "build-cost-probes.py": "a6624866bf1a8d26db4cfb654e8a5cc9530e12fa8132b99a8afa0578baec9fd7",
+        "CostProbe.java": "0b53acc1eef2b143726aff8bfd65cdbb2ad0d49637fa0e87d9b4aadfa868ca83",
+        "GatewayBenchmark.java": "57a2b0e7a22bfb0e0decb9604ec574c49847b47b2dae9ca8ecd73a889706bc5d"
+      },
+      "variants": {
+        "xerial": {
+          "source_manifest_sha256": "284045ed750a4f609674c2aaf079e46a4e016020d422ddf1f96be5480b1e8976",
+          "library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+          "jni_object_sha256": "e1d8ba3ed1c62ebbd21241298db3164a3b8c0a8b10f3f770c1b9e2f1d54b886d",
+          "jni_header_sha256": "645784bcc3773c68292b66d916ebc2994c70022f5fcb0ac36bf6b5ecfba9b787",
+          "sqlite_object_sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de"
+        },
+        "before": {
+          "source_manifest_sha256": "2153b660a07377259ee1b7d860a1661072c24ff745100e18131b38ee16736709",
+          "library_sha256": "05cc8a121d7d0c2407c72b90fb3c9cf36c65bc686b4811131bec59af935d8c60",
+          "jni_object_sha256": "a3beb53cb49d4feedbf48574dde5b9e3d53296e0ca74669126517112d96066f3",
+          "jni_header_sha256": "712bfd51bbbb210910d39b2a258b3c112a41face517a73a92267b04f3f685798",
+          "sqlite_object_sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de"
+        },
+        "fork": {
+          "source_manifest_sha256": "ba9e59cecbd2c4c34fe4af507e44ba740ba8fcf14113bee8f3dfd34a8af0ef7e",
+          "library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+          "jni_object_sha256": "667089a195a7685f68c1ccaddce9f82052b0852f7656dd6d56090b201ae9f083",
+          "jni_header_sha256": "45a3af1ba9f5384f8726ba04f3f6372a16941aadfaa470ca74555cc56ec0348b",
+          "sqlite_object_sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de"
+        }
+      }
+    },
+    "native_sha256": {
+      "xerial": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "fork": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "flat": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "reentrant": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd"
+    },
+    "benchmark_source_sha256": {
+      "run-lock-comparison.py": "b7553d82bf1d7846cc59380433d26e892818ed27a87adc640281ac9f63cc416e",
+      "JdbcLockBenchmark.java": "94425845f919884685430cbacb6435d04b325b85a8fa86e758e0a34de12e9876",
+      "ProfileSummary.java": "4340761054376995ecd3647861c832d76d00a96e55fa709542cc4ab9838dcf57",
+      "LockCorrectness.java": "add5d93a5d6cb3cf23ccd8fa12c85a32d87ddf45a1ecf4ffd8cacfa3cfa4262d"
+    },
+    "sqlite_source_id": "2026-07-24 19:02:57 bf7c7f30031888f4e796e429ab3978879485813aaca6f641c7b33e4e09459bcc",
+    "compile_options": [
+      "ATOMIC_INTRINSICS=1",
+      "COMPILER=gcc-13.3.0",
+      "DEFAULT_AUTOVACUUM",
+      "DEFAULT_CACHE_SIZE=-2000",
+      "DEFAULT_FILE_FORMAT=4",
+      "DEFAULT_FILE_PERMISSIONS=0666",
+      "DEFAULT_JOURNAL_SIZE_LIMIT=-1",
+      "DEFAULT_MEMSTATUS=0",
+      "DEFAULT_MMAP_SIZE=0",
+      "DEFAULT_PAGE_SIZE=4096",
+      "DEFAULT_PCACHE_INITSZ=20",
+      "DEFAULT_RECURSIVE_TRIGGERS",
+      "DEFAULT_SECTOR_SIZE=4096",
+      "DEFAULT_SYNCHRONOUS=2",
+      "DEFAULT_WAL_AUTOCHECKPOINT=1000",
+      "DEFAULT_WAL_SYNCHRONOUS=2",
+      "DEFAULT_WORKER_THREADS=0",
+      "DIRECT_OVERFLOW_READ",
+      "DISABLE_PAGECACHE_OVERFLOW_STATS",
+      "ENABLE_COLUMN_METADATA",
+      "ENABLE_DBSTAT_VTAB",
+      "ENABLE_FTS3",
+      "ENABLE_FTS3_PARENTHESIS",
+      "ENABLE_FTS5",
+      "ENABLE_LOAD_EXTENSION",
+      "ENABLE_MATH_FUNCTIONS",
+      "ENABLE_PERCENTILE",
+      "ENABLE_RTREE",
+      "ENABLE_STAT4",
+      "ENABLE_UPDATE_DELETE_LIMIT",
+      "HAVE_ISNAN",
+      "JDBC_EXTENSIONS",
+      "MALLOC_SOFT_LIMIT=1024",
+      "MAX_ATTACHED=125",
+      "MAX_COLUMN=32767",
+      "MAX_COMPOUND_SELECT=500",
+      "MAX_DEFAULT_PAGE_SIZE=8192",
+      "MAX_EXPR_DEPTH=1000",
+      "MAX_FUNCTION_ARG=127",
+      "MAX_LENGTH=2147483647",
+      "MAX_LIKE_PATTERN_LENGTH=50000",
+      "MAX_MMAP_SIZE=1099511627776",
+      "MAX_PAGE_COUNT=4294967294",
+      "MAX_PAGE_SIZE=65536",
+      "MAX_SQL_LENGTH=1073741824",
+      "MAX_TRIGGER_DEPTH=1000",
+      "MAX_VARIABLE_NUMBER=250000",
+      "MAX_VDBE_OP=250000000",
+      "MAX_WORKER_THREADS=8",
+      "MUTEX_PTHREADS",
+      "SYSTEM_MALLOC",
+      "TEMP_STORE=1",
+      "THREADSAFE=1"
+    ]
+  },
+  "design": "Fixed total prepared UPDATE operations; in-memory SQLite; per-worker statements and rows; same connections/statements through warmup and measurement; one VT per worker; ready/start barrier; wall ends after all joins; whole-process CPU delta over the measurement window divided by planned work only after full validation. Four carrier threads. No retries, admission, HTTP, pool, backups or timed denominator. Fresh sequential JVMs, cyclic variant rotations per scenario. JFR only in separate diagnostic JVMs. No latency sampling. Startup spread and worker durations are not per-operation latency.",
+  "parameters": {
+    "output": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/vt-wait-evidence/ci-lock-comparison",
+    "operations": 5000000,
+    "warmup_operations": 1000000,
+    "repetitions": 4,
+    "variants": [
+      "xerial",
+      "fork",
+      "flat",
+      "reentrant"
+    ],
+    "timeout_seconds": 180,
+    "diagnostic_divisor": 50,
+    "native_root": null,
+    "slf4j_api": "/home/runner/.m2/repository/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar"
+  },
+  "quality_policy": "Population CV >5%, any measured run shorter than5s, or fewer than2 repetitions is a descriptive caution, not a statistical significance test. No rows removed.",
+  "headline_performance_jvms": 64,
+  "measured_operations": 320000000,
+  "warmup_operations": 64000000,
+  "diagnostic_jvms": 8,
+  "offline_jfr_analyses": 16,
+  "correctness": [
+    {
+      "driver": "xerial",
+      "skipped": true,
+      "reason": "Fork-only public API/restart semantics; performance cells still validate exact work and integrity",
+      "outcome_passed": true
+    },
+    {
+      "driver": "fork",
+      "process_exit_code": 0,
+      "passed": [
+        "cancellation_while_execution_locked",
+        "concurrent_close",
+        "public_native_serialization",
+        "jni_callbacks_and_serialization",
+        "shared_connection_generated_key_contention",
+        "commit_restart_recovery",
+        "rollback_restart_recovery"
+      ],
+      "outcome_passed": true
+    },
+    {
+      "driver": "flat",
+      "process_exit_code": 0,
+      "passed": [
+        "cancellation_while_execution_locked",
+        "concurrent_close",
+        "public_native_serialization",
+        "jni_callbacks_and_serialization",
+        "shared_connection_generated_key_contention",
+        "commit_restart_recovery",
+        "rollback_restart_recovery"
+      ],
+      "outcome_passed": true
+    },
+    {
+      "driver": "reentrant",
+      "process_exit_code": 0,
+      "passed": [
+        "cancellation_while_execution_locked",
+        "concurrent_close",
+        "public_native_serialization",
+        "jni_callbacks_and_serialization",
+        "shared_connection_generated_key_contention",
+        "commit_restart_recovery",
+        "rollback_restart_recovery"
+      ],
+      "outcome_passed": true
+    }
+  ],
+  "summary": [
+    {
+      "scenario": "single",
+      "driver": "xerial",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 1836.0,
+        "median": 1846.0,
+        "max": 1876.0,
+        "cv": 0.008139664599308137
+      },
+      "operations_per_second": {
+        "min": 535076.63028849,
+        "median": 543868.0514107002,
+        "max": 547464.6990428874,
+        "cv": 0.00842167409453283
+      },
+      "min_measurement_seconds": 9.133008957,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "single",
+      "driver": "fork",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 4060.0,
+        "median": 4077.0,
+        "max": 4108.0,
+        "cv": 0.004250004949399491
+      },
+      "operations_per_second": {
+        "min": 243782.3729354682,
+        "median": 245670.8915691417,
+        "max": 246773.27294596558,
+        "cv": 0.004381964542886868
+      },
+      "min_measurement_seconds": 20.261513495,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "single",
+      "driver": "flat",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 4040.0,
+        "median": 4076.0,
+        "max": 4102.0,
+        "cv": 0.0054604090878937585
+      },
+      "operations_per_second": {
+        "min": 244245.03092546074,
+        "median": 245649.8267834537,
+        "max": 247870.10976420323,
+        "cv": 0.005325165060166115
+      },
+      "min_measurement_seconds": 20.171855351,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "single",
+      "driver": "reentrant",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 3576.0,
+        "median": 3608.0,
+        "max": 3640.0,
+        "cv": 0.006380745251231341
+      },
+      "operations_per_second": {
+        "min": 275077.1931756084,
+        "median": 277634.55350589566,
+        "max": 280089.90211849666,
+        "cv": 0.006521065425999225
+      },
+      "min_measurement_seconds": 17.851411144,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "private16",
+      "driver": "xerial",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 3212.0,
+        "median": 3251.0,
+        "max": 3296.0,
+        "cv": 0.009145195214595447
+      },
+      "operations_per_second": {
+        "min": 1176449.7664584864,
+        "median": 1207130.294141598,
+        "max": 1236745.4526947436,
+        "cv": 0.01773249306480334
+      },
+      "min_measurement_seconds": 4.04286912,
+      "short_run": true,
+      "noisy": true
+    },
+    {
+      "scenario": "private16",
+      "driver": "fork",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 7210.0,
+        "median": 7281.0,
+        "max": 7312.0,
+        "cv": 0.0052208094886816965
+      },
+      "operations_per_second": {
+        "min": 540242.6634097373,
+        "median": 543445.2212053076,
+        "max": 552566.2076748755,
+        "cv": 0.008591237381905863
+      },
+      "min_measurement_seconds": 9.048689425,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "private16",
+      "driver": "flat",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 7148.0,
+        "median": 7204.0,
+        "max": 7276.0,
+        "cv": 0.0067994177329871505
+      },
+      "operations_per_second": {
+        "min": 544655.182988236,
+        "median": 550548.7446260994,
+        "max": 554252.4369472299,
+        "cv": 0.006249175558698348
+      },
+      "min_measurement_seconds": 9.021160155,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "private16",
+      "driver": "reentrant",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 6416.0,
+        "median": 6458.0,
+        "max": 6488.0,
+        "cv": 0.004433489704493938
+      },
+      "operations_per_second": {
+        "min": 612612.2473676717,
+        "median": 615166.9861791214,
+        "max": 621455.9395500222,
+        "cv": 0.00588144456539948
+      },
+      "min_measurement_seconds": 8.045622677,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "shared4",
+      "driver": "xerial",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 5202.0,
+        "median": 5279.0,
+        "max": 5350.0,
+        "cv": 0.010859827294954404
+      },
+      "operations_per_second": {
+        "min": 372063.3140659458,
+        "median": 375774.07012666157,
+        "max": 379740.056294712,
+        "cv": 0.007272826577686031
+      },
+      "min_measurement_seconds": 13.166901719,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "shared4",
+      "driver": "fork",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 11758.0,
+        "median": 12449.0,
+        "max": 13228.0,
+        "cv": 0.04365251261762425
+      },
+      "operations_per_second": {
+        "min": 139126.31445252194,
+        "median": 148873.133266273,
+        "max": 158940.46057350875,
+        "cv": 0.04975944351250797
+      },
+      "min_measurement_seconds": 31.45832082,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "shared4",
+      "driver": "flat",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 12022.0,
+        "median": 12265.0,
+        "max": 15372.0,
+        "cv": 0.106645886599045
+      },
+      "operations_per_second": {
+        "min": 119071.1372075129,
+        "median": 150816.71841429087,
+        "max": 155188.50117575994,
+        "cv": 0.10074075691787138
+      },
+      "min_measurement_seconds": 32.218881954,
+      "short_run": false,
+      "noisy": true
+    },
+    {
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 13838.0,
+        "median": 14595.0,
+        "max": 15334.0,
+        "cv": 0.03627924762753882
+      },
+      "operations_per_second": {
+        "min": 144200.4067342167,
+        "median": 149464.15049735672,
+        "max": 155154.6507459878,
+        "cv": 0.025910127369881197
+      },
+      "min_measurement_seconds": 32.225911218,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "shared16",
+      "driver": "xerial",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 5316.0,
+        "median": 5500.0,
+        "max": 5732.0,
+        "cv": 0.028237851341148975
+      },
+      "operations_per_second": {
+        "min": 353177.00186254346,
+        "median": 367325.42438411363,
+        "max": 377143.67536360375,
+        "cv": 0.025355036827272585
+      },
+      "min_measurement_seconds": 13.257546995,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "shared16",
+      "driver": "fork",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 16866.0,
+        "median": 17209.0,
+        "max": 17318.0,
+        "cv": 0.010015420401807579
+      },
+      "operations_per_second": {
+        "min": 105126.24123028191,
+        "median": 105601.20235547176,
+        "max": 108048.68227200597,
+        "cv": 0.011161986243477681
+      },
+      "min_measurement_seconds": 46.275437098,
+      "short_run": false,
+      "noisy": false
+    },
+    {
+      "scenario": "shared16",
+      "driver": "flat",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 14852.0,
+        "median": 16434.0,
+        "max": 18000.0,
+        "cv": 0.0677756949858537
+      },
+      "operations_per_second": {
+        "min": 100363.47377326143,
+        "median": 110884.46878915574,
+        "max": 123955.41218203884,
+        "cv": 0.07501951615288167
+      },
+      "min_measurement_seconds": 40.337085021,
+      "short_run": false,
+      "noisy": true
+    },
+    {
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "runs": 4,
+      "valid_runs": 4,
+      "cpu_ns_per_operation": {
+        "min": 14782.0,
+        "median": 15116.0,
+        "max": 15376.0,
+        "cv": 0.014950120027081536
+      },
+      "operations_per_second": {
+        "min": 143298.05245042444,
+        "median": 144225.12011090107,
+        "max": 145487.7694436509,
+        "cv": 0.005709494797345857
+      },
+      "min_measurement_seconds": 34.36715003,
+      "short_run": false,
+      "noisy": false
+    }
+  ],
+  "comparisons_vs_fork": [
+    {
+      "scenario": "single",
+      "candidate": "flat",
+      "baseline": "fork",
+      "median_cpu_change_percent": -0.02452783909737688,
+      "median_throughput_change_percent": -0.008574392168914091,
+      "quality_caution": false,
+      "paired_repetitions": [
+        {
+          "repetition": 1,
+          "cpu_change_percent": 1.0344827586206806,
+          "throughput_change_percent": -1.024520196341694
+        },
+        {
+          "repetition": 2,
+          "cpu_change_percent": -0.8832188420019649,
+          "throughput_change_percent": 0.9040587532815225
+        },
+        {
+          "repetition": 3,
+          "cpu_change_percent": -0.8763388510223957,
+          "throughput_change_percent": 0.8662124168775209
+        },
+        {
+          "repetition": 4,
+          "cpu_change_percent": 0.049043648847479915,
+          "throughput_change_percent": -0.11676380151497412
+        }
+      ]
+    },
+    {
+      "scenario": "single",
+      "candidate": "reentrant",
+      "baseline": "fork",
+      "median_cpu_change_percent": -11.503556536669123,
+      "median_throughput_change_percent": 13.010764821422939,
+      "quality_caution": false,
+      "paired_repetitions": [
+        {
+          "repetition": 1,
+          "cpu_change_percent": -11.921182266009856,
+          "throughput_change_percent": 13.500906631742971
+        },
+        {
+          "repetition": 2,
+          "cpu_change_percent": -11.629048086359173,
+          "throughput_change_percent": 13.23273885387406
+        },
+        {
+          "repetition": 3,
+          "cpu_change_percent": -11.392405063291145,
+          "throughput_change_percent": 12.837195677156
+        },
+        {
+          "repetition": 4,
+          "cpu_change_percent": -11.37812653261403,
+          "throughput_change_percent": 12.788829810916003
+        }
+      ]
+    },
+    {
+      "scenario": "private16",
+      "candidate": "flat",
+      "baseline": "fork",
+      "median_cpu_change_percent": -1.0575470402417242,
+      "median_throughput_change_percent": 1.3071277736211862,
+      "quality_caution": false,
+      "paired_repetitions": [
+        {
+          "repetition": 1,
+          "cpu_change_percent": -1.9478737997256523,
+          "throughput_change_percent": 2.5932371666224974
+        },
+        {
+          "repetition": 2,
+          "cpu_change_percent": -1.1214442013129156,
+          "throughput_change_percent": 1.0764163898437262
+        },
+        {
+          "repetition": 3,
+          "cpu_change_percent": -0.44382801664355487,
+          "throughput_change_percent": -0.36137279980096304
+        },
+        {
+          "repetition": 4,
+          "cpu_change_percent": 0.05500550055006492,
+          "throughput_change_percent": 0.44814962651460455
+        }
+      ]
+    },
+    {
+      "scenario": "private16",
+      "candidate": "reentrant",
+      "baseline": "fork",
+      "median_cpu_change_percent": -11.303392391155064,
+      "median_throughput_change_percent": 13.197607077074313,
+      "quality_caution": false,
+      "paired_repetitions": [
+        {
+          "repetition": 1,
+          "cpu_change_percent": -11.98902606310014,
+          "throughput_change_percent": 15.032740218572883
+        },
+        {
+          "repetition": 2,
+          "cpu_change_percent": -11.433260393873091,
+          "throughput_change_percent": 12.475003502831061
+        },
+        {
+          "repetition": 3,
+          "cpu_change_percent": -10.013869625520112,
+          "throughput_change_percent": 10.925864477558367
+        },
+        {
+          "repetition": 4,
+          "cpu_change_percent": -11.44114411441144,
+          "throughput_change_percent": 13.863229988801894
+        }
+      ]
+    },
+    {
+      "scenario": "shared4",
+      "candidate": "flat",
+      "baseline": "fork",
+      "median_cpu_change_percent": -1.4780303638846526,
+      "median_throughput_change_percent": 1.3055311629275534,
+      "quality_caution": true,
+      "paired_repetitions": [
+        {
+          "repetition": 1,
+          "cpu_change_percent": 3.9292396666099627,
+          "throughput_change_percent": -4.498258869177862
+        },
+        {
+          "repetition": 2,
+          "cpu_change_percent": -6.939824614454193,
+          "throughput_change_percent": 7.70250776007444
+        },
+        {
+          "repetition": 3,
+          "cpu_change_percent": 25.773195876288657,
+          "throughput_change_percent": -21.815343606341187
+        },
+        {
+          "repetition": 4,
+          "cpu_change_percent": -5.1593562638056145,
+          "throughput_change_percent": 6.69432592688779
+        }
+      ]
+    },
+    {
+      "scenario": "shared4",
+      "candidate": "reentrant",
+      "baseline": "fork",
+      "median_cpu_change_percent": 17.238332396176403,
+      "median_throughput_change_percent": 0.3969938820503005,
+      "quality_caution": false,
+      "paired_repetitions": [
+        {
+          "repetition": 1,
+          "cpu_change_percent": 17.69008334750808,
+          "throughput_change_percent": -2.381904402353252
+        },
+        {
+          "repetition": 2,
+          "cpu_change_percent": 10.553371635923803,
+          "throughput_change_percent": 7.520922299843069
+        },
+        {
+          "repetition": 3,
+          "cpu_change_percent": 19.178530518736704,
+          "throughput_change_percent": -1.9412082670642428
+        },
+        {
+          "repetition": 4,
+          "cpu_change_percent": 20.96875986115494,
+          "throughput_change_percent": -0.8601469933298245
+        }
+      ]
+    },
+    {
+      "scenario": "shared16",
+      "candidate": "flat",
+      "baseline": "fork",
+      "median_cpu_change_percent": -4.5034574931721805,
+      "median_throughput_change_percent": 5.0030362494355,
+      "quality_caution": true,
+      "paired_repetitions": [
+        {
+          "repetition": 1,
+          "cpu_change_percent": 4.797391709361909,
+          "throughput_change_percent": -5.343624996743301
+        },
+        {
+          "repetition": 2,
+          "cpu_change_percent": -4.976220856049185,
+          "throughput_change_percent": 5.603297364688697
+        },
+        {
+          "repetition": 3,
+          "cpu_change_percent": -2.2649116565872207,
+          "throughput_change_percent": 2.4562711914823065
+        },
+        {
+          "repetition": 4,
+          "cpu_change_percent": -14.239519575008664,
+          "throughput_change_percent": 17.911009402981605
+        }
+      ]
+    },
+    {
+      "scenario": "shared16",
+      "candidate": "reentrant",
+      "baseline": "fork",
+      "median_cpu_change_percent": -12.162240688012083,
+      "median_throughput_change_percent": 36.57526324881659,
+      "quality_caution": false,
+      "paired_repetitions": [
+        {
+          "repetition": 1,
+          "cpu_change_percent": -12.657196087564039,
+          "throughput_change_percent": 36.38291369382118
+        },
+        {
+          "repetition": 2,
+          "cpu_change_percent": -11.669179909523253,
+          "throughput_change_percent": 36.76917861684386
+        },
+        {
+          "repetition": 3,
+          "cpu_change_percent": -8.834341278311397,
+          "throughput_change_percent": 32.6236002487104
+        },
+        {
+          "repetition": 4,
+          "cpu_change_percent": -14.643723293682875,
+          "throughput_change_percent": 38.39339040473819
+        }
+      ]
+    }
+  ],
+  "performance_runs": [
+    {
+      "driver": "xerial",
+      "scenario": "single",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 1836.0,
+      "operations_per_second": 547464.6990428874,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-single-rep-1-xerial/result.json",
+      "wall_ns": 9133008957,
+      "process_cpu_ns": 9180000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "single",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 4060.0,
+      "operations_per_second": 246773.27294596558,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-1-fork/result.json",
+      "wall_ns": 20261513495,
+      "process_cpu_ns": 20300000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "single",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 4102.0,
+      "operations_per_second": 244245.03092546074,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-1-flat/result.json",
+      "wall_ns": 20471245540,
+      "process_cpu_ns": 20510000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "single",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 3576.0,
+      "operations_per_second": 280089.90211849666,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-1-reentrant/result.json",
+      "wall_ns": 17851411144,
+      "process_cpu_ns": 17880000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "single",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 4076.0,
+      "operations_per_second": 245649.2958031207,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-2-fork/result.json",
+      "wall_ns": 20354220775,
+      "process_cpu_ns": 20380000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "single",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 4040.0,
+      "operations_per_second": 247870.10976420323,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-2-flat/result.json",
+      "wall_ns": 20171855351,
+      "process_cpu_ns": 20200000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "single",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 3602.0,
+      "operations_per_second": 278155.4256131283,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-2-reentrant/result.json",
+      "wall_ns": 17975561645,
+      "process_cpu_ns": 18010000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "single",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 1844.0,
+      "operations_per_second": 544004.0933931818,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-single-rep-2-xerial/result.json",
+      "wall_ns": 9191107311,
+      "process_cpu_ns": 9220000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "single",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 4072.0,
+      "operations_per_second": 245894.0461199939,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-3-flat/result.json",
+      "wall_ns": 20333961228,
+      "process_cpu_ns": 20360000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "single",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 3640.0,
+      "operations_per_second": 275077.1931756084,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-3-reentrant/result.json",
+      "wall_ns": 18176715933,
+      "process_cpu_ns": 18200000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "single",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 1876.0,
+      "operations_per_second": 535076.63028849,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-single-rep-3-xerial/result.json",
+      "wall_ns": 9344455947,
+      "process_cpu_ns": 9380000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "single",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 4108.0,
+      "operations_per_second": 243782.3729354682,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-3-fork/result.json",
+      "wall_ns": 20510096525,
+      "process_cpu_ns": 20540000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "single",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 3614.0,
+      "operations_per_second": 277113.68139866303,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-4-reentrant/result.json",
+      "wall_ns": 18043136574,
+      "process_cpu_ns": 18070000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "single",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 1848.0,
+      "operations_per_second": 543732.0094282187,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-single-rep-4-xerial/result.json",
+      "wall_ns": 9195706549,
+      "process_cpu_ns": 9240000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "single",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 4078.0,
+      "operations_per_second": 245692.4873351627,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-4-fork/result.json",
+      "wall_ns": 20350642603,
+      "process_cpu_ns": 20390000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "single",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 1,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 4080.0,
+      "operations_per_second": 245405.60744691346,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-single-rep-4-flat/result.json",
+      "wall_ns": 20374432565,
+      "process_cpu_ns": 20400000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 0,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "private16",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 3250.0,
+      "operations_per_second": 1204494.735434761,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-private16-rep-1-xerial/result.json",
+      "wall_ns": 4151118185,
+      "process_cpu_ns": 16250000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 3244026659,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "private16",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 7290.0,
+      "operations_per_second": 540242.6634097373,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-1-fork/result.json",
+      "wall_ns": 9255100233,
+      "process_cpu_ns": 36450000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 7004640909,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "private16",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 7148.0,
+      "operations_per_second": 554252.4369472299,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-1-flat/result.json",
+      "wall_ns": 9021160155,
+      "process_cpu_ns": 35740000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6785566144,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "private16",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 6416.0,
+      "operations_per_second": 621455.9395500222,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-1-reentrant/result.json",
+      "wall_ns": 8045622677,
+      "process_cpu_ns": 32080000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6042064258,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "private16",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 7312.0,
+      "operations_per_second": 544665.2396434483,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-2-fork/result.json",
+      "wall_ns": 9179950612,
+      "process_cpu_ns": 36560000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6903678405,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "private16",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 7230.0,
+      "operations_per_second": 550528.1055527519,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-2-flat/result.json",
+      "wall_ns": 9082188447,
+      "process_cpu_ns": 36150000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6817026928,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "private16",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 6476.0,
+      "operations_per_second": 612612.2473676717,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-2-reentrant/result.json",
+      "wall_ns": 8161769572,
+      "process_cpu_ns": 32380000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6138016685,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "private16",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 3212.0,
+      "operations_per_second": 1236745.4526947436,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-private16-rep-2-xerial/result.json",
+      "wall_ns": 4042869120,
+      "process_cpu_ns": 16060000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 3036383823,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "private16",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 7178.0,
+      "operations_per_second": 550569.3836994468,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-3-flat/result.json",
+      "wall_ns": 9081507523,
+      "process_cpu_ns": 35890000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6806574008,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "private16",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 6488.0,
+      "operations_per_second": 612938.8426742161,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-3-reentrant/result.json",
+      "wall_ns": 8157420695,
+      "process_cpu_ns": 32440000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6120474731,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "private16",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 3252.0,
+      "operations_per_second": 1209765.8528484348,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-private16-rep-3-xerial/result.json",
+      "wall_ns": 4133031188,
+      "process_cpu_ns": 16260000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 3174323606,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "private16",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 7210.0,
+      "operations_per_second": 552566.2076748755,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-3-fork/result.json",
+      "wall_ns": 9048689425,
+      "process_cpu_ns": 36050000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6790495223,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "private16",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 6440.0,
+      "operations_per_second": 617395.1296840267,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-4-reentrant/result.json",
+      "wall_ns": 8098541371,
+      "process_cpu_ns": 32200000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6083952067,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "private16",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 3296.0,
+      "operations_per_second": 1176449.7664584864,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-private16-rep-4-xerial/result.json",
+      "wall_ns": 4250075220,
+      "process_cpu_ns": 16480000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 3373951575,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "private16",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 7272.0,
+      "operations_per_second": 542225.2027671669,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-4-fork/result.json",
+      "wall_ns": 9221260787,
+      "process_cpu_ns": 36360000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 7099844545,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "private16",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 16,
+      "cpu_ns_per_operation": 7276.0,
+      "operations_per_second": 544655.182988236,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-private16-rep-4-flat/result.json",
+      "wall_ns": 9180120113,
+      "process_cpu_ns": 36380000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 6920885726,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared4",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 5202.0,
+      "operations_per_second": 379740.056294712,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-shared4-rep-1-xerial/result.json",
+      "wall_ns": 13166901719,
+      "process_cpu_ns": 26010000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 175208,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared4",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 11758.0,
+      "operations_per_second": 158940.46057350875,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-1-fork/result.json",
+      "wall_ns": 31458320820,
+      "process_cpu_ns": 58790000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 156075,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared4",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 12220.0,
+      "operations_per_second": 151790.90720904875,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-1-flat/result.json",
+      "wall_ns": 32940049519,
+      "process_cpu_ns": 61100000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 123551,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared4",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 13838.0,
+      "operations_per_second": 155154.6507459878,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-1-reentrant/result.json",
+      "wall_ns": 32225911218,
+      "process_cpu_ns": 69190000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 66377,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared4",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 13228.0,
+      "operations_per_second": 139126.31445252194,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-2-fork/result.json",
+      "wall_ns": 35938564316,
+      "process_cpu_ns": 66140000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 201647,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared4",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 12310.0,
+      "operations_per_second": 149842.52961953302,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-2-flat/result.json",
+      "wall_ns": 33368363526,
+      "process_cpu_ns": 61550000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 154186,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared4",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 14624.0,
+      "operations_per_second": 149589.89646113146,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-2-reentrant/result.json",
+      "wall_ns": 33424717299,
+      "process_cpu_ns": 73120000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 74649,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared4",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 5312.0,
+      "operations_per_second": 372063.3140659458,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-shared4-rep-2-xerial/result.json",
+      "wall_ns": 13438572982,
+      "process_cpu_ns": 26560000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 337181,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared4",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 15372.0,
+      "operations_per_second": 119071.1372075129,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-3-flat/result.json",
+      "wall_ns": 41991704432,
+      "process_cpu_ns": 76860000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 121207,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared4",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 14566.0,
+      "operations_per_second": 149338.40453358198,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-3-reentrant/result.json",
+      "wall_ns": 33481005878,
+      "process_cpu_ns": 72830000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 187932,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared4",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 5246.0,
+      "operations_per_second": 376223.24272353767,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-shared4-rep-3-xerial/result.json",
+      "wall_ns": 13289981671,
+      "process_cpu_ns": 26230000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 79752,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared4",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 12222.0,
+      "operations_per_second": 152294.76306449587,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-3-fork/result.json",
+      "wall_ns": 32831069824,
+      "process_cpu_ns": 61110000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 132150,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared4",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 15334.0,
+      "operations_per_second": 144200.4067342167,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-4-reentrant/result.json",
+      "wall_ns": 34673965998,
+      "process_cpu_ns": 76670000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 58599,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared4",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 5350.0,
+      "operations_per_second": 375324.89752978546,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-shared4-rep-4-xerial/result.json",
+      "wall_ns": 13321791421,
+      "process_cpu_ns": 26750000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 115416,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared4",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 12676.0,
+      "operations_per_second": 145451.50346805016,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-4-fork/result.json",
+      "wall_ns": 34375718922,
+      "process_cpu_ns": 63380000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 161153,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared4",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 4,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 12022.0,
+      "operations_per_second": 155188.50117575994,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared4-rep-4-flat/result.json",
+      "wall_ns": 32218881954,
+      "process_cpu_ns": 60110000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 144824,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared16",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 5570.0,
+      "operations_per_second": 362175.743473765,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-shared16-rep-1-xerial/result.json",
+      "wall_ns": 13805452436,
+      "process_cpu_ns": 27850000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 590597,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared16",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 17176.0,
+      "operations_per_second": 106029.28093306803,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-1-fork/result.json",
+      "wall_ns": 47156784956,
+      "process_cpu_ns": 85880000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 552351,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared16",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 18000.0,
+      "operations_per_second": 100363.47377326143,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-1-flat/result.json",
+      "wall_ns": 49818921287,
+      "process_cpu_ns": 90000000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 337489,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared16",
+      "repetition": 1,
+      "order": [
+        "xerial",
+        "fork",
+        "flat",
+        "reentrant"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 15002.0,
+      "operations_per_second": 144605.82270512538,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-1-reentrant/result.json",
+      "wall_ns": 34576754286,
+      "process_cpu_ns": 75010000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 124743,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared16",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 17242.0,
+      "operations_per_second": 105173.12377787549,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-2-fork/result.json",
+      "wall_ns": 47540662675,
+      "process_cpu_ns": 86210000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 252983,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared16",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 16384.0,
+      "operations_per_second": 111066.28665088197,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-2-flat/result.json",
+      "wall_ns": 45018161233,
+      "process_cpu_ns": 81920000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 339966,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared16",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 15230.0,
+      "operations_per_second": 143844.4175166768,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-2-reentrant/result.json",
+      "wall_ns": 34759777865,
+      "process_cpu_ns": 76150000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 192302,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared16",
+      "repetition": 2,
+      "order": [
+        "fork",
+        "flat",
+        "reentrant",
+        "xerial"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 5732.0,
+      "operations_per_second": 353177.00186254346,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-shared16-rep-2-xerial/result.json",
+      "wall_ns": 14157207218,
+      "process_cpu_ns": 28660000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 556514,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared16",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 16484.0,
+      "operations_per_second": 110702.65092742951,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-3-flat/result.json",
+      "wall_ns": 45166036749,
+      "process_cpu_ns": 82420000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 432105,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared16",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 15376.0,
+      "operations_per_second": 143298.05245042444,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-3-reentrant/result.json",
+      "wall_ns": 34892309522,
+      "process_cpu_ns": 76880000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 218411,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared16",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 5316.0,
+      "operations_per_second": 377143.67536360375,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-shared16-rep-3-xerial/result.json",
+      "wall_ns": 13257546995,
+      "process_cpu_ns": 26580000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 2720978,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared16",
+      "repetition": 3,
+      "order": [
+        "flat",
+        "reentrant",
+        "xerial",
+        "fork"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 16866.0,
+      "operations_per_second": 108048.68227200597,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-3-fork/result.json",
+      "wall_ns": 46275437098,
+      "process_cpu_ns": 84330000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 369343,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared16",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 14782.0,
+      "operations_per_second": 145487.7694436509,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-4-reentrant/result.json",
+      "wall_ns": 34367150030,
+      "process_cpu_ns": 73910000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 148127,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared16",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 5430.0,
+      "operations_per_second": 372475.10529446235,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+      "raw_result": "performance-shared16-rep-4-xerial/result.json",
+      "wall_ns": 13423715918,
+      "process_cpu_ns": 27150000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 832306,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared16",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 17318.0,
+      "operations_per_second": 105126.24123028191,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-4-fork/result.json",
+      "wall_ns": 47561864112,
+      "process_cpu_ns": 86590000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 396271,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared16",
+      "repetition": 4,
+      "order": [
+        "reentrant",
+        "xerial",
+        "fork",
+        "flat"
+      ],
+      "operations": 5000000,
+      "warmup_operations": 1000000,
+      "worker_count": 16,
+      "connection_count": 1,
+      "cpu_ns_per_operation": 14852.0,
+      "operations_per_second": 123955.41218203884,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "raw_result": "performance-shared16-rep-4-flat/result.json",
+      "wall_ns": 40337085021,
+      "process_cpu_ns": 74260000000,
+      "completed_operations": 5000000,
+      "warmup_completed_operations": 1000000,
+      "startup_spread_ns": 267333,
+      "counter_total": 6000000,
+      "integrity": "ok"
+    }
+  ],
+  "diagnostics": [
+    {
+      "driver": "xerial",
+      "scenario": "single",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "monitor_inflations": {
+        "warmup-monitors": {},
+        "measurement-monitors": {}
+      },
+      "thread_park_events": {
+        "warmup-monitors": 3,
+        "measurement-monitors": 3
+      }
+    },
+    {
+      "driver": "fork",
+      "scenario": "single",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "monitor_inflations": {
+        "warmup-monitors": {
+          "org.sqlite.core.NativeDB :: Monitor Enter": {
+            "events": 1
+          }
+        },
+        "measurement-monitors": {}
+      },
+      "thread_park_events": {
+        "warmup-monitors": 3,
+        "measurement-monitors": 4
+      }
+    },
+    {
+      "driver": "flat",
+      "scenario": "single",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "monitor_inflations": {
+        "warmup-monitors": {
+          "org.sqlite.core.NativeDB :: VM Internal": {
+            "events": 1
+          }
+        },
+        "measurement-monitors": {}
+      },
+      "thread_park_events": {
+        "warmup-monitors": 1,
+        "measurement-monitors": 3
+      }
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "single",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "monitor_inflations": {
+        "warmup-monitors": {},
+        "measurement-monitors": {}
+      },
+      "thread_park_events": {
+        "warmup-monitors": 2,
+        "measurement-monitors": 3
+      }
+    },
+    {
+      "driver": "xerial",
+      "scenario": "shared16",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "monitor_inflations": {
+        "warmup-monitors": {
+          "org.sqlite.core.NativeDB :: Monitor Enter": {
+            "events": 1
+          }
+        },
+        "measurement-monitors": {}
+      },
+      "thread_park_events": {
+        "warmup-monitors": 1142,
+        "measurement-monitors": 4432
+      }
+    },
+    {
+      "driver": "fork",
+      "scenario": "shared16",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "monitor_inflations": {
+        "warmup-monitors": {
+          "org.sqlite.core.NativeDB :: Monitor Enter": {
+            "events": 1
+          }
+        },
+        "measurement-monitors": {}
+      },
+      "thread_park_events": {
+        "warmup-monitors": 3331,
+        "measurement-monitors": 15361
+      }
+    },
+    {
+      "driver": "flat",
+      "scenario": "shared16",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "monitor_inflations": {
+        "warmup-monitors": {
+          "org.sqlite.core.NativeDB :: VM Internal": {
+            "events": 1
+          }
+        },
+        "measurement-monitors": {}
+      },
+      "thread_park_events": {
+        "warmup-monitors": 3779,
+        "measurement-monitors": 19958
+      }
+    },
+    {
+      "driver": "reentrant",
+      "scenario": "shared16",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "monitor_inflations": {
+        "warmup-monitors": {},
+        "measurement-monitors": {}
+      },
+      "thread_park_events": {
+        "warmup-monitors": 7278,
+        "measurement-monitors": 28871
+      }
+    }
+  ],
+  "local_overload_validation": {
+    "real_http_attempts": 12,
+    "successes": 4,
+    "admission_rejections": 8,
+    "other_failures": 0,
+    "source_calls": 4,
+    "controlled_source_delay_ms": 2500,
+    "strict_gateway_successes": 1127,
+    "overload_gateway_successes": 1082
+  },
+  "limitations": [
+    "SQLite UPDATE plus JNI and driver bookkeeping are measured, not the bare lock primitive.",
+    "Nonfair ReentrantLock candidate includes an experimental JNI-compatible subclass; not a production compatibility commitment.",
+    "Headline JVMs have no JFR; diagnostic inflation cannot be assumed identical in uninstrumented JVMs.",
+    "Only one hosted run and one in-memory SQL workload; no general Gateway/disk or all-SQL performance claim.",
+    "The new Gateway overload collector was locally exercised; no new full overload CI matrix was run for this redesign."
+  ]
+}

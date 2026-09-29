@@ -1,5 +1,7 @@
 # 동일 작업량 JDBC 락 전략 비교
 
+**분리된 GitHub CI [36509360919](https://github.com/Clickin/sqlite-jdbc/actions/runs/36509360919)가 성공했다.** 64개 성능 JVM이 동일한 작업량을 모두 완료했다. ReentrantLock은 single/private16/shared16에서 이득이 있었지만, shared4에서는 CPU가 늘어 보편적인 개선으로 결론 내리지 않는다. 상세 수치는 아래 실제 CI 결과와 [결과 JSON](ci-lock-comparison-results.json)에 있다.
+
 ## 목적과 제외 범위
 
 **HTTP/admission/pool/disk/backup을 제거하고, 같은 SQLite 작업을 같은 횟수만큼 완료하는 비용을 비교한다.** 비교 대상은 현재 fork, 내부 conn monitor 3개를 제거한 flat, DB당 non-fair ReentrantLock 하나를 쓰는 후보이며 xerial을 대조군으로 둔다. Production driver는 변경하지 않는다.
@@ -85,3 +87,60 @@ python3 scripts/benchmark/run-lock-comparison.py \
 - Artifact: `jdbc-isolated-lock-*`, 30일 보존. Gateway의 `ci-gateway-overload-*`와 섞지 않는다.
 
 Hosted 실행은 기존 completion-only observer를 사용한다. 진행 로그를 스트리밍하지 않고 종료 callback 뒤 artifact를 조회·분석한다.
+
+## 실제 CI 결과
+
+- Run: [36509360919](https://github.com/Clickin/sqlite-jdbc/actions/runs/36509360919), **success**.
+- 측정 source: `d92dac2eef1ec294cbaf912abcfea8e74c038f4a`, branch `benchmarks/vt-lock/20260929-isolated`.
+- Host: Ubuntu 24.04.5, AMD EPYC 7763, 4 vCPU; Temurin 25.0.2/GCC 13.3.0. 같은 job 안의 값만 비교한다.
+- Gateway build 여부는 build identity에서 **false**다. 성능 JVM에는 Gateway classpath나 HTTP 서비스가 없다.
+- 성능 64/64 valid: **측정 320,000,000회 + warmup 64,000,000회**를 모두 완료했다. 모든 final counter와 integrity 검사를 통과했다. 부분 완료·거절·재시도는 없다.
+- 별도 diagnostic 8/8, JFR offline 분석 16/16, fork 계열 correctness 21개 통과.
+- 완료 observer는 45초 간격 REST 42회 후 1,867.3초에 최종 callback 한 번을 전달했다. 이후 artifact를 조회했다. `gh watch`는 사용하지 않았다.
+
+### CPU: µs/operation, 네 JVM의 중앙값
+
+| 시나리오 | xerial | 현재 fork | flat | ReentrantLock |
+|---|---:|---:|---:|---:|
+| single | 1.846 | 4.077 | 4.076 | 3.608 |
+| private16 | 3.251 | 7.281 | 7.204 | 6.458 |
+| shared4 | 5.279 | 12.449 | 12.265 | 14.595 |
+| shared16 | 5.500 | 17.209 | 16.434 | 15.116 |
+
+### 처리량: operations/second, 네 JVM의 중앙값
+
+| 시나리오 | xerial | 현재 fork | flat | ReentrantLock |
+|---|---:|---:|---:|---:|
+| single | 543,868 | 245,671 | 245,650 | 277,635 |
+| private16 | 1,207,130 | 543,445 | 550,549 | 615,167 |
+| shared4 | 375,774 | 148,873 | 150,817 | 149,464 |
+| shared16 | 367,325 | 105,601 | 110,884 | 144,225 |
+
+### ReentrantLock과 현재 fork의 차이
+
+| 시나리오 | CPU/op 변화 | 처리량 변화 | 반복 관측 |
+|---|---:|---:|---|
+| single | −11.50% | +13.01% | 네 paired repetition 모두 CPU 감소·처리량 증가 |
+| private16 | −11.30% | +13.20% | 네 paired repetition 모두 CPU 감소·처리량 증가 |
+| shared4 | +17.24% | +0.40% | 네 반복 모두 CPU 증가; 처리량 차이는 부호가 섞임 |
+| shared16 | −12.16% | +36.58% | 네 paired repetition 모두 CPU 감소·처리량 증가 |
+
+변화율은 각 구현의 중앙값끼리 비교한 값이다. 같은 repetition의 개별 paired 변화율도 JSON에 보존했다. 통계적 유의성이나 모든 workload에 대한 우위를 주장하지 않는다.
+
+품질 경고는 3개 cell에 있다. xerial/private16은 CV가 낮지만 측정 시간이 최소 **4.04초**로 사전 기준 5초보다 짧다. flat/shared4는 CPU CV **10.66%**, 처리량 CV **10.07%**, flat/shared16은 각각 **6.78%**, **7.50%**다. 표에서 제거하지 않았으며 flat 경합 개선 수치를 확정적인 이득으로 사용하지 않는다. 그 밖의 cell은 사전 품질 경고 기준에 걸리지 않았다.
+
+**해석:** 내부 conn monitor 3개 제거는 이 workload의 비경합 비용을 거의 줄이지 않았다. ReentrantLock은 조건별 의미 있는 차이를 보였지만, 공유 worker 4개에서는 CPU/작업이 증가했다. 따라서 전면 교체를 결정할 수는 없다. 또 xerial보다 남은 비용이 크다. xerial과의 차이는 lock뿐 아니라 fork의 busy-policy/transaction 처리 등도 포함하므로 이를 전부 락 오버헤드로 돌리지 않는다.
+
+### 별도 진단의 해석
+
+진단의 single warmup에서 현재 fork는 `NativeDB / Monitor Enter` inflation 1건, flat은 `NativeDB / VM Internal` 1건, ReentrantLock은 0건이었다. shared16 warmup에서는 xerial/fork에 `Monitor Enter` 1건, flat에 `VM Internal` 1건, ReentrantLock에 0건이었다. 측정 recording에는 추가 DB inflation이 없었다.
+
+Inflation 건수는 lock 획득 횟수나 비용이 아니다. 이미 warmup에 inflate된 monitor를 계속 사용하는 비용은 새 inflation event 없이도 존재할 수 있다. 또한 진단은 별도 JFR JVM이므로 **이 event 수가 비계측 성능 JVM에서도 똑같다고 단정하지 않는다.** 이번 측정으로 inflation이 전체 CPU 차이의 몇 %인지 분해하지 않았다.
+
+### 보존 자료
+
+[결과 JSON](ci-lock-comparison-results.json)은 64개 성능 run의 작업 수·CPU·wall·변화율·품질 경고와 진단·correctness·source/native identity를 담는다. 원본 per-worker counter, JFR, argv와 로그는 artifact에 있다.
+
+- Artifact ID: `11009204048`, `jdbc-isolated-lock-36509360919-1`.
+- GitHub 제공 artifact SHA-256: `f92335f7d93168ad4ceb1ba7bf8c615a3bd27161c6eabe70227eb21eaabdab0d`.
+- 새 overload collector는 실제 Gateway 로컬 smoke로 검증했다. 이번 redesign에서 **새로운 전체 overload CI matrix를 다시 실행한 것은 아니다.** 기존 두 CI의 수치는 별도 과부하 보고서에 보존했다.
