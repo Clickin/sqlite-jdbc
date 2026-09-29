@@ -151,6 +151,10 @@ public final class NativeDB extends DB {
     protected synchronized native long attemptNoWaitBusy(
             long stmtPointer, boolean autoCommitProbe, int firstAttemptTimeout);
 
+    /** @see org.sqlite.core.DB#autocommitProbe(long, long) */
+    @Override
+    protected synchronized native long autocommitProbe(long beginPtr, long commitPtr);
+
     @Override
     public boolean supportsPolicyPreservingBusyWait() {
         return true;

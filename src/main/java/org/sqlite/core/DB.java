@@ -1502,16 +1502,46 @@ public abstract class DB implements Codes {
         }
     }
 
+    /** {@link #autocommitProbe} phases; keep in sync with NativeDB.c. */
+    static final int AUTOCOMMIT_PROBE_COMPLETE = 0;
+
+    static final int AUTOCOMMIT_PROBE_BEGIN_RESULT = 1;
+    static final int AUTOCOMMIT_PROBE_COMMIT_RESULT = 2;
+    static final int AUTOCOMMIT_PROBE_COMMIT_NEEDS_WAIT = 3;
+
+    /**
+     * Steps the compatibility probe. A deferred BEGIN takes no lock, so it is stepped plainly. The
+     * COMMIT is stepped plainly only when no write transaction is pending, since only then can it
+     * not reach the busy handler; otherwise it is left to the Java wait boundary.
+     *
+     * @return rc in the low 32 bits, phase in the high 32 bits; statements are reset only for
+     *     {@link #AUTOCOMMIT_PROBE_COMPLETE}
+     */
+    protected long autocommitProbe(long beginPtr, long commitPtr) throws SQLException {
+        int rc = step(beginPtr);
+        if (rc != SQLITE_DONE) {
+            return (rc & 0xFFFFFFFFL) | ((long) AUTOCOMMIT_PROBE_BEGIN_RESULT << 32);
+        }
+        return (long) AUTOCOMMIT_PROBE_COMMIT_NEEDS_WAIT << 32;
+    }
+
     private void ensureAutocommit(long beginPtr, long commitPtr) throws SQLException {
+        long probe = autocommitProbe(beginPtr, commitPtr);
+        int phase = (int) (probe >>> 32);
+        if (phase == AUTOCOMMIT_PROBE_COMPLETE) {
+            return; // both statements completed and were reset
+        }
         try {
-            // Each probe statement gets its own wait boundary; semantics of the
-            // legacy probe (any begin result != DONE means "in a transaction") are
-            // preserved exactly, including on busy-exhaustion.
-            if (stepControl(ControlStatement.AUTOCOMMIT_PROBE_BEGIN, beginPtr) != SQLITE_DONE) {
+            // Semantics of the legacy probe (any begin result != DONE means "in a transaction")
+            // are preserved exactly.
+            if (phase == AUTOCOMMIT_PROBE_BEGIN_RESULT) {
                 return; // assume we are in a transaction
             }
             try {
-                int rc = stepControl(ControlStatement.AUTOCOMMIT_PROBE_COMMIT, commitPtr);
+                int rc =
+                        phase == AUTOCOMMIT_PROBE_COMMIT_NEEDS_WAIT
+                                ? stepControl(ControlStatement.AUTOCOMMIT_PROBE_COMMIT, commitPtr)
+                                : (int) probe;
                 if (rc != SQLITE_DONE) {
                     throw newSQLException(rc);
                 }
