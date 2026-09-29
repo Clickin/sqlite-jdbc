@@ -18,6 +18,8 @@ Java waits are enabled only when the live native `PRAGMA busy_timeout` is positi
 
 The live timeout is read from SQLite, not inferred from `SQLiteConfig`; SQL `PRAGMA busy_timeout` can take effect during prepare. Callback reentry through driver-managed UDF, aggregate/window, collation, busy/progress handler, update listener, or commit listener is tracked per thread. Native extensions that install handlers or call Java outside those wrappers remain unverified.
 
+The first native attempt reuses the live timeout snapshot just read for that control operation while the same DB monitor remains held. It does not prepare a second identical PRAGMA. Retries still read the native policy again. This is not a connection-level timeout cache and does not change custom-handler, callback, cancellation, or zero-timeout fallbacks.
+
 The DB monitor remains held during Java sleep. Other connections can progress; another thread using or closing the same connection waits. On a BEGIN failure, the JDBC auto-commit setting remains unchanged. If COMMIT/ROLLBACK succeeded but its following BEGIN failed, the driver records the exact pending BEGIN and blocks user SQL until only that BEGIN is recovered. It never replays the completed COMMIT, ROLLBACK, DML, or batch entry.
 
 ## Runtime behavior

@@ -752,7 +752,7 @@ static int readBusyTimeout(sqlite3 *db) {
 ** is untouched if readback fails; the caller then keeps legacy one-step behavior.
 */
 JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_attemptNoWaitBusy(
-    JNIEnv *env, jobject this, jlong stmtPtr, jboolean autoCommitProbe)
+    JNIEnv *env, jobject this, jlong stmtPtr, jboolean autoCommitProbe, jint firstAttemptTimeout)
 {
     sqlite3 *db = gethandle(env, this);
     if (!db)
@@ -777,7 +777,8 @@ JNIEXPORT jlong JNICALL Java_org_sqlite_core_NativeDB_attemptNoWaitBusy(
     struct BusyAttemptContext attempt;
     attempt.busyObserved = 0;
 
-    int savedTimeout = readBusyTimeout(db);
+    /* The first snapshot was read under the same Java DB monitor; retries read live policy. */
+    int savedTimeout = firstAttemptTimeout > 0 ? firstAttemptTimeout : readBusyTimeout(db);
     if (savedTimeout > 0)
     {
         sqlite3_busy_handler(db, &markBusyWithoutWaiting, &attempt);

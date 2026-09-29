@@ -148,7 +148,8 @@ public final class NativeDB extends DB {
      * One native control-statement step; low 32 bits are rc, bit 32 marks busy callback invocation.
      */
     @Override
-    protected synchronized native long attemptNoWaitBusy(long stmtPointer, boolean autoCommitProbe);
+    protected synchronized native long attemptNoWaitBusy(
+            long stmtPointer, boolean autoCommitProbe, int firstAttemptTimeout);
 
     @Override
     public boolean supportsPolicyPreservingBusyWait() {
