@@ -42,10 +42,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
-# Branch pushes other than master run a reduced matrix: GraalVM on ubuntu/JDK 25 only and no QEMU
-# emulation. Pull requests, manual runs and master run everything. (The env context is unavailable
-# in strategy and job-level if, so the condition is spelled out where it is used.)
-
 jobs:
   lint:
     name: Check code formatting
@@ -112,8 +108,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJSON((github.event_name != 'push' || github.ref == 'refs/heads/master') && '["ubuntu-latest","windows-latest","macos-latest"]' || '["ubuntu-latest"]') }}
-        java: ${{ fromJSON((github.event_name != 'push' || github.ref == 'refs/heads/master') && '["17","21","25"]' || '["25"]') }}
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        java: [ '17', '21', '25' ]
         profiles: [ 'native', 'native,native-exported' ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -134,7 +130,6 @@ jobs:
   test_multiarch:
     name: test ${{ matrix.arch }} ${{ matrix.distro }} jdk${{ matrix.java }}
     needs: [ lint, test ]
-    if: ${{ github.event_name != 'push' || github.ref == 'refs/heads/master' }}
     strategy:
       fail-fast: false
       matrix:
@@ -143,10 +138,8 @@ jobs:
           - arch: armv7
             distro: ubuntu_latest
             java: 21
-          # ARM 64 (glibc aarch64 runs on the native ubuntu-24.04-arm runner in the test job)
-          - arch: aarch64
-            distro: alpine_latest
-            java: 25
+          # aarch64 (glibc and musl) runs on the native ubuntu-24.04-arm runner instead:
+          # see the test job and test_alpine_arm. The architectures below have no hosted runner.
           # PPC64
           - arch: ppc64le
             distro: ubuntu_latest
@@ -204,6 +197,21 @@ jobs:
             echo "MAVEN_OPTS: ${MAVEN_OPTS}"
             cd /work && mvn -Dmaven.repo.local=/work/.m2/repository --batch-mode --no-transfer-progress test
 
+  # musl aarch64 on a native arm64 runner: the Alpine container runs without QEMU. Same user and
+  # SKIP_TEST_MULTIARCH as the emulated jobs.
+  test_alpine_arm:
+    name: test aarch64 alpine_latest jdk25
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build test image
+        run: printf 'FROM alpine:latest\nRUN apk add --no-cache maven openjdk25\n' | docker build -t sqlite-jdbc-alpine-test -
+      - name: Test
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e SKIP_TEST_MULTIARCH=true \
+            -v "${PWD}:/work" -w /work sqlite-jdbc-alpine-test \
+            mvn -Dmaven.repo.local=/work/.m2/repository --batch-mode --no-transfer-progress test
+
   # This will test the build process using an external amalgamation, as well as the
   # Java tests with that native library, as some functions will not be available (extensions).
   # Here we use the sqlite3 package installed by homebrew on Mac, which comes
@@ -232,7 +240,7 @@ jobs:
 
   release:
     name: Deploy
-    needs: [ lint, android-signatures, test, test_multiarch, test_external_amalgamation, test_graalvm ]
+    needs: [ lint, android-signatures, test, test_multiarch, test_alpine_arm, test_external_amalgamation, test_graalvm ]
     if: github.repository_owner == 'xerial' && github.ref == 'refs/heads/master' # only perform on latest master
     runs-on: ubuntu-latest
     steps:

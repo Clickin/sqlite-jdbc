@@ -309,9 +309,13 @@ Raw evidence: `target/vt-wait-evidence/perf-parity-v3/` — `macos/perf-*-summar
 
 - 이전 run의 전체 시간 29분 중 대부분은 QEMU job이 차지했다: riscv64 29분, aarch64 15분, ppc64le 12분, armv7 10분, alpine 9분.
 - GraalVM job은 18개였고, 각각 2–5분이 걸렸다.
-- 바꾼 점(`ci.yml`):
+- 바꾼 점(`ci.yml`): upstream 매트릭스(JDK, OS, GraalVM, 아키텍처)는 그대로 두고, 실행 방식만 바꿨다.
+  - 매트릭스를 처음 만들 때는 hosted arm runner가 없었을 것이다. 지금은 네이티브 runner가 있는 환경만 QEMU에서 옮겼다.
+    - glibc aarch64: `ubuntu-24.04-arm`에서 test job으로 실행한다.
+    - musl aarch64: `ubuntu-24.04-arm`에서 Alpine 컨테이너를 에뮬레이션 없이 실행한다(`test_alpine_arm`). 사용자(`1001:121` 계열)와 `SKIP_TEST_MULTIARCH`는 기존 job과 같다.
+      - 로컬 arm64 docker에서 같은 설정으로 520개 테스트, 실패 0건을 확인했다(23초).
+      - root로 실행하면 읽기 전용 파일 테스트 2건이 실패하고, 환경 변수가 없으면 `OSInfoTest`가 실패한다.
+  - armv7, ppc64le, riscv64는 hosted runner가 없어 QEMU를 유지한다. arm64 runner(Neoverse N2)는 AArch32를 실행하지 못한다.
   - 같은 브랜치에 새로 push하면 이전 run을 취소한다(master는 제외).
   - GraalVM·QEMU job은 lint와 기본 test가 통과한 뒤에만 실행한다.
-  - master 이외 브랜치 push에서는 GraalVM을 ubuntu·JDK 25의 2개 job만 돌리고 QEMU job은 생략한다. PR, 수동 실행, master에서는 전체 매트릭스를 돌린다.
-  - glibc aarch64는 QEMU 대신 네이티브 `ubuntu-24.04-arm` runner에서 test job으로 실행한다.
 - `scripts/ci-local-check.sh`로 push 전에 spotless(JDK 17)와 JDK 25/21 전체 테스트를 돌린다. 로컬에서 약 1분 걸린다. `--native`와 `GRAALVM_HOME`을 주면 native image 테스트도 돌린다.
