@@ -192,7 +192,9 @@ public class VtWaitScenarioMain {
             }
 
             SQLiteConfig config = new SQLiteConfig();
-            config.setBusyTimeout(1500);
+            // The wait ends when the blocker releases the lock, so a long budget costs nothing on
+            // fast hosts and keeps emulated (QEMU) runs from timing out before the release.
+            config.setBusyTimeout(10_000);
             config.setTransactionMode(
                     begin
                             ? SQLiteConfig.TransactionMode.IMMEDIATE
