@@ -333,9 +333,13 @@ public abstract class DB implements Codes {
             if (Thread.currentThread().isInterrupted()) {
                 throw newSQLException(SQLITE_INTERRUPT, "interrupted during busy wait");
             }
+            // The DB monitor excludes policy changes between the initial readback and this step.
+            // Re-read in native code on retries; this is not a connection-level timeout cache.
             long attempt =
                     attemptNoWaitBusy(
-                            stmtPointer, statement == ControlStatement.AUTOCOMMIT_PROBE_COMMIT);
+                            stmtPointer,
+                            statement == ControlStatement.AUTOCOMMIT_PROBE_COMMIT,
+                            waits == 0 ? (int) budgetMillis : -1);
             int rc = (int) attempt;
             boolean busyObserved = (attempt >>> 32) != 0;
 
@@ -424,8 +428,12 @@ public abstract class DB implements Codes {
         return -1;
     }
 
-    /** One no-wait native step; low 32 bits are rc, bit 32 marks busy callback invocation. */
-    protected long attemptNoWaitBusy(long stmtPointer, boolean autoCommitProbe) {
+    /**
+     * One no-wait native step; low 32 bits are rc, bit 32 marks busy callback invocation.
+     * firstAttemptTimeout is the live readback under this DB's monitor, or -1 to read it again.
+     */
+    protected long attemptNoWaitBusy(
+            long stmtPointer, boolean autoCommitProbe, int firstAttemptTimeout) {
         return SQLITE_INTERNAL;
     }
 
