@@ -30,7 +30,10 @@ public abstract class JDBC3Connection extends SQLiteConnection {
     }
 
     void recoverTransactionRestartForStatement() throws SQLException {
-        recoverTransactionRestart();
+        // The caller holds the DB monitor, which guards the pending restart state.
+        if (isTransactionRestartPending()) {
+            recoverTransactionRestart();
+        }
     }
 
     /**
