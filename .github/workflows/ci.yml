@@ -37,6 +37,15 @@ on:
       - '**.dll'
       - '.github/workflows/*.yml'
 
+# A newer push to the same branch cancels the older run; master runs are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+# Branch pushes other than master run a reduced matrix: GraalVM on ubuntu/JDK 25 only and no QEMU
+# emulation. Pull requests, manual runs and master run everything. (The env context is unavailable
+# in strategy and job-level if, so the condition is spelled out where it is used.)
+
 jobs:
   lint:
     name: Check code formatting
@@ -82,6 +91,9 @@ jobs:
             java: 25
           - os: macos-latest
             java: 25
+          # Native arm64 runner instead of QEMU emulation
+          - os: ubuntu-24.04-arm
+            java: 25
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -96,11 +108,12 @@ jobs:
 
   test_graalvm:
     name: test ${{ matrix.os }} jdk${{ matrix.java }} GraalVM native-image - ${{ matrix.profiles }}
+    needs: [ lint, test ]
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        java: [ '17', '21', '25' ]
+        os: ${{ fromJSON((github.event_name != 'push' || github.ref == 'refs/heads/master') && '["ubuntu-latest","windows-latest","macos-latest"]' || '["ubuntu-latest"]') }}
+        java: ${{ fromJSON((github.event_name != 'push' || github.ref == 'refs/heads/master') && '["17","21","25"]' || '["25"]') }}
         profiles: [ 'native', 'native,native-exported' ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -120,6 +133,8 @@ jobs:
 
   test_multiarch:
     name: test ${{ matrix.arch }} ${{ matrix.distro }} jdk${{ matrix.java }}
+    needs: [ lint, test ]
+    if: ${{ github.event_name != 'push' || github.ref == 'refs/heads/master' }}
     strategy:
       fail-fast: false
       matrix:
@@ -128,10 +143,7 @@ jobs:
           - arch: armv7
             distro: ubuntu_latest
             java: 21
-          # ARM 64
-          - arch: aarch64
-            distro: ubuntu_latest
-            java: 25
+          # ARM 64 (glibc aarch64 runs on the native ubuntu-24.04-arm runner in the test job)
           - arch: aarch64
             distro: alpine_latest
             java: 25
