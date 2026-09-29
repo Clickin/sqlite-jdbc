@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Check out pinned native-only upstream
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -48,10 +49,6 @@ jobs:
           sysctl kernel.perf_event_paranoid kernel.kptr_restrict > target/vt-wait-evidence/lock-cause-workflow/profiler-permissions.log
       - name: Build drivers with one common SQLite engine, without Gateway
         run: bash scripts/benchmark/build-ci.sh --drivers-only
-      - name: Build exact-native lock variants
-        run: |
-          python3 scripts/benchmark/build-lock-variants.py \
-            2>&1 | tee target/vt-wait-evidence/lock-cause-workflow/variant-build.log
       - name: Download SHA-pinned async-profiler 4.5
         run: |
           mkdir -p target/ci/async-profiler
@@ -63,6 +60,7 @@ jobs:
       - name: Run stock controls, separate CPU profiles and JFR diagnostics sequentially
         run: |
           python3 scripts/benchmark/run-lock-cause.py \
+            --variants xerial fork \
             --operations 2000000 --warmup-operations 500000 --repetitions 3 \
             --profiler-home target/ci/async-profiler \
             --profiler-jar target/ci/async-profiler.jar \

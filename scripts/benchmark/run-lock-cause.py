@@ -15,7 +15,7 @@ comparison = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(comparison)
 comparison.SCENARIOS.update(shared2=2, shared8=8)
 run, save, digest = comparison.run, comparison.save, comparison.digest
-VARIANTS = ('fork', 'reentrant')
+VARIANTS = ('xerial', 'fork', 'reentrant')
 # Each tuple is (scenario, worker kind, scheduler carriers, lock granularity).
 CELLS = [(f'shared4-vt-c{n}', 'shared4', 'virtual', n, 'jdbc') for n in (1, 2, 4, 8)] + [
     ('shared4-platform', 'shared4', 'platform', 4, 'jdbc'),
@@ -31,18 +31,20 @@ PROFILE_CELLS = {'single-vt-c4', 'shared4-vt-c4', 'shared4-platform', 'shared16-
 DIAGNOSTIC_CELLS = PROFILE_CELLS - {'single-vt-c4'}
 
 
-def validate(row, cell, operations, warmup, kind):
+def validate(row, cell, operations, warmup, kind, driver):
     _, scenario, worker_kind, carriers, granularity = cell
     errors = comparison.validate(row, scenario, operations, warmup, kind)
     if row.get('worker_kind') != worker_kind or row.get('lock_granularity') != granularity:
         errors.append('Effective worker kind / lock granularity mismatch')
+    # Upstream xerial has no Java SQL busy-retry path, hence no counter to observe.
+    busy_counter = driver != 'xerial'
     for phase in ('warmup', 'measurement'):
-        if row.get(phase, {}).get('java_busy_waits') != 0:
+        if busy_counter and row.get(phase, {}).get('java_busy_waits') != 0:
             errors.append(f'{phase}: expected zero Java SQL busy-retry observations')
     if (row.get('scheduler_parallelism') != str(carriers)
             or row.get('scheduler_max_pool_size') != str(carriers)):
         errors.append('Effective scheduler carrier properties mismatch')
-    if row.get('java_busy_counter_available') is not True:
+    if busy_counter and row.get('java_busy_counter_available') is not True:
         errors.append('Java SQL busy-retry counter unavailable')
     return errors
 
@@ -111,15 +113,21 @@ def main():
     slf4j = args.slf4j_api.resolve()
     if not slf4j.is_file():
         raise RuntimeError(f'Missing slf4j-api 1.7.36: {slf4j}')
-    drivers = {'fork': ROOT / 'target/classes', 'reentrant': variant_root / 'reentrant/target/classes'}
-    source_roots = {'fork': ROOT / 'src/main/java', 'reentrant': variant_root / 'reentrant/src/main/java'}
+    drivers = {'xerial': ROOT / 'target/ci/upstream/target/classes', 'fork': ROOT / 'target/classes',
+               'reentrant': variant_root / 'reentrant/target/classes'}
+    source_roots = {'xerial': ROOT / 'target/ci/upstream/src/main/java', 'fork': ROOT / 'src/main/java',
+                    'reentrant': variant_root / 'reentrant/src/main/java'}
     machine = {'arm64': 'aarch64', 'amd64': 'x86_64'}.get(platform.machine().lower(), platform.machine().lower())
     systems = {'Darwin': ('Mac', 'libsqlitejdbc.dylib'), 'Linux': ('Linux', 'libsqlitejdbc.so')}
     if platform.system() not in systems:
         raise RuntimeError('Supported native platforms: Linux and macOS')
     os_name, library = systems[platform.system()]
-    native = (args.native_root.resolve() if args.native_root else drivers['fork']) / 'org/sqlite/native' / os_name / machine / library
-    native_hash = digest(native)
+    resource = Path('org/sqlite/native') / os_name / machine / library
+    # xerial keeps its own JNI library (built by build-ci.sh against the same SQLite object).
+    natives = {name: (drivers['xerial'] if name == 'xerial'
+                      else args.native_root.resolve() if args.native_root else drivers['fork']) / resource
+               for name in VARIANTS}
+    native_hashes = {name: digest(natives[name]) for name in args.variants}
     identity = {}
     for name in args.variants:
         manifest = {str(p.relative_to(drivers[name])): digest(p) for p in sorted(drivers[name].rglob('*.class'))}
@@ -131,7 +139,7 @@ def main():
         shutil.copytree(source_roots[name], out / 'sources' / name)
         identity[name] = {'classes': str(drivers[name]), 'class_manifest_sha256': digest(out / f'{name}-class-manifest.json'),
                           'source_root': str(source_roots[name]), 'source_manifest_sha256': digest(out / f'{name}-source-manifest.json'),
-                          'native_library': str(native), 'native_library_sha256': native_hash}
+                          'native_library': str(natives[name]), 'native_library_sha256': native_hashes[name]}
     build_path, provenance_path = base / 'build-identity.json', variant_root / 'provenance.json'
     if hosted and not build_path.is_file():
         raise RuntimeError('Hosted runs require build-identity.json')
@@ -189,7 +197,7 @@ def main():
         command = [java, '--enable-native-access=ALL-UNNAMED', '-Xms512m', '-Xmx512m',
                    f'-Djdk.virtualThreadScheduler.parallelism={carriers}', f'-Djdk.virtualThreadScheduler.maxPoolSize={carriers}',
                    f'-Dbenchmark.worker.kind={worker_kind}', f'-Dbenchmark.lock.granularity={granularity}',
-                   f'-Dorg.sqlite.lib.path={native.parent}', f'-Dorg.sqlite.lib.name={library}', '-Xlog:library=debug']
+                   f'-Dorg.sqlite.lib.path={natives[driver].parent}', f'-Dorg.sqlite.lib.name={library}', '-Xlog:library=debug']
         cp = [str(classes), str(drivers[driver]), str(slf4j)]
         if mode == 'async':
             command += [f'-agentpath:{ap_library}', f'-Dbenchmark.async.library={ap_library}']
@@ -201,7 +209,7 @@ def main():
         result = directory / 'result.json'
         try:
             row = json.loads(result.read_text()) if result.exists() else {}
-            errors = validate(row, cell, operations, warmup, kind)
+            errors = validate(row, cell, operations, warmup, kind, driver)
         except (ValueError, TypeError, KeyError, AttributeError) as failure:
             row, errors = {}, ['Malformed result: ' + str(failure)]
         if status:
@@ -229,7 +237,7 @@ def main():
                    configured_worker_kind=worker_kind, configured_carriers=carriers, configured_lock_granularity=granularity,
                    order=list(order), process_exit_code=status, outcome_passed=not errors, validation_errors=errors,
                    workload_classification='no-sql-busy-retry' if not errors else 'invalid',
-                   native_library_sha256=native_hash, raw_result=str(result.relative_to(out)))
+                   native_library_sha256=native_hashes[driver], raw_result=str(result.relative_to(out)))
         save(directory / 'runner-result.json', row)
         rows.append(row)
         save(out / 'results.json', rows)
