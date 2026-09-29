@@ -1,5 +1,7 @@
 # shared4 CPU 증가: busy waiting과 VT 락 인계 원인 분석
 
+**후속 [동작 등가성 검증](CI-LOCK-SAFETY.md)에서 전체-method outer guard의 새 metadata 교착과 진행 순서 변화가 확인됐다. 아래 성능 수치는 그대로 유효한 실험 관측이지만, 해당 wrapper를 production에 적용하는 근거로 사용하면 안 된다.**
+
 ## 결론
 
 **SQLite BUSY 재시도가 원인이라는 증거는 없다. AQS의 bounded spin은 실제로 관측됐다. 다만 가장 강한 증거는 “여러 구간으로 나뉜 DB 락 획득·해제와 VT 재스케줄링의 상호작용”을 가리킨다. Spin 하나로 CPU 증가를 설명하거나, spin을 끄면 해결된다고 결론 낼 수 없다.**
