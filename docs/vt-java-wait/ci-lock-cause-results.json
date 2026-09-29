@@ -1,0 +1,5128 @@
+{
+  "question": "Does busy waiting cause shared4 CPU regression?",
+  "conclusion": "SQLite Java busy retries were zero. Bounded AQS reacquisition spin is directly sampled, but spin alone does not explain the regression. Controlled guard-scope/thread/carrier interventions and scheduler CPU/queue allocation evidence support an interaction between fragmented DB locking and VT rescheduling. No production lock change applied.",
+  "run_id": 36516852571,
+  "run_url": "https://github.com/Clickin/sqlite-jdbc/actions/runs/36516852571",
+  "source_revision": "b25e6dabf04a195ccfe546c9925c318d17a8107d",
+  "branch": "benchmarks/vt-lock-cause/20260929-shared4",
+  "github_conclusion": "success",
+  "callback": {
+    "id": 36516852571,
+    "head_sha": "b25e6dabf04a195ccfe546c9925c318d17a8107d",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Clickin/sqlite-jdbc/actions/runs/36516852571",
+    "run_attempt": 1,
+    "rest_requests": 29,
+    "observer_elapsed_seconds": 1276.0,
+    "notification": "single background-process completion callback; REST polling internally"
+  },
+  "artifact": {
+    "id": 11011578515,
+    "name": "jdbc-lock-cause",
+    "github_digest": "sha256:ef7314f334d8f4b7a52929f57c17efed727a573e3970ec208d1d1819c17ac3e5",
+    "size_bytes": 51558283,
+    "retention_days": 30
+  },
+  "validity": {
+    "outcome_passed": true,
+    "expected_runs": {
+      "stock": 72,
+      "async": 10,
+      "diagnostic": 8
+    },
+    "actual_runs": {
+      "stock": 72,
+      "async": 10,
+      "diagnostic": 8
+    },
+    "expected_recordings": 26,
+    "analyzed_recordings": 26,
+    "profiles_omitted_local_smoke": false
+  },
+  "environment": {
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "vcpus": 4,
+    "guest_threads_per_core": 2,
+    "guest_cores_per_socket": 2,
+    "java_version": "openjdk version \"25.0.2\" 2026-01-20 LTS\nOpenJDK Runtime Environment Temurin-25.0.2+10 (build 25.0.2+10-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.2+10 (build 25.0.2+10-LTS, mixed mode, sharing)\n",
+    "javac_version": "javac 25.0.2\n",
+    "build_identity": {
+      "gateway_built": false,
+      "fork_revision": "b25e6dabf04a195ccfe546c9925c318d17a8107d",
+      "upstream_revision": "cab7981c19ce04d691f0675f0b2586afc2bbf803",
+      "jdk": "openjdk version \"25.0.2\" 2026-01-20 LTS\nOpenJDK Runtime Environment Temurin-25.0.2+10 (build 25.0.2+10-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.2+10 (build 25.0.2+10-LTS, mixed mode, sharing)",
+      "javac": "javac 25.0.2",
+      "gcc": "Using built-in specs.\nCOLLECT_GCC=gcc-13\nCOLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-linux-gnu/13/lto-wrapper\nOFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa\nOFFLOAD_TARGET_DEFAULT=1\nTarget: x86_64-linux-gnu\nConfigured with: ../src/configure -v --with-pkgversion='Ubuntu 13.3.0-6ubuntu2~24.04.1' --with-bugurl=file:///usr/share/doc/gcc-13/README.Bugs --enable-languages=c,ada,c++,go,d,fortran,objc,obj-c++,m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-13 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/libexec --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-libstdcxx-backtrace --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-13-EldibY/gcc-13-13.3.0/debian/tmp-nvptx/usr,amdgcn-amdhsa=/build/gcc-13-EldibY/gcc-13-13.3.0/debian/tmp-gcn/usr --enable-offload-defaulted --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2\nThread model: posix\nSupported LTO compression algorithms: zlib zstd\ngcc version 13.3.0 (Ubuntu 13.3.0-6ubuntu2~24.04.1)",
+      "maven": "\u001b[1mApache Maven 3.8.7\u001b[m\nMaven home: /usr/share/maven\nJava version: 25.0.2, vendor: Eclipse Adoptium, runtime: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/25.0.2-10.0.LTS/x64\nDefault locale: en, platform encoding: UTF-8\nOS name: \"linux\", version: \"6.17.0-1022-azure\", arch: \"amd64\", family: \"unix\"",
+      "compiler_plugin": "org.apache.maven.plugins:maven-compiler-plugin:3.16.0:compile",
+      "java_release": 8,
+      "native_flags": "Unmodified Linux-x86_64 Makefile flags; full commands in *-native-build.log",
+      "sqlite_object": {
+        "path": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/upstream/target/sqlite-3.53.4-Linux-x86_64/sqlite3.o",
+        "sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de"
+      },
+      "sqlite_source_sha256": "6a2805f8c1ef020a7086e62258519323cf98b219e9fe87a42065d916cfebaefc",
+      "sqlite_header_sha256": "919e7f2e8ed1d8f56ac17b412b8971c76aa5d1a879752cc6058f75e7d5910e1d",
+      "runner": {
+        "GITHUB_REPOSITORY": "Clickin/sqlite-jdbc",
+        "GITHUB_SHA": "b25e6dabf04a195ccfe546c9925c318d17a8107d",
+        "GITHUB_RUN_ID": "36516852571",
+        "GITHUB_RUN_ATTEMPT": "1",
+        "RUNNER_NAME": "GitHub Actions 1000007653",
+        "RUNNER_OS": "Linux",
+        "RUNNER_ARCH": "X64",
+        "ImageOS": "ubuntu24",
+        "ImageVersion": "20260920.314.1"
+      },
+      "fixtures": {
+        "gateway-source.zip": "267ef05e0114a77d366373df38859933a85ad4b0b8a390caacea036e8341d11c",
+        "manifest.json": "662421beac4419257290f0f5edb2518fe226fdfca0ac78d82656648b24491417",
+        "pre-optimization.patch": "51a0ab17dbcbb5c6a67216f25e4d1057ed0dda33859919a2984cb8bc93197ec3"
+      },
+      "benchmark_sources": {
+        "build-ci.sh": "b79862b5545083e0f8be178a1536ae1c823cfaccf343e35ec83489acc1f6a9bd",
+        "LockCorrectness.java": "add5d93a5d6cb3cf23ccd8fa12c85a32d87ddf45a1ecf4ffd8cacfa3cfa4262d",
+        "run-lock-comparison.py": "b7553d82bf1d7846cc59380433d26e892818ed27a87adc640281ac9f63cc416e",
+        "native-cost-probe.h": "ae57a53f8208950f61b87e934341ca93af8f5f0b84011bcc5f8d92928b4fe2be",
+        "run-gateway-overload.py": "bddfe93bb8eb7cbac9fd46c05842609015724bd2807b7ce6cf2291690661f0d3",
+        "build-lock-variants.py": "f2dbbf8e933f5d74b830b1fe9dcc91495278ec724c1ef3c15bb287186384f219",
+        "wait-actions.py": "3fe8531af9603d4feb36b239f59100df5dcce76d6382ae06ca6c65f171921142",
+        "run-cost-profile.py": "a191f7c4649cff717d46ab5ca2fab37f9c37a3b0e13f2e8f38ad8bf291953366",
+        "run-gateway.py": "18ba54a6fcdbbe1b20e968b90a5852dc614157b9952c8084a946598afa5475a1",
+        "ProfileSummary.java": "4b6edfde5ec25de607756c282a233c5a5fbc5538469e7bc6052a87e8e7bb5117",
+        "JdbcLockBenchmark.java": "7fc8023eb7cba7059987bf67927bfc045e402f814b42167e5f5da434791fb10d",
+        "build-cost-probes.py": "a6624866bf1a8d26db4cfb654e8a5cc9530e12fa8132b99a8afa0578baec9fd7",
+        "CostProbe.java": "0b53acc1eef2b143726aff8bfd65cdbb2ad0d49637fa0e87d9b4aadfa868ca83",
+        "run-lock-cause.py": "2a05d1c59b64b7531960e85a115255ebe8560ddb221f4d7c6a1c8acaa586b362",
+        "GatewayBenchmark.java": "57a2b0e7a22bfb0e0decb9604ec574c49847b47b2dae9ca8ecd73a889706bc5d"
+      },
+      "variants": {
+        "xerial": {
+          "source_manifest_sha256": "284045ed750a4f609674c2aaf079e46a4e016020d422ddf1f96be5480b1e8976",
+          "library_sha256": "8a262774b9c10ec24caece841756e0ac492701d04ae779335a29978fcf706b58",
+          "jni_object_sha256": "e1d8ba3ed1c62ebbd21241298db3164a3b8c0a8b10f3f770c1b9e2f1d54b886d",
+          "jni_header_sha256": "645784bcc3773c68292b66d916ebc2994c70022f5fcb0ac36bf6b5ecfba9b787",
+          "sqlite_object_sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de"
+        },
+        "before": {
+          "source_manifest_sha256": "2153b660a07377259ee1b7d860a1661072c24ff745100e18131b38ee16736709",
+          "library_sha256": "05cc8a121d7d0c2407c72b90fb3c9cf36c65bc686b4811131bec59af935d8c60",
+          "jni_object_sha256": "a3beb53cb49d4feedbf48574dde5b9e3d53296e0ca74669126517112d96066f3",
+          "jni_header_sha256": "712bfd51bbbb210910d39b2a258b3c112a41face517a73a92267b04f3f685798",
+          "sqlite_object_sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de"
+        },
+        "fork": {
+          "source_manifest_sha256": "ba9e59cecbd2c4c34fe4af507e44ba740ba8fcf14113bee8f3dfd34a8af0ef7e",
+          "library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+          "jni_object_sha256": "667089a195a7685f68c1ccaddce9f82052b0852f7656dd6d56090b201ae9f083",
+          "jni_header_sha256": "45a3af1ba9f5384f8726ba04f3f6372a16941aadfaa470ca74555cc56ec0348b",
+          "sqlite_object_sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de"
+        }
+      }
+    },
+    "profiler": {
+      "library": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/async-profiler/lib/libasyncProfiler.so",
+      "library_sha256": "3c03ce90c8c34332480d14cb0a5b9eb380c0dbc0da915486b3348bcfaf026d61",
+      "jar": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/async-profiler.jar",
+      "jar_sha256": "81d6cae9971d41af140b1c627f40d511182e004b491307dc3c7de3b199ebcbbb"
+    },
+    "source_hashes": {
+      "run-lock-cause.py": "2a05d1c59b64b7531960e85a115255ebe8560ddb221f4d7c6a1c8acaa586b362",
+      "run-lock-comparison.py": "b7553d82bf1d7846cc59380433d26e892818ed27a87adc640281ac9f63cc416e",
+      "build-lock-variants.py": "f2dbbf8e933f5d74b830b1fe9dcc91495278ec724c1ef3c15bb287186384f219",
+      "JdbcLockBenchmark.java": "7fc8023eb7cba7059987bf67927bfc045e402f814b42167e5f5da434791fb10d",
+      "ProfileSummary.java": "4b6edfde5ec25de607756c282a233c5a5fbc5538469e7bc6052a87e8e7bb5117"
+    },
+    "matrix": [
+      {
+        "cell": "shared4-vt-c1",
+        "scenario": "shared4",
+        "worker_kind": "virtual",
+        "carriers": 1,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "shared4-vt-c2",
+        "scenario": "shared4",
+        "worker_kind": "virtual",
+        "carriers": 2,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "shared4-vt-c4",
+        "scenario": "shared4",
+        "worker_kind": "virtual",
+        "carriers": 4,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "shared4-vt-c8",
+        "scenario": "shared4",
+        "worker_kind": "virtual",
+        "carriers": 8,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "shared4-platform",
+        "scenario": "shared4",
+        "worker_kind": "platform",
+        "carriers": 4,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "shared2-vt-c4",
+        "scenario": "shared2",
+        "worker_kind": "virtual",
+        "carriers": 4,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "shared8-vt-c4",
+        "scenario": "shared8",
+        "worker_kind": "virtual",
+        "carriers": 4,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "shared16-vt-c4",
+        "scenario": "shared16",
+        "worker_kind": "virtual",
+        "carriers": 4,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "single-vt-c4",
+        "scenario": "single",
+        "worker_kind": "virtual",
+        "carriers": 4,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "private16-vt-c4",
+        "scenario": "private16",
+        "worker_kind": "virtual",
+        "carriers": 4,
+        "lock_granularity": "jdbc"
+      },
+      {
+        "cell": "shared4-outer-op",
+        "scenario": "shared4",
+        "worker_kind": "virtual",
+        "carriers": 4,
+        "lock_granularity": "outer-op"
+      },
+      {
+        "cell": "shared16-outer-op",
+        "scenario": "shared16",
+        "worker_kind": "virtual",
+        "carriers": 4,
+        "lock_granularity": "outer-op"
+      }
+    ]
+  },
+  "requested_local_command": {
+    "command": "/Users/senghyunjo/.sdkman/candidates/java/25.0.2-tem/bin/java -XX:+PrintFlagsFinal -version",
+    "exit_code": 0,
+    "jdk": "Temurin 25.0.2+10",
+    "LockingMode": 2,
+    "EliminateLocks": true,
+    "EliminateNestedLocks": true,
+    "scope": "Local macOS defaults, not a proof of AQS spin or the Linux CI configuration"
+  },
+  "busy_counter_evidence": {
+    "local_positive_control_fork_waits": 5,
+    "local_positive_control_reentrant_waits": 5,
+    "local_scenario_and_diagnostic_runs": 32,
+    "local_scenario_waits": 0,
+    "hosted_runs": 90,
+    "hosted_warmup_and_measurement_java_busy_waits": 0,
+    "scope": "DB.javaWaitObservations counts Java-side SQLite busy-retry sleeps; not a census of arbitrary native mutex calls"
+  },
+  "prior_run_36509360919_utilization": [
+    {
+      "scenario": "shared4",
+      "driver": "fork",
+      "median_average_cpu_cores": 1.8525449260676359,
+      "median_cpu_ns_per_operation": 12449.0,
+      "median_operations_per_second": 148873.133266273,
+      "first_worker_finish_fraction": [
+        0.9003195788185111,
+        0.9280959159837797,
+        0.8963862313584046,
+        0.976158541007982
+      ]
+    },
+    {
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "median_average_cpu_cores": 2.1814329231418705,
+      "median_cpu_ns_per_operation": 14595.0,
+      "median_operations_per_second": 149464.15049735672,
+      "first_worker_finish_fraction": [
+        0.9880448746229771,
+        0.9977080778779753,
+        0.9948399359735628,
+        0.9974378996044143
+      ]
+    },
+    {
+      "scenario": "shared16",
+      "driver": "fork",
+      "median_average_cpu_cores": 1.8208675874661993,
+      "median_cpu_ns_per_operation": 17209.0,
+      "median_operations_per_second": 105601.20235547176,
+      "first_worker_finish_fraction": [
+        0.714957001043606,
+        0.7992927243940653,
+        0.7080079051142234,
+        0.7594615718370563
+      ]
+    },
+    {
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "median_average_cpu_cores": 2.180063515500639,
+      "median_cpu_ns_per_operation": 15116.0,
+      "median_operations_per_second": 144225.12011090107,
+      "first_worker_finish_fraction": [
+        0.9931348271432142,
+        0.9926279206387558,
+        0.9917503146698127,
+        0.9822354113021574
+      ]
+    }
+  ],
+  "summary": [
+    {
+      "scenario": "shared4",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 3990.0,
+        "median": 3990.0,
+        "max": 4015.0,
+        "cv": 0.002947506382603366
+      },
+      "operations_per_second": {
+        "min": 249369.7207427185,
+        "median": 250932.6024028972,
+        "max": 250952.3129903718,
+        "cv": 0.0029608029353275344
+      },
+      "min_measurement_seconds": 7.969641627,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-vt-c1",
+      "worker_kind": "virtual",
+      "carriers": 1,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 3530.0,
+        "median": 3565.0,
+        "max": 3585.0,
+        "cv": 0.006384916524806113
+      },
+      "operations_per_second": {
+        "min": 279204.00145346904,
+        "median": 281646.06974078354,
+        "max": 284148.54010588577,
+        "cv": 0.00716681529356305
+      },
+      "min_measurement_seconds": 7.038572147,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-vt-c1",
+      "worker_kind": "virtual",
+      "carriers": 1,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 11055.0,
+        "median": 11260.0,
+        "max": 11765.0,
+        "cv": 0.02626378608210415
+      },
+      "operations_per_second": {
+        "min": 157417.83746948728,
+        "median": 164244.41102041298,
+        "max": 166463.15657971296,
+        "cv": 0.02365665136215197
+      },
+      "min_measurement_seconds": 12.01467064,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-vt-c2",
+      "worker_kind": "virtual",
+      "carriers": 2,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 8695.0,
+        "median": 8920.0,
+        "max": 8925.0,
+        "cv": 0.012124787422535107
+      },
+      "operations_per_second": {
+        "min": 224045.96561802554,
+        "median": 224579.75039782084,
+        "max": 230708.00972796057,
+        "cv": 0.01334794256921704
+      },
+      "min_measurement_seconds": 8.668966467,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-vt-c2",
+      "worker_kind": "virtual",
+      "carriers": 2,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 10335.0,
+        "median": 10410.0,
+        "max": 10745.0,
+        "cv": 0.01698135690352509
+      },
+      "operations_per_second": {
+        "min": 171713.00448798097,
+        "median": 178264.84769953165,
+        "max": 178339.62237994914,
+        "cv": 0.017639070555334143
+      },
+      "min_measurement_seconds": 11.214557782,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 14280.0,
+        "median": 14555.0,
+        "max": 14575.0,
+        "cv": 0.009301877498074162
+      },
+      "operations_per_second": {
+        "min": 153182.96826380785,
+        "median": 154147.57870526903,
+        "max": 154857.8893964985,
+        "cv": 0.0044553628241373305
+      },
+      "min_measurement_seconds": 12.91506689,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 9475.0,
+        "median": 11345.0,
+        "max": 12415.0,
+        "cv": 0.10967095727725815
+      },
+      "operations_per_second": {
+        "min": 143592.43074020115,
+        "median": 158680.3862342169,
+        "max": 191633.33346480018,
+        "cv": 0.12184230310280372
+      },
+      "min_measurement_seconds": 10.436597662,
+      "short_run": false,
+      "noisy": true,
+      "cell": "shared4-vt-c8",
+      "worker_kind": "virtual",
+      "carriers": 8,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 14290.0,
+        "median": 14380.0,
+        "max": 14900.0,
+        "cv": 0.018512687473101475
+      },
+      "operations_per_second": {
+        "min": 140112.9800033466,
+        "median": 143500.3442411103,
+        "max": 147780.94046904714,
+        "cv": 0.021818812859340096
+      },
+      "min_measurement_seconds": 13.533544946,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-vt-c8",
+      "worker_kind": "virtual",
+      "carriers": 8,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 8055.0,
+        "median": 8305.0,
+        "max": 9935.0,
+        "cv": 0.09510400777771838
+      },
+      "operations_per_second": {
+        "min": 149496.08629882717,
+        "median": 162028.31954025556,
+        "max": 170218.63012687824,
+        "cv": 0.05306741237965186
+      },
+      "min_measurement_seconds": 11.749595203,
+      "short_run": false,
+      "noisy": true,
+      "cell": "shared4-platform",
+      "worker_kind": "platform",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 8850.0,
+        "median": 9030.0,
+        "max": 9090.0,
+        "cv": 0.011343758650929443
+      },
+      "operations_per_second": {
+        "min": 157159.08560107852,
+        "median": 157676.92329711406,
+        "max": 162412.1595033116,
+        "cv": 0.014858559174301303
+      },
+      "min_measurement_seconds": 12.314348914,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-platform",
+      "worker_kind": "platform",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared2",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 10710.0,
+        "median": 10860.0,
+        "max": 11440.0,
+        "cv": 0.028608046938086724
+      },
+      "operations_per_second": {
+        "min": 158285.43482192524,
+        "median": 162548.42939967522,
+        "max": 162548.47765945777,
+        "cv": 0.012472153719611216
+      },
+      "min_measurement_seconds": 12.304021722,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared2-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared2",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 10080.0,
+        "median": 10735.0,
+        "max": 11565.0,
+        "cv": 0.056298669068572574
+      },
+      "operations_per_second": {
+        "min": 173049.5946939035,
+        "median": 185166.38731643028,
+        "max": 196367.77193032278,
+        "cv": 0.05150917661543692
+      },
+      "min_measurement_seconds": 10.184970682,
+      "short_run": false,
+      "noisy": true,
+      "cell": "shared2-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared8",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 10315.0,
+        "median": 10520.0,
+        "max": 12545.0,
+        "cv": 0.09044927840287545
+      },
+      "operations_per_second": {
+        "min": 145374.0860151039,
+        "median": 176749.37909617825,
+        "max": 178650.39346497267,
+        "cv": 0.09140819574418291
+      },
+      "min_measurement_seconds": 11.195049511,
+      "short_run": false,
+      "noisy": true,
+      "cell": "shared8-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared8",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 13865.0,
+        "median": 14375.0,
+        "max": 14590.0,
+        "cv": 0.02129612261509257
+      },
+      "operations_per_second": {
+        "min": 153477.62014981412,
+        "median": 155356.27543661455,
+        "max": 157493.19786701232,
+        "cv": 0.010553638806680348
+      },
+      "min_measurement_seconds": 12.698961143,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared8-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared16",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 10255.0,
+        "median": 10300.0,
+        "max": 10515.0,
+        "cv": 0.01095485833609109
+      },
+      "operations_per_second": {
+        "min": 176766.65506980187,
+        "median": 179191.0917657404,
+        "max": 179332.52633295974,
+        "cv": 0.006600025989110591
+      },
+      "min_measurement_seconds": 11.152466543,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared16-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 14325.0,
+        "median": 14450.0,
+        "max": 14805.0,
+        "cv": 0.013996305989366289
+      },
+      "operations_per_second": {
+        "min": 147253.77212702678,
+        "median": 151323.24543878486,
+        "max": 153828.3550061754,
+        "cv": 0.017965772375489963
+      },
+      "min_measurement_seconds": 13.001504176,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared16-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "single",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 3970.0,
+        "median": 3980.0,
+        "max": 4005.0,
+        "cv": 0.003693751930710099
+      },
+      "operations_per_second": {
+        "min": 250438.90636098947,
+        "median": 251978.2572971106,
+        "max": 252388.08043208442,
+        "cv": 0.00333504209809211
+      },
+      "min_measurement_seconds": 7.924304494,
+      "short_run": false,
+      "noisy": false,
+      "cell": "single-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "single",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 3510.0,
+        "median": 3555.0,
+        "max": 3570.0,
+        "cv": 0.007191846986731714
+      },
+      "operations_per_second": {
+        "min": 280910.00971248746,
+        "median": 281502.62809861294,
+        "max": 285265.3000566724,
+        "cv": 0.0068256703526481735
+      },
+      "min_measurement_seconds": 7.011017462,
+      "short_run": false,
+      "noisy": false,
+      "cell": "single-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "private16",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 7050.0,
+        "median": 7050.0,
+        "max": 7060.0,
+        "cv": 0.0006683428933710279
+      },
+      "operations_per_second": {
+        "min": 558831.9854683521,
+        "median": 563852.7098921654,
+        "max": 565331.2674440364,
+        "cv": 0.004943512030523021
+      },
+      "min_measurement_seconds": 3.537748777,
+      "short_run": true,
+      "noisy": true,
+      "cell": "private16-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "private16",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 6170.0,
+        "median": 6265.0,
+        "max": 6385.0,
+        "cv": 0.014023000234215354
+      },
+      "operations_per_second": {
+        "min": 608834.484569074,
+        "median": 633829.6920837989,
+        "max": 643552.1042708552,
+        "cv": 0.023258334803525335
+      },
+      "min_measurement_seconds": 3.107751473,
+      "short_run": true,
+      "noisy": true,
+      "cell": "private16-vt-c4",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "jdbc",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 11320.0,
+        "median": 11770.0,
+        "max": 12255.0,
+        "cv": 0.03240639012328239
+      },
+      "operations_per_second": {
+        "min": 145532.69770922948,
+        "median": 153095.80791501017,
+        "max": 159076.00190161806,
+        "cv": 0.036322155118432196
+      },
+      "min_measurement_seconds": 12.572606654,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-outer-op",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "outer-op",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 9905.0,
+        "median": 10190.0,
+        "max": 10660.0,
+        "cv": 0.03036545976642165
+      },
+      "operations_per_second": {
+        "min": 187099.65688866004,
+        "median": 195783.2351113952,
+        "max": 201733.82463591674,
+        "cv": 0.03083559632381607
+      },
+      "min_measurement_seconds": 9.914053846,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared4-outer-op",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "outer-op",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared16",
+      "driver": "fork",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 11115.0,
+        "median": 11430.0,
+        "max": 11535.0,
+        "cv": 0.015710007304203123
+      },
+      "operations_per_second": {
+        "min": 156950.26592109058,
+        "median": 159520.51933580672,
+        "max": 163690.36192753955,
+        "cv": 0.01735256518595647
+      },
+      "min_measurement_seconds": 12.218190347,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared16-outer-op",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "outer-op",
+      "mode": "stock"
+    },
+    {
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "runs": 3,
+      "valid_runs": 3,
+      "cpu_ns_per_operation": {
+        "min": 9995.0,
+        "median": 10470.0,
+        "max": 10665.0,
+        "cv": 0.027116182708994813
+      },
+      "operations_per_second": {
+        "min": 184328.9620856977,
+        "median": 188416.73125477595,
+        "max": 198757.6892521403,
+        "cv": 0.03187434487022862
+      },
+      "min_measurement_seconds": 10.062503783,
+      "short_run": false,
+      "noisy": false,
+      "cell": "shared16-outer-op",
+      "worker_kind": "virtual",
+      "carriers": 4,
+      "lock_granularity": "outer-op",
+      "mode": "stock"
+    }
+  ],
+  "comparisons_vs_fork": [
+    {
+      "cell": "private16-vt-c4",
+      "cpu_change_percent": -11.134751773049645,
+      "throughput_change_percent": 12.410507383216519,
+      "quality_caution": true
+    },
+    {
+      "cell": "shared16-outer-op",
+      "cpu_change_percent": -8.398950131233596,
+      "throughput_change_percent": 18.114416903407758,
+      "quality_caution": false
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "cpu_change_percent": 40.29126213592234,
+      "throughput_change_percent": -15.552026639464678,
+      "quality_caution": false
+    },
+    {
+      "cell": "shared2-vt-c4",
+      "cpu_change_percent": -1.151012891344383,
+      "throughput_change_percent": 13.91459640692181,
+      "quality_caution": true
+    },
+    {
+      "cell": "shared4-outer-op",
+      "cpu_change_percent": -13.423959218351744,
+      "throughput_change_percent": 27.882819116825573,
+      "quality_caution": false
+    },
+    {
+      "cell": "shared4-platform",
+      "cpu_change_percent": 8.72968091511137,
+      "throughput_change_percent": -2.6855775925395564,
+      "quality_caution": true
+    },
+    {
+      "cell": "shared4-vt-c1",
+      "cpu_change_percent": -10.6516290726817,
+      "throughput_change_percent": 12.2397277371606,
+      "quality_caution": false
+    },
+    {
+      "cell": "shared4-vt-c2",
+      "cpu_change_percent": -20.781527531083476,
+      "throughput_change_percent": 36.73509436489082,
+      "quality_caution": false
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "cpu_change_percent": 39.81748318924112,
+      "throughput_change_percent": -13.52889776391175,
+      "quality_caution": false
+    },
+    {
+      "cell": "shared4-vt-c8",
+      "cpu_change_percent": 26.751873071837817,
+      "throughput_change_percent": -9.56642616857537,
+      "quality_caution": true
+    },
+    {
+      "cell": "shared8-vt-c4",
+      "cpu_change_percent": 36.64448669201521,
+      "throughput_change_percent": -12.10363723423471,
+      "quality_caution": true
+    },
+    {
+      "cell": "single-vt-c4",
+      "cpu_change_percent": -10.678391959798994,
+      "throughput_change_percent": 11.717031111414421,
+      "quality_caution": false
+    }
+  ],
+  "runs": [
+    {
+      "cell": "shared4-vt-c1",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 1,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c1-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 4015.0,
+      "operations_per_second": 249369.7207427185,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2150059811,
+          "process_cpu_ns": 2530000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1643037911
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 8020219913,
+          "process_cpu_ns": 8030000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 6016729414
+        }
+      },
+      "average_cpu_cores": 1.0012194287820146,
+      "first_worker_finish_fraction": 0.24990045581559353,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c1",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 1,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c1-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3530.0,
+      "operations_per_second": 284148.54010588577,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1928776664,
+          "process_cpu_ns": 2470000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1486552534
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7038572147,
+          "process_cpu_ns": 7060000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 5283524156
+        }
+      },
+      "average_cpu_cores": 1.0030443465737768,
+      "first_worker_finish_fraction": 0.25194359451949794,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c1",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 1,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c1-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3585.0,
+      "operations_per_second": 279204.00145346904,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1886876594,
+          "process_cpu_ns": 2550000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1435875987
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7163221120,
+          "process_cpu_ns": 7170000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 5373422717
+        }
+      },
+      "average_cpu_cores": 1.0009463452106864,
+      "first_worker_finish_fraction": 0.24957959443809546,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c1",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 1,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c1-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3990.0,
+      "operations_per_second": 250932.6024028972,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2081584997,
+          "process_cpu_ns": 2610000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1579558429
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7970267637,
+          "process_cpu_ns": 7980000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 5970620665
+        }
+      },
+      "average_cpu_cores": 1.00122108358756,
+      "first_worker_finish_fraction": 0.24972700298796754,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c1",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 1,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c1-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3990.0,
+      "operations_per_second": 250952.3129903718,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2149579749,
+          "process_cpu_ns": 2560000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1648747440
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7969641627,
+          "process_cpu_ns": 7980000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 5976144120
+        }
+      },
+      "average_cpu_cores": 1.0012997288315835,
+      "first_worker_finish_fraction": 0.2500216565885993,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c1",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 1,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c1-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3565.0,
+      "operations_per_second": 281646.06974078354,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1862389636,
+          "process_cpu_ns": 2470000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1416915679
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7101110986,
+          "process_cpu_ns": 7130000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 5329752535
+        }
+      },
+      "average_cpu_cores": 1.0040682386258932,
+      "first_worker_finish_fraction": 0.25276588332990746,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c2",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 2,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c2-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11260.0,
+      "operations_per_second": 164244.41102041298,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3208682417,
+          "process_cpu_ns": 6400000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 127217
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12176974471,
+          "process_cpu_ns": 22520000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 98660
+        }
+      },
+      "average_cpu_cores": 1.8493920680898501,
+      "first_worker_finish_fraction": 0.928981610821347,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c2",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 2,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c2-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 8920.0,
+      "operations_per_second": 224579.75039782084,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2533129472,
+          "process_cpu_ns": 5790000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 129806
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 8905522410,
+          "process_cpu_ns": 17840000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 64784
+        }
+      },
+      "average_cpu_cores": 2.003251373548562,
+      "first_worker_finish_fraction": 0.9977578098082626,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c2",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 2,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c2-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 8925.0,
+      "operations_per_second": 224045.96561802554,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2533384796,
+          "process_cpu_ns": 5800000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 98113
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 8926739629,
+          "process_cpu_ns": 17850000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 90455
+        }
+      },
+      "average_cpu_cores": 1.999610243140878,
+      "first_worker_finish_fraction": 0.9980197374702661,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c2",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 2,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c2-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11055.0,
+      "operations_per_second": 166463.15657971296,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3477302514,
+          "process_cpu_ns": 6880000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 127486
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12014670640,
+          "process_cpu_ns": 22110000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 113900
+        }
+      },
+      "average_cpu_cores": 1.8402501959887267,
+      "first_worker_finish_fraction": 0.8993238860853201,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c2",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 2,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c2-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11765.0,
+      "operations_per_second": 157417.83746948728,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3444826301,
+          "process_cpu_ns": 6900000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 128203
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12705040497,
+          "process_cpu_ns": 23530000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 106936
+        }
+      },
+      "average_cpu_cores": 1.852020857828518,
+      "first_worker_finish_fraction": 0.9279544504233468,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c2",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 2,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c2-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 8695.0,
+      "operations_per_second": 230708.00972796057,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2497830385,
+          "process_cpu_ns": 5780000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 107617
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 8668966467,
+          "process_cpu_ns": 17390000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 81979
+        }
+      },
+      "average_cpu_cores": 2.0060061445846173,
+      "first_worker_finish_fraction": 0.9966993022629719,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10410.0,
+      "operations_per_second": 178264.84769953165,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3128559087,
+          "process_cpu_ns": 6150000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 78655
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11219261822,
+          "process_cpu_ns": 20820000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 55839
+        }
+      },
+      "average_cpu_cores": 1.8557370645521245,
+      "first_worker_finish_fraction": 0.9814568330518814,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14555.0,
+      "operations_per_second": 154147.57870526903,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3437748592,
+          "process_cpu_ns": 8290000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 106801
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12974579405,
+          "process_cpu_ns": 29110000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 65626
+        }
+      },
+      "average_cpu_cores": 2.2436180080551904,
+      "first_worker_finish_fraction": 0.9994789713185311,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c4-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14280.0,
+      "operations_per_second": 154857.8893964985,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3524264762,
+          "process_cpu_ns": 8650000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 121495
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12915066890,
+          "process_cpu_ns": 28560000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 117464
+        }
+      },
+      "average_cpu_cores": 2.211370660581999,
+      "first_worker_finish_fraction": 0.9880554563662813,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c4-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10335.0,
+      "operations_per_second": 178339.62237994914,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3253229169,
+          "process_cpu_ns": 6360000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 121515
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11214557782,
+          "process_cpu_ns": 20670000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 58117
+        }
+      },
+      "average_cpu_cores": 1.8431399972967744,
+      "first_worker_finish_fraction": 0.8336386730295773,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c4-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10745.0,
+      "operations_per_second": 171713.00448798097,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3108343316,
+          "process_cpu_ns": 6270000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 238312
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11647341481,
+          "process_cpu_ns": 21490000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 32957
+        }
+      },
+      "average_cpu_cores": 1.8450562332233555,
+      "first_worker_finish_fraction": 0.9368340184581904,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c4-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14575.0,
+      "operations_per_second": 153182.96826380785,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3456895405,
+          "process_cpu_ns": 8340000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 614997
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13056281796,
+          "process_cpu_ns": 29150000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 66978
+        }
+      },
+      "average_cpu_cores": 2.2326417624449992,
+      "first_worker_finish_fraction": 0.9948760129380406,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c8",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 8,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c8-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 12415.0,
+      "operations_per_second": 143592.43074020115,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3367186665,
+          "process_cpu_ns": 6820000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 139493
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13928310773,
+          "process_cpu_ns": 24830000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 58127
+        }
+      },
+      "average_cpu_cores": 1.7827000276395972,
+      "first_worker_finish_fraction": 0.8563986601392298,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c8",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 8,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c8-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14900.0,
+      "operations_per_second": 140112.9800033466,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3748388534,
+          "process_cpu_ns": 8700000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 97616
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 14274195010,
+          "process_cpu_ns": 29800000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 57792
+        }
+      },
+      "average_cpu_cores": 2.0876834020498647,
+      "first_worker_finish_fraction": 0.9914970182966556,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c8",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 8,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c8-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14380.0,
+      "operations_per_second": 143500.3442411103,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3695293640,
+          "process_cpu_ns": 8400000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 497018
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13937248796,
+          "process_cpu_ns": 28760000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 54817
+        }
+      },
+      "average_cpu_cores": 2.063534950187166,
+      "first_worker_finish_fraction": 0.9979726892722106,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c8",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 8,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c8-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 9475.0,
+      "operations_per_second": 191633.33346480018,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3333744663,
+          "process_cpu_ns": 6410000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 311121
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 10436597662,
+          "process_cpu_ns": 18950000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 114788
+        }
+      },
+      "average_cpu_cores": 1.8157258345789817,
+      "first_worker_finish_fraction": 0.7479213823122657,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c8",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 8,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c8-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11345.0,
+      "operations_per_second": 158680.3862342169,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3294475641,
+          "process_cpu_ns": 6380000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1116297
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12603952180,
+          "process_cpu_ns": 22690000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 114820
+        }
+      },
+      "average_cpu_cores": 1.8002289818271906,
+      "first_worker_finish_fraction": 0.8952167041623923,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c8",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 8,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-vt-c8-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14290.0,
+      "operations_per_second": 147780.94046904714,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3674849759,
+          "process_cpu_ns": 8220000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 114750
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13533544946,
+          "process_cpu_ns": 28580000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 81385
+        }
+      },
+      "average_cpu_cores": 2.111789639302684,
+      "first_worker_finish_fraction": 0.9935182785921934,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-platform-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 8305.0,
+      "operations_per_second": 162028.31954025556,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3182061033,
+          "process_cpu_ns": 5020000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 864455
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12343521217,
+          "process_cpu_ns": 16610000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 54365
+        }
+      },
+      "average_cpu_cores": 1.3456451937818223,
+      "first_worker_finish_fraction": 0.9009760216301494,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-platform-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 8850.0,
+      "operations_per_second": 162412.1595033116,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3113528758,
+          "process_cpu_ns": 5080000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 51496
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12314348914,
+          "process_cpu_ns": 17700000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 59849
+        }
+      },
+      "average_cpu_cores": 1.4373476116043076,
+      "first_worker_finish_fraction": 0.9868153579914066,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-platform-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 9030.0,
+      "operations_per_second": 157676.92329711406,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3065683880,
+          "process_cpu_ns": 5110000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 102288
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12684164291,
+          "process_cpu_ns": 18060000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 65833
+        }
+      },
+      "average_cpu_cores": 1.4238226173729398,
+      "first_worker_finish_fraction": 0.9954845813499406,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-platform-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 9935.0,
+      "operations_per_second": 149496.08629882717,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3718577173,
+          "process_cpu_ns": 10250000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1111588
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13378276646,
+          "process_cpu_ns": 19870000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 59204
+        }
+      },
+      "average_cpu_cores": 1.485243617378848,
+      "first_worker_finish_fraction": 0.808564106815227,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-platform-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 8055.0,
+      "operations_per_second": 170218.63012687824,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3616807652,
+          "process_cpu_ns": 9950000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 191982
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11749595203,
+          "process_cpu_ns": 16110000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 187070
+        }
+      },
+      "average_cpu_cores": 1.3711110656720042,
+      "first_worker_finish_fraction": 0.7943832388895279,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-platform-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 9090.0,
+      "operations_per_second": 157159.08560107852,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3053902818,
+          "process_cpu_ns": 5100000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 365463
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12725958492,
+          "process_cpu_ns": 18180000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 437580
+        }
+      },
+      "average_cpu_cores": 1.4285760881138037,
+      "first_worker_finish_fraction": 0.9942061073791533,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared2-vt-c4",
+      "scenario": "shared2",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared2-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10710.0,
+      "operations_per_second": 162548.42939967522,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3298717589,
+          "process_cpu_ns": 6350000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 27373
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12304025375,
+          "process_cpu_ns": 21420000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 21654
+        }
+      },
+      "average_cpu_cores": 1.7408936788705216,
+      "first_worker_finish_fraction": 0.9032894159648138,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared2-vt-c4",
+      "scenario": "shared2",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared2-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10735.0,
+      "operations_per_second": 185166.38731643028,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2978518121,
+          "process_cpu_ns": 6580000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 26778
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 10801096403,
+          "process_cpu_ns": 21470000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 9165
+        }
+      },
+      "average_cpu_cores": 1.9877611678418792,
+      "first_worker_finish_fraction": 0.9902062841536514,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared2-vt-c4",
+      "scenario": "shared2",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared2-vt-c4-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10080.0,
+      "operations_per_second": 196367.77193032278,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2963506143,
+          "process_cpu_ns": 6580000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 27148
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 10184970682,
+          "process_cpu_ns": 20160000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 15083
+        }
+      },
+      "average_cpu_cores": 1.9793871410576536,
+      "first_worker_finish_fraction": 0.9851205362556585,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared2-vt-c4",
+      "scenario": "shared2",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared2-vt-c4-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11440.0,
+      "operations_per_second": 158285.43482192524,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3754105578,
+          "process_cpu_ns": 7190000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 20905
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12635401370,
+          "process_cpu_ns": 22880000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 49361
+        }
+      },
+      "average_cpu_cores": 1.8107853743628248,
+      "first_worker_finish_fraction": 0.9841130476095038,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared2-vt-c4",
+      "scenario": "shared2",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared2-vt-c4-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10860.0,
+      "operations_per_second": 162548.47765945777,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3468889581,
+          "process_cpu_ns": 6730000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 27191
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12304021722,
+          "process_cpu_ns": 21720000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 46785
+        }
+      },
+      "average_cpu_cores": 1.7652764673817112,
+      "first_worker_finish_fraction": 0.93652636043355,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared2-vt-c4",
+      "scenario": "shared2",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared2-vt-c4-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11565.0,
+      "operations_per_second": 173049.5946939035,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2897883001,
+          "process_cpu_ns": 6520000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 29137
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11557380435,
+          "process_cpu_ns": 23130000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 34649
+        }
+      },
+      "average_cpu_cores": 2.0013185626349936,
+      "first_worker_finish_fraction": 0.9984875912756955,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared8-vt-c4",
+      "scenario": "shared8",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared8-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 12545.0,
+      "operations_per_second": 145374.0860151039,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3620229176,
+          "process_cpu_ns": 7170000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 250431
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13757610141,
+          "process_cpu_ns": 25090000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 102730
+        }
+      },
+      "average_cpu_cores": 1.8237179090594786,
+      "first_worker_finish_fraction": 0.9279406212387451,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared8-vt-c4",
+      "scenario": "shared8",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared8-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 13865.0,
+      "operations_per_second": 157493.19786701232,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3564661456,
+          "process_cpu_ns": 9020000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 223768
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12698961143,
+          "process_cpu_ns": 27730000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 808191
+        }
+      },
+      "average_cpu_cores": 2.183643188426126,
+      "first_worker_finish_fraction": 0.9724575778237736,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared8-vt-c4",
+      "scenario": "shared8",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared8-vt-c4-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14590.0,
+      "operations_per_second": 153477.62014981412,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3397606686,
+          "process_cpu_ns": 8370000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 826670
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13031215874,
+          "process_cpu_ns": 29180000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 118123
+        }
+      },
+      "average_cpu_cores": 2.239238477985788,
+      "first_worker_finish_fraction": 0.9936818408354149,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared8-vt-c4",
+      "scenario": "shared8",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared8-vt-c4-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10315.0,
+      "operations_per_second": 178650.39346497267,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3292986015,
+          "process_cpu_ns": 6480000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 194950
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11195049511,
+          "process_cpu_ns": 20630000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 143080
+        }
+      },
+      "average_cpu_cores": 1.8427788085911931,
+      "first_worker_finish_fraction": 0.7809339730395767,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared8-vt-c4",
+      "scenario": "shared8",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared8-vt-c4-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10520.0,
+      "operations_per_second": 176749.37909617825,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3013112912,
+          "process_cpu_ns": 6100000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 179499
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11315457006,
+          "process_cpu_ns": 21040000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 253105
+        }
+      },
+      "average_cpu_cores": 1.859403468091795,
+      "first_worker_finish_fraction": 0.8665499973002151,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared8-vt-c4",
+      "scenario": "shared8",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared8-vt-c4-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14375.0,
+      "operations_per_second": 155356.27543661455,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3425545810,
+          "process_cpu_ns": 8460000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1510713
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12873635097,
+          "process_cpu_ns": 28750000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 96495
+        }
+      },
+      "average_cpu_cores": 2.233246459401334,
+      "first_worker_finish_fraction": 0.9876410011002194,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10515.0,
+      "operations_per_second": 176766.65506980187,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2988300873,
+          "process_cpu_ns": 6030000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 468335
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11314351110,
+          "process_cpu_ns": 21030000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 255798
+        }
+      },
+      "average_cpu_cores": 1.8587013780589667,
+      "first_worker_finish_fraction": 0.7012117011277724,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14805.0,
+      "operations_per_second": 147253.77212702678,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3790138490,
+          "process_cpu_ns": 9470000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 359792
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13581995022,
+          "process_cpu_ns": 29610000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 136014
+        }
+      },
+      "average_cpu_cores": 2.1800920963406316,
+      "first_worker_finish_fraction": 0.9892548543300446,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-vt-c4-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14450.0,
+      "operations_per_second": 151323.24543878486,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 4281228204,
+          "process_cpu_ns": 11110000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 465077
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13216740060,
+          "process_cpu_ns": 28900000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 103750
+        }
+      },
+      "average_cpu_cores": 2.186620896590441,
+      "first_worker_finish_fraction": 0.9837269699620619,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-vt-c4-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10255.0,
+      "operations_per_second": 179332.52633295974,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2937635789,
+          "process_cpu_ns": 5980000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 574258
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11152466543,
+          "process_cpu_ns": 20510000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 230983
+        }
+      },
+      "average_cpu_cores": 1.8390550575445022,
+      "first_worker_finish_fraction": 0.6068751793071395,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-vt-c4-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10300.0,
+      "operations_per_second": 179191.0917657404,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3109554228,
+          "process_cpu_ns": 6200000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 383448
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 11161269125,
+          "process_cpu_ns": 20600000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 308506
+        }
+      },
+      "average_cpu_cores": 1.845668245187126,
+      "first_worker_finish_fraction": 0.3531577434300062,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-vt-c4-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14325.0,
+      "operations_per_second": 153828.3550061754,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3456243371,
+          "process_cpu_ns": 8330000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 397256
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13001504176,
+          "process_cpu_ns": 28650000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 176560
+        }
+      },
+      "average_cpu_cores": 2.2035911854634627,
+      "first_worker_finish_fraction": 0.9818646865156381,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "single-vt-c4",
+      "scenario": "single",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-single-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 4005.0,
+      "operations_per_second": 250438.90636098947,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2069989968,
+          "process_cpu_ns": 2590000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7985979611,
+          "process_cpu_ns": 8010000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        }
+      },
+      "average_cpu_cores": 1.0030078199757628,
+      "first_worker_finish_fraction": 0.9999845648241037,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "single-vt-c4",
+      "scenario": "single",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-single-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3555.0,
+      "operations_per_second": 281502.62809861294,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1854702960,
+          "process_cpu_ns": 2450000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7104729407,
+          "process_cpu_ns": 7110000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        }
+      },
+      "average_cpu_cores": 1.000741842890569,
+      "first_worker_finish_fraction": 0.9999870047126764,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "single-vt-c4",
+      "scenario": "single",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-single-vt-c4-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3510.0,
+      "operations_per_second": 285265.3000566724,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1892061021,
+          "process_cpu_ns": 2520000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7011017462,
+          "process_cpu_ns": 7020000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        }
+      },
+      "average_cpu_cores": 1.0012812031989202,
+      "first_worker_finish_fraction": 0.9999850907517251,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "single-vt-c4",
+      "scenario": "single",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-single-vt-c4-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3970.0,
+      "operations_per_second": 252388.08043208442,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2060606789,
+          "process_cpu_ns": 2570000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7924304494,
+          "process_cpu_ns": 7940000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        }
+      },
+      "average_cpu_cores": 1.0019806793153752,
+      "first_worker_finish_fraction": 0.9999817647088007,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "single-vt-c4",
+      "scenario": "single",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-single-vt-c4-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3980.0,
+      "operations_per_second": 251978.2572971106,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2048762622,
+          "process_cpu_ns": 2430000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7937192762,
+          "process_cpu_ns": 7960000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        }
+      },
+      "average_cpu_cores": 1.0028734640425003,
+      "first_worker_finish_fraction": 0.9999870978313025,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "single-vt-c4",
+      "scenario": "single",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-single-vt-c4-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3570.0,
+      "operations_per_second": 280910.00971248746,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1865276953,
+          "process_cpu_ns": 2400000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7119717813,
+          "process_cpu_ns": 7140000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        }
+      },
+      "average_cpu_cores": 1.0028487346735802,
+      "first_worker_finish_fraction": 0.999982733725798,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "private16-vt-c4",
+      "scenario": "private16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-private16-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 7050.0,
+      "operations_per_second": 565331.2674440364,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1155851167,
+          "process_cpu_ns": 4360000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 974488030
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 3537748777,
+          "process_cpu_ns": 14100000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 2657284548
+        }
+      },
+      "average_cpu_cores": 3.9855854354804574,
+      "first_worker_finish_fraction": 0.24851403658615412,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "private16-vt-c4",
+      "scenario": "private16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-private16-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 6265.0,
+      "operations_per_second": 633829.6920837989,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1078690179,
+          "process_cpu_ns": 4150000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 900662601
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 3155421756,
+          "process_cpu_ns": 12530000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 2367454919
+        }
+      },
+      "average_cpu_cores": 3.970943020905,
+      "first_worker_finish_fraction": 0.24708505590971783,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "private16-vt-c4",
+      "scenario": "private16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-private16-vt-c4-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 6170.0,
+      "operations_per_second": 643552.1042708552,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1093881573,
+          "process_cpu_ns": 4150000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 951970718
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 3107751473,
+          "process_cpu_ns": 12340000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 2342925984
+        }
+      },
+      "average_cpu_cores": 3.9707164833511768,
+      "first_worker_finish_fraction": 0.24789016357743995,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "private16-vt-c4",
+      "scenario": "private16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-private16-vt-c4-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 7060.0,
+      "operations_per_second": 563852.7098921654,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1099346462,
+          "process_cpu_ns": 4250000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 905644928
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 3547025606,
+          "process_cpu_ns": 14120000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 2660970247
+        }
+      },
+      "average_cpu_cores": 3.9808001318386874,
+      "first_worker_finish_fraction": 0.24815754008402272,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "private16-vt-c4",
+      "scenario": "private16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-private16-vt-c4-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 7050.0,
+      "operations_per_second": 558831.9854683521,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1139687111,
+          "process_cpu_ns": 4370000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 939745644
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 3578893213,
+          "process_cpu_ns": 14100000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 2719314067
+        }
+      },
+      "average_cpu_cores": 3.9397654975518823,
+      "first_worker_finish_fraction": 0.25137785635293275,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "private16-vt-c4",
+      "scenario": "private16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-private16-vt-c4-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 6385.0,
+      "operations_per_second": 608834.484569074,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1136416945,
+          "process_cpu_ns": 4400000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 969310385
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 3284965045,
+          "process_cpu_ns": 12770000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 2557264991
+        }
+      },
+      "average_cpu_cores": 3.8874081839735375,
+      "first_worker_finish_fraction": 0.24200944305634156,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-outer-op-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 12255.0,
+      "operations_per_second": 145532.69770922948,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3372274661,
+          "process_cpu_ns": 6420000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 214235
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13742616137,
+          "process_cpu_ns": 24510000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 67023
+        }
+      },
+      "average_cpu_cores": 1.7835032104266073,
+      "first_worker_finish_fraction": 0.878481419232557,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-outer-op-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10660.0,
+      "operations_per_second": 187099.65688866004,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2860724245,
+          "process_cpu_ns": 6460000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 27134
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 10689490474,
+          "process_cpu_ns": 21320000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 69370
+        }
+      },
+      "average_cpu_cores": 1.994482342433116,
+      "first_worker_finish_fraction": 0.9410255842845517,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-outer-op-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 9905.0,
+      "operations_per_second": 201733.82463591674,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2908193649,
+          "process_cpu_ns": 6500000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 80395
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 9914053846,
+          "process_cpu_ns": 19810000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 77201
+        }
+      },
+      "average_cpu_cores": 1.9981735330187553,
+      "first_worker_finish_fraction": 0.9810351245897398,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-outer-op-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11320.0,
+      "operations_per_second": 159076.00190161806,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3262522100,
+          "process_cpu_ns": 6150000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 92540
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12572606654,
+          "process_cpu_ns": 22640000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 798237
+        }
+      },
+      "average_cpu_cores": 1.8007403415263166,
+      "first_worker_finish_fraction": 0.808426077798775,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-outer-op-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11770.0,
+      "operations_per_second": 153095.80791501017,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3587056367,
+          "process_cpu_ns": 6930000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 126094
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13063714985,
+          "process_cpu_ns": 23540000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 105000
+        }
+      },
+      "average_cpu_cores": 1.8019376591596696,
+      "first_worker_finish_fraction": 0.8885245303750019,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared4-outer-op-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10190.0,
+      "operations_per_second": 195783.2351113952,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2693593436,
+          "process_cpu_ns": 6000000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 584795
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 10215379263,
+          "process_cpu_ns": 20380000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 63425
+        }
+      },
+      "average_cpu_cores": 1.995031165785117,
+      "first_worker_finish_fraction": 0.9679136195963672,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-outer-op",
+      "scenario": "shared16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-outer-op-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11535.0,
+      "operations_per_second": 156950.26592109058,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3504235926,
+          "process_cpu_ns": 6870000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 417768
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12742890165,
+          "process_cpu_ns": 23070000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 344945
+        }
+      },
+      "average_cpu_cores": 1.81042131739978,
+      "first_worker_finish_fraction": 0.5272808327623217,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-outer-op",
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-outer-op-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10665.0,
+      "operations_per_second": 184328.9620856977,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2787403335,
+          "process_cpu_ns": 6110000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 382977
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 10850166883,
+          "process_cpu_ns": 21330000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1084126
+        }
+      },
+      "average_cpu_cores": 1.965868380643966,
+      "first_worker_finish_fraction": 0.8463938738480323,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-outer-op",
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-outer-op-rep-2-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10470.0,
+      "operations_per_second": 188416.73125477595,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2773829852,
+          "process_cpu_ns": 6190000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 380795
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 10614768586,
+          "process_cpu_ns": 20940000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 655798
+        }
+      },
+      "average_cpu_cores": 1.9727231762375042,
+      "first_worker_finish_fraction": 0.932325957821875,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-outer-op",
+      "scenario": "shared16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 2,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-outer-op-rep-2-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11115.0,
+      "operations_per_second": 163690.36192753955,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3303905915,
+          "process_cpu_ns": 6690000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 384269
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12218190347,
+          "process_cpu_ns": 22230000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 524423
+        }
+      },
+      "average_cpu_cores": 1.819418372824602,
+      "first_worker_finish_fraction": 0.4784957036976828,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-outer-op",
+      "scenario": "shared16",
+      "driver": "fork",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-outer-op-rep-3-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 11430.0,
+      "operations_per_second": 159520.51933580672,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3586563574,
+          "process_cpu_ns": 7090000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 434202
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12537572021,
+          "process_cpu_ns": 22860000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 482946
+        }
+      },
+      "average_cpu_cores": 1.823319536008271,
+      "first_worker_finish_fraction": 0.42629244059757815,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-outer-op",
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "mode": "stock",
+      "repetition": 3,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "stock-shared16-outer-op-rep-3-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 9995.0,
+      "operations_per_second": 198757.6892521403,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2776178953,
+          "process_cpu_ns": 6190000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 382428
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 10062503783,
+          "process_cpu_ns": 19990000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 141652
+        }
+      },
+      "average_cpu_cores": 1.986583104075142,
+      "first_worker_finish_fraction": 0.9531978427878322,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-shared4-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 12675.0,
+      "operations_per_second": 145215.13424755103,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3433369999,
+          "process_cpu_ns": 6790000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 404035
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13772669153,
+          "process_cpu_ns": 25350000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 145587
+        }
+      },
+      "average_cpu_cores": 1.8406018265877093,
+      "first_worker_finish_fraction": 0.9162289799324275,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-shared4-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 15965.0,
+      "operations_per_second": 143764.01543660738,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3442838485,
+          "process_cpu_ns": 8330000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 104729
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13911687107,
+          "process_cpu_ns": 31930000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 51825
+        }
+      },
+      "average_cpu_cores": 2.295192506445437,
+      "first_worker_finish_fraction": 0.9910713743024382,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-shared4-platform-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 10800.0,
+      "operations_per_second": 144844.88107777736,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3224681554,
+          "process_cpu_ns": 5200000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 76381
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13807874915,
+          "process_cpu_ns": 21600000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 69296
+        }
+      },
+      "average_cpu_cores": 1.5643247156399953,
+      "first_worker_finish_fraction": 0.992294698304051,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-shared4-platform-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 14400.0,
+      "operations_per_second": 114400.38612107154,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 4118986254,
+          "process_cpu_ns": 11080000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 45311
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 17482458476,
+          "process_cpu_ns": 28800000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 52344
+        }
+      },
+      "average_cpu_cores": 1.6473655601434303,
+      "first_worker_finish_fraction": 0.9804931645930597,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "fork",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-shared16-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 13610.0,
+      "operations_per_second": 135393.43541957837,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3030131480,
+          "process_cpu_ns": 6070000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 423580
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 14771764922,
+          "process_cpu_ns": 27220000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 498581
+        }
+      },
+      "average_cpu_cores": 1.8427046560604614,
+      "first_worker_finish_fraction": 0.8955941494368712,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-shared16-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 17240.0,
+      "operations_per_second": 135018.09788997477,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3573786139,
+          "process_cpu_ns": 8580000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 603330
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 14812829030,
+          "process_cpu_ns": 34480000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 235129
+        }
+      },
+      "average_cpu_cores": 2.327712007623165,
+      "first_worker_finish_fraction": 0.988471318972619,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "single-vt-c4",
+      "scenario": "single",
+      "driver": "reentrant",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-single-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 3670.0,
+      "operations_per_second": 273454.2219393077,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 1848092509,
+          "process_cpu_ns": 2510000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 7313838440,
+          "process_cpu_ns": 7340000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        }
+      },
+      "average_cpu_cores": 1.0035769945172592,
+      "first_worker_finish_fraction": 0.9999835928834108,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "single-vt-c4",
+      "scenario": "single",
+      "driver": "fork",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-single-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 4130.0,
+      "operations_per_second": 242617.22378124026,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 2078462287,
+          "process_cpu_ns": 2580000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 8243437827,
+          "process_cpu_ns": 8260000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 0
+        }
+      },
+      "average_cpu_cores": 1.0020091342165223,
+      "first_worker_finish_fraction": 0.9999843553135589,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-shared4-outer-op-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 12180.0,
+      "operations_per_second": 151452.93264252323,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3398553686,
+          "process_cpu_ns": 6500000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 52005
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 13205422735,
+          "process_cpu_ns": 24360000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 97966
+        }
+      },
+      "average_cpu_cores": 1.844696719585933,
+      "first_worker_finish_fraction": 0.9587650947699858,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "async",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 2000000,
+      "warmup_operations": 500000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "async-shared4-outer-op-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "cpu_ns_per_operation": 12225.0,
+      "operations_per_second": 161611.38899350865,
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 500000,
+          "completed_operations": 500000,
+          "wall_ns": 3142216632,
+          "process_cpu_ns": 7030000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 400062
+        },
+        "measurement": {
+          "planned_operations": 2000000,
+          "completed_operations": 2000000,
+          "wall_ns": 12375365452,
+          "process_cpu_ns": 24450000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 108533
+        }
+      },
+      "average_cpu_cores": 1.9756992304456433,
+      "first_worker_finish_fraction": 0.9795201395075537,
+      "integrity": "ok",
+      "counter_total": 2500000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "diagnostic",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "diagnostic-shared4-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 20000,
+          "completed_operations": 20000,
+          "wall_ns": 230484706,
+          "process_cpu_ns": 760000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 121771
+        },
+        "measurement": {
+          "planned_operations": 100000,
+          "completed_operations": 100000,
+          "wall_ns": 788601326,
+          "process_cpu_ns": 1740000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 41725
+        }
+      },
+      "average_cpu_cores": 2.2064380855479313,
+      "first_worker_finish_fraction": 0.6784500397860097,
+      "integrity": "ok",
+      "counter_total": 120000
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "diagnostic",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "diagnostic-shared4-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 20000,
+          "completed_operations": 20000,
+          "wall_ns": 302160481,
+          "process_cpu_ns": 1100000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 138634
+        },
+        "measurement": {
+          "planned_operations": 100000,
+          "completed_operations": 100000,
+          "wall_ns": 755925302,
+          "process_cpu_ns": 2140000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 104556
+        }
+      },
+      "average_cpu_cores": 2.83096754975401,
+      "first_worker_finish_fraction": 0.9881989120136635,
+      "integrity": "ok",
+      "counter_total": 120000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "diagnostic",
+      "repetition": 1,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "diagnostic-shared4-platform-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 20000,
+          "completed_operations": 20000,
+          "wall_ns": 219824532,
+          "process_cpu_ns": 670000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 75984
+        },
+        "measurement": {
+          "planned_operations": 100000,
+          "completed_operations": 100000,
+          "wall_ns": 642627569,
+          "process_cpu_ns": 1260000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 924809
+        }
+      },
+      "average_cpu_cores": 1.9607001952323648,
+      "first_worker_finish_fraction": 0.9806842227150078,
+      "integrity": "ok",
+      "counter_total": 120000
+    },
+    {
+      "cell": "shared4-platform",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "diagnostic",
+      "repetition": 1,
+      "configured_worker_kind": "platform",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "diagnostic-shared4-platform-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 20000,
+          "completed_operations": 20000,
+          "wall_ns": 233536866,
+          "process_cpu_ns": 680000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 135965
+        },
+        "measurement": {
+          "planned_operations": 100000,
+          "completed_operations": 100000,
+          "wall_ns": 769101376,
+          "process_cpu_ns": 1800000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 1860657
+        }
+      },
+      "average_cpu_cores": 2.3403936804294574,
+      "first_worker_finish_fraction": 0.8672629471410541,
+      "integrity": "ok",
+      "counter_total": 120000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "fork",
+      "mode": "diagnostic",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "diagnostic-shared16-vt-c4-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 20000,
+          "completed_operations": 20000,
+          "wall_ns": 200640760,
+          "process_cpu_ns": 650000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 469082
+        },
+        "measurement": {
+          "planned_operations": 100000,
+          "completed_operations": 100000,
+          "wall_ns": 768022825,
+          "process_cpu_ns": 1540000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 4185940
+        }
+      },
+      "average_cpu_cores": 2.0051487402083397,
+      "first_worker_finish_fraction": 0.48762410544243917,
+      "integrity": "ok",
+      "counter_total": 120000
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "scenario": "shared16",
+      "driver": "reentrant",
+      "mode": "diagnostic",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "jdbc",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "diagnostic-shared16-vt-c4-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 20000,
+          "completed_operations": 20000,
+          "wall_ns": 300465959,
+          "process_cpu_ns": 1080000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 417928
+        },
+        "measurement": {
+          "planned_operations": 100000,
+          "completed_operations": 100000,
+          "wall_ns": 754812559,
+          "process_cpu_ns": 2020000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 380712
+        }
+      },
+      "average_cpu_cores": 2.676161089153261,
+      "first_worker_finish_fraction": 0.9331040502732282,
+      "integrity": "ok",
+      "counter_total": 120000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "reentrant",
+      "mode": "diagnostic",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "diagnostic-shared4-outer-op-rep-1-reentrant/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 20000,
+          "completed_operations": 20000,
+          "wall_ns": 284466753,
+          "process_cpu_ns": 1020000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 110015
+        },
+        "measurement": {
+          "planned_operations": 100000,
+          "completed_operations": 100000,
+          "wall_ns": 620923065,
+          "process_cpu_ns": 1520000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 2181959
+        }
+      },
+      "average_cpu_cores": 2.4479683324374495,
+      "first_worker_finish_fraction": 0.9739397005649967,
+      "integrity": "ok",
+      "counter_total": 120000
+    },
+    {
+      "cell": "shared4-outer-op",
+      "scenario": "shared4",
+      "driver": "fork",
+      "mode": "diagnostic",
+      "repetition": 1,
+      "configured_worker_kind": "virtual",
+      "configured_carriers": 4,
+      "configured_lock_granularity": "outer-op",
+      "operations": 100000,
+      "warmup_operations": 20000,
+      "outcome_passed": true,
+      "process_exit_code": 0,
+      "validation_errors": [],
+      "raw_result": "diagnostic-shared4-outer-op-rep-1-fork/result.json",
+      "native_library_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "phase_observations": {
+        "warmup": {
+          "planned_operations": 20000,
+          "completed_operations": 20000,
+          "wall_ns": 241630008,
+          "process_cpu_ns": 840000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 100700
+        },
+        "measurement": {
+          "planned_operations": 100000,
+          "completed_operations": 100000,
+          "wall_ns": 709148684,
+          "process_cpu_ns": 1550000000,
+          "java_busy_waits": 0,
+          "startup_spread_ns": 58930
+        }
+      },
+      "average_cpu_cores": 2.185719349089281,
+      "first_worker_finish_fraction": 0.8079925365834847,
+      "integrity": "ok",
+      "counter_total": 120000
+    }
+  ],
+  "profile_overhead": [
+    {
+      "cell": "shared4-vt-c4",
+      "driver": "fork",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 21.757925072046103,
+      "operations_per_second_change_percent": -18.5396694179923
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "driver": "reentrant",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 9.687392648574367,
+      "operations_per_second_change_percent": -6.736118306804595
+    },
+    {
+      "cell": "shared4-platform",
+      "driver": "reentrant",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 19.60132890365449,
+      "operations_per_second_change_percent": -8.138186584955742
+    },
+    {
+      "cell": "shared4-platform",
+      "driver": "fork",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": true,
+      "cpu_ns_per_operation_change_percent": 73.38952438290187,
+      "operations_per_second_change_percent": -29.394820334078066
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "driver": "fork",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 32.135922330097074,
+      "operations_per_second_change_percent": -24.441871476188926
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "driver": "reentrant",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 19.307958477508656,
+      "operations_per_second_change_percent": -10.775044839628457
+    },
+    {
+      "cell": "single-vt-c4",
+      "driver": "reentrant",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 3.234880450070321,
+      "operations_per_second_change_percent": -2.859087395974791
+    },
+    {
+      "cell": "single-vt-c4",
+      "driver": "fork",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 3.7688442211055273,
+      "operations_per_second_change_percent": -3.7150163733502772
+    },
+    {
+      "cell": "shared4-outer-op",
+      "driver": "fork",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 3.4834324553950635,
+      "operations_per_second_change_percent": -1.0731027157836803
+    },
+    {
+      "cell": "shared4-outer-op",
+      "driver": "reentrant",
+      "profile_valid": true,
+      "baseline_valid_runs": 3,
+      "baseline_noisy": false,
+      "cpu_ns_per_operation_change_percent": 19.970559371933263,
+      "operations_per_second_change_percent": -17.45391841055426
+    }
+  ],
+  "profile_mechanisms": [
+    {
+      "cell": "shared4-vt-c4",
+      "driver": "fork",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 14616,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 0,
+        "scheduler_interrupt_clear": 32,
+        "scheduler_deactivate": 10,
+        "aqs_and_reentrant_other": 0,
+        "vt_and_continuation_leaf": 2,
+        "object_monitor_leaf": 841
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 0.0,
+        "scheduler_interrupt_clear": 16.0,
+        "scheduler_deactivate": 5.0,
+        "aqs_and_reentrant_other": 0.0,
+        "vt_and_continuation_leaf": 1.0,
+        "object_monitor_leaf": 420.5
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.5765680473372781,
+      "selected_allocations": {
+        "java.util.concurrent.ForkJoinTask$RunnableExecuteAction": {
+          "recorded_allocationSize_bytes": 736,
+          "samples": 23,
+          "weight_bytes": 12058624,
+          "weight_from_tlabSize_bytes": 12058624
+        }
+      }
+    },
+    {
+      "cell": "shared4-vt-c4",
+      "driver": "reentrant",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 28029,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 1256,
+        "scheduler_interrupt_clear": 3379,
+        "scheduler_deactivate": 1515,
+        "aqs_and_reentrant_other": 2358,
+        "vt_and_continuation_leaf": 463,
+        "object_monitor_leaf": 0
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 628.0,
+        "scheduler_interrupt_clear": 1689.5,
+        "scheduler_deactivate": 757.5,
+        "aqs_and_reentrant_other": 1179.0,
+        "vt_and_continuation_leaf": 231.5,
+        "object_monitor_leaf": 0.0
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.8778264954588162,
+      "selected_allocations": {
+        "java.util.concurrent.ForkJoinTask$AdaptedRunnableAction": {
+          "recorded_allocationSize_bytes": 48,
+          "samples": 2,
+          "weight_bytes": 1048576,
+          "weight_from_tlabSize_bytes": 1048576
+        },
+        "java.util.concurrent.ForkJoinTask$RunnableExecuteAction": {
+          "recorded_allocationSize_bytes": 3648,
+          "samples": 114,
+          "weight_bytes": 59768832,
+          "weight_from_tlabSize_bytes": 59768832
+        },
+        "java.util.concurrent.locks.AbstractQueuedSynchronizer$ExclusiveNode": {
+          "recorded_allocationSize_bytes": 736,
+          "samples": 23,
+          "weight_bytes": 12058624,
+          "weight_from_tlabSize_bytes": 12058624
+        }
+      }
+    },
+    {
+      "cell": "shared4-platform",
+      "driver": "reentrant",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 19193,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 6,
+        "scheduler_interrupt_clear": 0,
+        "scheduler_deactivate": 0,
+        "aqs_and_reentrant_other": 1621,
+        "vt_and_continuation_leaf": 1,
+        "object_monitor_leaf": 0
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 3.0,
+        "scheduler_interrupt_clear": 0.0,
+        "scheduler_deactivate": 0.0,
+        "aqs_and_reentrant_other": 810.5,
+        "vt_and_continuation_leaf": 0.5,
+        "object_monitor_leaf": 0.0
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.8885648148148149,
+      "selected_allocations": {
+        "java.util.concurrent.locks.AbstractQueuedSynchronizer$ExclusiveNode": {
+          "recorded_allocationSize_bytes": 256,
+          "samples": 8,
+          "weight_bytes": 4194304,
+          "weight_from_tlabSize_bytes": 4194304
+        }
+      }
+    },
+    {
+      "cell": "shared4-platform",
+      "driver": "fork",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 23012,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 0,
+        "scheduler_interrupt_clear": 0,
+        "scheduler_deactivate": 0,
+        "aqs_and_reentrant_other": 0,
+        "vt_and_continuation_leaf": 0,
+        "object_monitor_leaf": 3977
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 0.0,
+        "scheduler_interrupt_clear": 0.0,
+        "scheduler_deactivate": 0.0,
+        "aqs_and_reentrant_other": 0.0,
+        "vt_and_continuation_leaf": 0.0,
+        "object_monitor_leaf": 1988.5
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.7990277777777778,
+      "selected_allocations": {}
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "driver": "fork",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 16120,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 0,
+        "scheduler_interrupt_clear": 0,
+        "scheduler_deactivate": 11,
+        "aqs_and_reentrant_other": 0,
+        "vt_and_continuation_leaf": 5,
+        "object_monitor_leaf": 880
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 0.0,
+        "scheduler_interrupt_clear": 0.0,
+        "scheduler_deactivate": 5.5,
+        "aqs_and_reentrant_other": 0.0,
+        "vt_and_continuation_leaf": 2.5,
+        "object_monitor_leaf": 440.0
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.5922116091109478,
+      "selected_allocations": {
+        "java.util.concurrent.ForkJoinTask$RunnableExecuteAction": {
+          "recorded_allocationSize_bytes": 672,
+          "samples": 21,
+          "weight_bytes": 11010048,
+          "weight_from_tlabSize_bytes": 11010048
+        },
+        "java.util.concurrent.locks.AbstractQueuedSynchronizer$SharedNode": {
+          "recorded_allocationSize_bytes": 32,
+          "samples": 1,
+          "weight_bytes": 524288,
+          "weight_from_tlabSize_bytes": 524288
+        }
+      }
+    },
+    {
+      "cell": "shared16-vt-c4",
+      "driver": "reentrant",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 29233,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 762,
+        "scheduler_interrupt_clear": 3260,
+        "scheduler_deactivate": 912,
+        "aqs_and_reentrant_other": 2404,
+        "vt_and_continuation_leaf": 568,
+        "object_monitor_leaf": 0
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 381.0,
+        "scheduler_interrupt_clear": 1630.0,
+        "scheduler_deactivate": 456.0,
+        "aqs_and_reentrant_other": 1202.0,
+        "vt_and_continuation_leaf": 284.0,
+        "object_monitor_leaf": 0.0
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.8478248259860789,
+      "selected_allocations": {
+        "java.util.concurrent.ForkJoinTask$AdaptedRunnableAction": {
+          "recorded_allocationSize_bytes": 24,
+          "samples": 1,
+          "weight_bytes": 524288,
+          "weight_from_tlabSize_bytes": 524288
+        },
+        "java.util.concurrent.ForkJoinTask$RunnableExecuteAction": {
+          "recorded_allocationSize_bytes": 3072,
+          "samples": 96,
+          "weight_bytes": 50331648,
+          "weight_from_tlabSize_bytes": 50331648
+        },
+        "java.util.concurrent.locks.AbstractQueuedSynchronizer$ExclusiveNode": {
+          "recorded_allocationSize_bytes": 736,
+          "samples": 23,
+          "weight_bytes": 12058624,
+          "weight_from_tlabSize_bytes": 12058624
+        }
+      }
+    },
+    {
+      "cell": "single-vt-c4",
+      "driver": "reentrant",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 7284,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 0,
+        "scheduler_interrupt_clear": 0,
+        "scheduler_deactivate": 0,
+        "aqs_and_reentrant_other": 432,
+        "vt_and_continuation_leaf": 0,
+        "object_monitor_leaf": 0
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 0.0,
+        "scheduler_interrupt_clear": 0.0,
+        "scheduler_deactivate": 0.0,
+        "aqs_and_reentrant_other": 216.0,
+        "vt_and_continuation_leaf": 0.0,
+        "object_monitor_leaf": 0.0
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.9923705722070845,
+      "selected_allocations": {}
+    },
+    {
+      "cell": "single-vt-c4",
+      "driver": "fork",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 8205,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 0,
+        "scheduler_interrupt_clear": 0,
+        "scheduler_deactivate": 0,
+        "aqs_and_reentrant_other": 0,
+        "vt_and_continuation_leaf": 2,
+        "object_monitor_leaf": 433
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 0.0,
+        "scheduler_interrupt_clear": 0.0,
+        "scheduler_deactivate": 0.0,
+        "aqs_and_reentrant_other": 0.0,
+        "vt_and_continuation_leaf": 1.0,
+        "object_monitor_leaf": 216.5
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.9933414043583535,
+      "selected_allocations": {}
+    },
+    {
+      "cell": "shared4-outer-op",
+      "driver": "fork",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 13878,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 0,
+        "scheduler_interrupt_clear": 9,
+        "scheduler_deactivate": 22,
+        "aqs_and_reentrant_other": 0,
+        "vt_and_continuation_leaf": 2,
+        "object_monitor_leaf": 808
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 0.0,
+        "scheduler_interrupt_clear": 4.5,
+        "scheduler_deactivate": 11.0,
+        "aqs_and_reentrant_other": 0.0,
+        "vt_and_continuation_leaf": 1.0,
+        "object_monitor_leaf": 404.0
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.569704433497537,
+      "selected_allocations": {
+        "java.util.concurrent.ForkJoinTask$RunnableExecuteAction": {
+          "recorded_allocationSize_bytes": 640,
+          "samples": 20,
+          "weight_bytes": 10485760,
+          "weight_from_tlabSize_bytes": 10485760
+        }
+      }
+    },
+    {
+      "cell": "shared4-outer-op",
+      "driver": "reentrant",
+      "completed_operations": 2000000,
+      "engine": "perf_events",
+      "actual_cstack": "vm",
+      "cpu_samples": 23991,
+      "source_leaf_samples": {
+        "aqs_post_unpark_spin_line782": 4820,
+        "scheduler_interrupt_clear": 2545,
+        "scheduler_deactivate": 672,
+        "aqs_and_reentrant_other": 3152,
+        "vt_and_continuation_leaf": 283,
+        "object_monitor_leaf": 0
+      },
+      "source_leaf_samples_per_million_operations": {
+        "aqs_post_unpark_spin_line782": 2410.0,
+        "scheduler_interrupt_clear": 1272.5,
+        "scheduler_deactivate": 336.0,
+        "aqs_and_reentrant_other": 1576.0,
+        "vt_and_continuation_leaf": 141.5,
+        "object_monitor_leaf": 0.0
+      },
+      "cpu_sample_density_per_process_cpu_ms": 0.9812269938650306,
+      "selected_allocations": {
+        "java.util.concurrent.ForkJoinTask$RunnableExecuteAction": {
+          "recorded_allocationSize_bytes": 2400,
+          "samples": 75,
+          "weight_bytes": 39321600,
+          "weight_from_tlabSize_bytes": 39321600
+        },
+        "java.util.concurrent.locks.AbstractQueuedSynchronizer$ExclusiveNode": {
+          "recorded_allocationSize_bytes": 96,
+          "samples": 3,
+          "weight_bytes": 1572864,
+          "weight_from_tlabSize_bytes": 1572864
+        }
+      }
+    }
+  ],
+  "primary_sources": {
+    "aqs_spin": "https://github.com/openjdk/jdk25u/blob/jdk-25.0.2%2B10/src/java.base/share/classes/java/util/concurrent/locks/AbstractQueuedSynchronizer.java#L779-L792",
+    "scheduler_idle_scan": "https://github.com/openjdk/jdk25u/blob/jdk-25.0.2%2B10/src/java.base/share/classes/java/util/concurrent/ForkJoinPool.java#L2042-L2073",
+    "interrupt_check": "https://github.com/openjdk/jdk25u/blob/jdk-25.0.2%2B10/src/java.base/share/classes/java/lang/Thread.java#L1624-L1627",
+    "virtual_park_dispatch": "https://github.com/openjdk/jdk25u/blob/jdk-25.0.2%2B10/src/java.base/share/classes/java/util/concurrent/locks/LockSupport.java#L178-L224",
+    "unsafe_park_event": "https://github.com/openjdk/jdk25u/blob/jdk-25.0.2%2B10/src/hotspot/share/prims/unsafe.cpp#L755-L783",
+    "monitor_flags": "https://github.com/openjdk/jdk25u/blob/jdk-25.0.2%2B10/src/hotspot/share/runtime/globals.hpp#L1964-L1979"
+  },
+  "limits": [
+    "Profiled modes change CPU/op; use stock cells for effect sizes, not profile percentages as an exact decomposition.",
+    "Source-line sample counts are not calls or exact time; inclusive stacks overlap; native SQLite detail is often unresolved into a library bucket.",
+    "CPU sample density differs by variant and profiler overhead is unequal; AQS and scheduler presence are supported, exact shares of the original +17.24% are not.",
+    "The prior reference used5M measured/1M warmup/4reps; this extended harness used2M/500k/3reps, so shared16 direction change cannot be attributed to worker count alone.",
+    "ThreadPark is not a complete census of ordinary unmounted virtual-thread waiting.",
+    "Outer-op changes guard scope and can also affect locality; it is a mechanism intervention, not a production-ready optimization.",
+    "Guest SMT topology observed but thread affinity/hardware counters were not controlled."
+  ]
+}

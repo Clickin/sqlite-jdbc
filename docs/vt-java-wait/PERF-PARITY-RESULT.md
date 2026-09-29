@@ -122,3 +122,55 @@ java --enable-native-access=ALL-UNNAMED -Xms512m -Xmx512m \
 | `VIRTUAL-THREADS.md` | 동작이 바뀌지 않아 의도적으로 변경하지 않음 |
 
 다음 변경 전 필요한 결정은 P0 단독 우선 계획의 재검토다. **[INFERENCE]** macOS에서는 statement JNI restore guard의 비용을 별도 대조 실험으로 먼저 분리할 가치가 크다. P2의 직접 호출자 안전성 감사 없이 C guard를 제거해서는 안 된다. Linux CI의 같은 CPU profile에서 이 플랫폼 특이 비용이 나타나는지도 확인해야 한다. monitor 범위 확장이나 ReentrantLock 전면 교체를 정당화하는 결과는 아니다.
+
+## A. Restore-guard isolation
+
+작성일: 2026-09-29. 기존 P0-0 결과는 수정하지 않았다. 이 절은 지시서 v2 §2.A의 대조 실험만 기록한다.
+
+### 실험과 유효성
+
+- 다섯 fork 후보(`fork`, `probe-plain`, `guard-nonvolatile`, `guard-off`, `probe-plain-guard-off`)와 xerial 기준을 `single`에서 각각 10,000,000회 측정, warmup 2,000,000회, 새 JVM 3회, 순차 실행 및 반복별 순서 회전으로 측정했다.
+- `probe-plain`은 `ensureAutocommit`의 probe BEGIN/COMMIT 두 `stepControl`만 plain `step`으로 바꿨다. `guard-nonvolatile`은 Java field의 `volatile`만 제거했다. `guard-off`은 statement JNI 구간에서 explicit `checkBackupAccess` 조건 19개만 제거했다. `gethandle()` 검사는 유지했다.
+- 각 플랫폼에서 xerial과 모든 fork 후보가 같은 SQLite source ID와 compile options를 보고했다. Fork 후보 JNI는 플랫폼별 공유 SQLite object에 링크했다. 기존 runner의 `validate`가 각 JVM의 전체 작업량, worker counter, 결과, DB integrity를 확인했다. 후보별 raw result와 실행 명령은 아래 `target/` 산출물에 보존했다.
+- macOS: arm64, Temurin 25.0.2+10, async-profiler 4.5. Linux: OrbStack의 Ubuntu 24.04 arm64 컨테이너, 같은 Temurin 25.0.2+10, GCC 13.3.0. **Linux 측정은 x86_64 GitHub Actions CI가 아니라 로컬 VM 결과다.** 따라서 CI 합격 판정으로 사용하지 않는다.
+
+### 처리량 측정
+
+CPU는 ns/op 중앙값(min–max), 처리량은 ops/s 중앙값이다. xerial은 기준선이다.
+
+| 후보 | macOS CPU ns/op | macOS ops/s | Linux arm64 CPU ns/op | Linux arm64 ops/s |
+|---|---:|---:|---:|---:|
+| xerial | 680.7 (662.7–690.6) | 1,478,802 | 663 (647–664) | 1,512,388 |
+| fork | 1,805.5 (1,742.6–1,805.8) | 554,697 | 1,568 (1,449–1,781) | 637,681 |
+| probe-plain | 1,180.9 (1,161.9–1,209.3) | 849,118 | 1,003 (943–1,102) | 998,160 |
+| guard-nonvolatile | 1,800.6 (1,778.7–1,815.1) | 556,098 | 1,508 (1,469–1,533) | 663,572 |
+| guard-off | 1,804.2 (1,770.1–1,807.3) | 555,038 | 1,552 (1,474–1,769) | 644,870 |
+| probe-plain + guard-off | 1,174.4 (1,162.4–1,189.9) | 853,359 | 870 (862–910) | 1,151,481 |
+
+macOS에서 `guard-off`은 `fork`보다 CPU/op가 **0.07%** 낮을 뿐이고, `guard-nonvolatile`도 **0.27%** 차이다. 결합본은 `probe-plain`보다 **0.55%** 낮다. 각 차이는 반복 범위에 비해 미미하다. `pthread_jit_write_protect_np` inclusive samples도 `fork` 4,879/21,562 (22.6%)에서 `guard-off` 4,832/21,983 (22.0%)으로 의미 있게 줄지 않았다. `guard-nonvolatile`은 4,888/22,078 (22.1%)이었다.
+
+Linux arm64에서는 `guard-off` 단독 중앙값이 fork보다 **1.0%** 낮지만 범위가 크게 겹친다. `probe-plain + guard-off`는 `probe-plain`보다 13.3% 낮았으나, 이 결과는 가상화된 로컬 Linux 측정이며 cyclic order에서 `probe-plain`이 항상 결합본보다 먼저 실행됐다. 독립 CI 재현 전에는 guard 효과로 귀속하지 않는다.
+
+### CPU profile
+
+각 후보의 별도 10M/2M profile은 startup/warmup을 포함한다. 표의 수는 inclusive sample이며 호출 횟수가 아니다.
+
+| 후보 | macOS 전체 / `pthread_jit_write_protect_np` | Linux 전체 / `checkBackupAccess` |
+|---|---:|---:|
+| xerial | 8,568 / 12 | 8,346 / 0 |
+| fork | 21,562 / 4,879 | 19,056 / 182 |
+| probe-plain | 14,574 / 4,038 | 13,400 / 126 |
+| guard-nonvolatile | 22,078 / 4,888 | 21,065 / 195 |
+| guard-off | 21,983 / 4,832 | 18,134 / 61 |
+| probe-plain + guard-off | 14,525 / 4,017 | 10,942 / 11 |
+
+Linux에서 `jni_GetBooleanField`, `GetBooleanField`, `ThreadInVMfromNative` 이름의 frame은 표본에서 관측되지 않았다. `checkBackupAccess` frame은 fork 182개(전체의 0.96%)에서 guard-off 61개(0.34%)로 줄었다. guard 제거가 실제 native 경로에 적용된 것은 확인되지만, 이 CPU profile은 field accessor의 호출 횟수나 latency를 측정하지 않는다.
+
+### 판정
+
+**지시서 v2 §3의 중단 조건에 해당한다.** guard-off가 macOS `single`에서 효과를 내지 않았다. 따라서 `GetBooleanField`/volatile이 남은 macOS 성능 격차나 JIT write-protect samples의 주원인이라는 가설은 이 대조 실험으로 지지되지 않는다. `volatile`만 제거해도 개선되지 않았다. Linux 로컬 결과는 직접 guard frame이 줄었음을 보였지만, fork 단독 개선은 측정 변동 범위이고 x86_64 CI에서 검증되지 않았다.
+
+**B–D 구현은 시작하지 않았다.** 제품 Java/C/native resource는 변경하지 않았고, 실험은 커밋하지 않았다. 성능 parity 또는 CI 합격을 주장하지 않는다.
+
+Raw evidence: `target/vt-wait-evidence/perf-parity-guard-isolation/` — `macos/performance-summary.json`, `macos/profile-summary.json`, per-run `command.json`/`result.json`/`stdout.log`/`cpu.collapsed`; Linux 대응 자료는 `linux-arm64-local/`에 있다. Linux CI run URL은 없다.
+

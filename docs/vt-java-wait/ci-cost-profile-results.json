@@ -1,0 +1,1218 @@
+{
+  "primary_run": {
+    "id": 36432647253,
+    "url": "https://github.com/Clickin/sqlite-jdbc/actions/runs/36432647253",
+    "commit": "90758fa59bdafdba466430151a25363c0a3b12cc",
+    "conclusion": "success",
+    "artifact_id": 10976572261,
+    "artifact_sha256": "2435fd52331a240465178f5284ebb8dc88b1fa7267671d9b2b187aa688e1f923"
+  },
+  "monitor_followup": {
+    "id": 36442549170,
+    "url": "https://github.com/Clickin/sqlite-jdbc/actions/runs/36442549170",
+    "commit": "1b976080f0f4b0157646471a7e20f1f5216d1b82",
+    "conclusion": "success",
+    "artifact_id": 10980736475,
+    "artifact_sha256": "f87047b25bd13a35f18ca1cc64fcc770cf73ed7d6628e888679b8badaef28b03"
+  },
+  "production_behavior_changes": false,
+  "finding": "Fork-only NativeDB monitor inflation is observed without async-profiler in Linux. DB monitor -> connection monitor -> DB monitor reentry at DB.prepare/execute is backed by source and JDK25 lock-stack rules. Associated monitor CPU slow paths increase consistently, but exact stock CPU-gap share is unproven without an intervention.",
+  "primary_host": "Intel Xeon Platinum8573C,4vCPU,Ubuntu24.04.5,JDK25.0.2+10,GCC13.3.0; prior4.79%benchmark usedAMD EPYC7763",
+  "shared_sqlite_object_sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de",
+  "control_text_identity": {
+    "xerial": {
+      "original": "f487eb0c504e2ae7b3f02e00a05a51d2c5eb861b3e567747eaa841f50d1cf39d",
+      "symbols": "f487eb0c504e2ae7b3f02e00a05a51d2c5eb861b3e567747eaa841f50d1cf39d"
+    },
+    "fork": {
+      "original": "de1d2d59ee465fdf0fcd30a470d6105ea5b3b679c6f31a906bc4b55f892513ba",
+      "symbols": "de1d2d59ee465fdf0fcd30a470d6105ea5b3b679c6f31a906bc4b55f892513ba"
+    }
+  },
+  "checks": {
+    "primary_runs": 30,
+    "primary_successful_requests": 128165,
+    "primary_warmup_successes": 180000,
+    "followup_runs": 12,
+    "followup_successful_requests": 51063,
+    "followup_warmup_successes": 72000,
+    "request_failures": 0,
+    "integrity": "all ok",
+    "positive_jfr_controls": 42,
+    "verified_cpu_backend": "perf_events",
+    "actual_native_stack_mode": "vm (profiler preference; requested dwarf)"
+  },
+  "overhead_controls": [
+    {
+      "mode": "stock",
+      "driver": "xerial",
+      "runs": 3,
+      "median_rps": 146.14699798007118,
+      "min_rps": 145.3344721750562,
+      "max_rps": 147.74009022116195,
+      "median_cpu_ms_per_success": 9.67475950526798,
+      "failed_runs": 0
+    },
+    {
+      "mode": "stock",
+      "driver": "fork",
+      "runs": 3,
+      "median_rps": 141.91714492907832,
+      "min_rps": 139.78021720998754,
+      "max_rps": 143.65747712101916,
+      "median_cpu_ms_per_success": 10.070339976553342,
+      "failed_runs": 0
+    },
+    {
+      "mode": "async",
+      "driver": "xerial",
+      "runs": 3,
+      "median_rps": 140.59952687198557,
+      "min_rps": 140.2526143322397,
+      "max_rps": 143.20720755708143,
+      "median_cpu_ms_per_success": 10.577378135352578,
+      "failed_runs": 0
+    },
+    {
+      "mode": "async",
+      "driver": "fork",
+      "runs": 3,
+      "median_rps": 135.12957244762293,
+      "min_rps": 134.0888990272175,
+      "max_rps": 135.89292907076037,
+      "median_cpu_ms_per_success": 11.477104874446086,
+      "failed_runs": 0
+    },
+    {
+      "mode": "probe-off",
+      "driver": "xerial",
+      "runs": 3,
+      "median_rps": 146.0079303783942,
+      "min_rps": 145.569553906721,
+      "max_rps": 147.69181936785424,
+      "median_cpu_ms_per_success": 9.49156406748746,
+      "failed_runs": 0
+    },
+    {
+      "mode": "probe-off",
+      "driver": "fork",
+      "runs": 3,
+      "median_rps": 140.60958199848213,
+      "min_rps": 138.79335516236446,
+      "max_rps": 141.31990235522582,
+      "median_cpu_ms_per_success": 10.421573245407442,
+      "failed_runs": 0
+    },
+    {
+      "mode": "counts",
+      "driver": "xerial",
+      "runs": 3,
+      "median_rps": 146.6490975587264,
+      "min_rps": 143.64821789607672,
+      "max_rps": 147.07223516084295,
+      "median_cpu_ms_per_success": 9.857078039927405,
+      "failed_runs": 0
+    },
+    {
+      "mode": "counts",
+      "driver": "fork",
+      "runs": 3,
+      "median_rps": 139.11393047490597,
+      "min_rps": 136.7699818406451,
+      "max_rps": 140.98757033634115,
+      "median_cpu_ms_per_success": 10.42822966507177,
+      "failed_runs": 0
+    },
+    {
+      "mode": "sampled",
+      "driver": "xerial",
+      "runs": 3,
+      "median_rps": 147.31026562179736,
+      "min_rps": 147.0811650242951,
+      "max_rps": 147.7647159470173,
+      "median_cpu_ms_per_success": 9.637387387387387,
+      "failed_runs": 0
+    },
+    {
+      "mode": "sampled",
+      "driver": "fork",
+      "runs": 3,
+      "median_rps": 138.17555419851863,
+      "min_rps": 137.6560878650314,
+      "max_rps": 138.8548162589414,
+      "median_cpu_ms_per_success": 10.775737071048816,
+      "failed_runs": 0
+    }
+  ],
+  "primary_stock_throughput_gap_percent": -2.8942455948151924,
+  "primary_stock_extra_cpu_ms_per_success": 0.39558047128536167,
+  "cpu_frame_deltas_per_1000_successes": [
+    {
+      "frame": "libjvm.so.SharedRuntime::complete_monitor_locking_C [C++]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 57.15693520571569,
+      "delta": 57.15693520571569
+    },
+    {
+      "frame": "libjvm.so.SharedRuntime::complete_monitor_unlocking_C [C++]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 20.2020202020202,
+      "delta": 20.2020202020202
+    },
+    {
+      "frame": "libjvm.so.LightweightSynchronizer::quick_enter [C++]",
+      "xerial_samples_per_1000_requests": 0.3138485680659082,
+      "fork_samples_per_1000_requests": 15.27469820152747,
+      "delta": 14.96084963346156
+    },
+    {
+      "frame": "libjvm.so.LightweightSynchronizer::exit [C++]",
+      "xerial_samples_per_1000_requests": 0.4707728520988623,
+      "fork_samples_per_1000_requests": 15.356820234869016,
+      "delta": 14.886047382770153
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::spin_enter [C++]",
+      "xerial_samples_per_1000_requests": 0.23538642604943116,
+      "fork_samples_per_1000_requests": 14.371355834770469,
+      "delta": 14.135969408721039
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::try_lock [C++]",
+      "xerial_samples_per_1000_requests": 1.0200078462142017,
+      "fork_samples_per_1000_requests": 14.124989734745832,
+      "delta": 13.10498188853163
+    },
+    {
+      "frame": "libsqlitejdbc.so.checkBackupAccess [Native]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 9.279789767594645,
+      "delta": 9.279789767594645
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::exit [C++]",
+      "xerial_samples_per_1000_requests": 0.7061592781482935,
+      "fork_samples_per_1000_requests": 9.854644000985465,
+      "delta": 9.148484722837171
+    },
+    {
+      "frame": "org.sqlite.core.NativeDB.attemptNoWaitBusy [JIT compiled]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 5.091566067175823,
+      "delta": 5.091566067175823
+    },
+    {
+      "frame": "org.sqlite.core.NativeDB.busyTimeoutReadback [JIT compiled]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 4.352467767101913,
+      "delta": 4.352467767101913
+    },
+    {
+      "frame": "org.sqlite.core.NativeDB.checkBackupAccess [Inlined]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 1.6424406668309108,
+      "delta": 1.6424406668309108
+    },
+    {
+      "frame": "libsqlitejdbc.so.readBusyTimeout [Native]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 0.9033423667570009,
+      "delta": 0.9033423667570009
+    },
+    {
+      "frame": "libsqlitejdbc.so.Java_org_sqlite_core_NativeDB_attemptNoWaitBusy [Native]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 0.8212203334154554,
+      "delta": 0.8212203334154554
+    },
+    {
+      "frame": "libjvm.so.LightweightSynchronizer::enter [C++]",
+      "xerial_samples_per_1000_requests": 0.1569242840329541,
+      "fork_samples_per_1000_requests": 0.5748542333908188,
+      "delta": 0.41792994935786465
+    },
+    {
+      "frame": "libjvm.so.LightweightSynchronizer::inflate_into_object_header [C++]",
+      "xerial_samples_per_1000_requests": 0.07846214201647705,
+      "fork_samples_per_1000_requests": 0.4106101667077277,
+      "delta": 0.33214802469125065
+    },
+    {
+      "frame": "libjvm.so.LightweightSynchronizer::inflate_and_enter [C++]",
+      "xerial_samples_per_1000_requests": 0.1569242840329541,
+      "fork_samples_per_1000_requests": 0.4106101667077277,
+      "delta": 0.2536858826747736
+    },
+    {
+      "frame": "libsqlitejdbc.so.Java_org_sqlite_core_NativeDB_busyTimeoutReadback [Native]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 0.2463661000246366,
+      "delta": 0.2463661000246366
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::enter_internal [C++]",
+      "xerial_samples_per_1000_requests": 0.1569242840329541,
+      "fork_samples_per_1000_requests": 0.0,
+      "delta": -0.1569242840329541
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::try_spin [C++]",
+      "xerial_samples_per_1000_requests": 0.39231071008238527,
+      "fork_samples_per_1000_requests": 0.4927322000492732,
+      "delta": 0.10042148996688793
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::exit_epilog [C++]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 0.08212203334154554,
+      "delta": 0.08212203334154554
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::unlink_after_acquire [C++]",
+      "xerial_samples_per_1000_requests": 0.0,
+      "fork_samples_per_1000_requests": 0.08212203334154554,
+      "delta": 0.08212203334154554
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::enter [C++]",
+      "xerial_samples_per_1000_requests": 0.23538642604943116,
+      "fork_samples_per_1000_requests": 0.2463661000246366,
+      "delta": 0.01097967397520544
+    },
+    {
+      "frame": "libjvm.so.ObjectMonitor::enter_with_contention_mark [C++]",
+      "xerial_samples_per_1000_requests": 0.07846214201647705,
+      "fork_samples_per_1000_requests": 0.08212203334154554,
+      "delta": 0.0036598913250684845
+    }
+  ],
+  "native_calls_from_count_mode_and_raw_sample_timings": [
+    {
+      "driver": "xerial",
+      "category": "gethandle",
+      "calls_per_success": 839.1381618989653,
+      "timed_samples": 43553,
+      "raw_inclusive_cpu_ns_per_sample": 556.8525704314284,
+      "raw_inclusive_wall_ns_per_sample": 1429.622023741189
+    },
+    {
+      "driver": "xerial",
+      "category": "prepare_utf8",
+      "calls_per_success": 276.07478697504564,
+      "timed_samples": 14331,
+      "raw_inclusive_cpu_ns_per_sample": 10288.133835740702,
+      "raw_inclusive_wall_ns_per_sample": 11157.123857372131
+    },
+    {
+      "driver": "xerial",
+      "category": "step",
+      "calls_per_success": 495.13412964090077,
+      "timed_samples": 25699,
+      "raw_inclusive_cpu_ns_per_sample": 3980.4971788785556,
+      "raw_inclusive_wall_ns_per_sample": 12283.92396591307
+    },
+    {
+      "driver": "xerial",
+      "category": "column_name_utf8",
+      "calls_per_success": 1345.3996500304322,
+      "timed_samples": 69829,
+      "raw_inclusive_cpu_ns_per_sample": 891.8684787122828,
+      "raw_inclusive_wall_ns_per_sample": 1838.5490698706842
+    },
+    {
+      "driver": "xerial",
+      "category": "bind_parameter_count",
+      "calls_per_success": 300.0543213633597,
+      "timed_samples": 15574,
+      "raw_inclusive_cpu_ns_per_sample": 553.3048028765892,
+      "raw_inclusive_wall_ns_per_sample": 1418.7561320148966
+    },
+    {
+      "driver": "xerial",
+      "category": "_exec_utf8",
+      "calls_per_success": 0.0,
+      "timed_samples": 0,
+      "raw_inclusive_cpu_ns_per_sample": null,
+      "raw_inclusive_wall_ns_per_sample": null
+    },
+    {
+      "driver": "xerial",
+      "category": "finalize",
+      "calls_per_success": 276.07478697504564,
+      "timed_samples": 14330,
+      "raw_inclusive_cpu_ns_per_sample": 820.529448709002,
+      "raw_inclusive_wall_ns_per_sample": 1499.8736217725052
+    },
+    {
+      "driver": "xerial",
+      "category": "column_text_utf8",
+      "calls_per_success": 365.00867315885574,
+      "timed_samples": 18945,
+      "raw_inclusive_cpu_ns_per_sample": 882.0808656637636,
+      "raw_inclusive_wall_ns_per_sample": 1698.7935075217736
+    },
+    {
+      "driver": "xerial",
+      "category": "sqlite3_busy_handler",
+      "calls_per_success": 0.0,
+      "timed_samples": 0,
+      "raw_inclusive_cpu_ns_per_sample": null,
+      "raw_inclusive_wall_ns_per_sample": null
+    },
+    {
+      "driver": "xerial",
+      "category": "sqlite3_busy_timeout",
+      "calls_per_success": 0.0,
+      "timed_samples": 0,
+      "raw_inclusive_cpu_ns_per_sample": null,
+      "raw_inclusive_wall_ns_per_sample": null
+    },
+    {
+      "driver": "fork",
+      "category": "gethandle",
+      "calls_per_success": 1007.220785440613,
+      "timed_samples": 49048,
+      "raw_inclusive_cpu_ns_per_sample": 492.34533518186265,
+      "raw_inclusive_wall_ns_per_sample": 1042.445216930354
+    },
+    {
+      "driver": "fork",
+      "category": "checkBackupAccess",
+      "calls_per_success": 6844.806513409962,
+      "timed_samples": 333310,
+      "raw_inclusive_cpu_ns_per_sample": 479.36167831748224,
+      "raw_inclusive_wall_ns_per_sample": 1186.9713149920494
+    },
+    {
+      "driver": "fork",
+      "category": "readBusyTimeout",
+      "calls_per_success": 84.03879310344827,
+      "timed_samples": 4090,
+      "raw_inclusive_cpu_ns_per_sample": 1367.3031784841075,
+      "raw_inclusive_wall_ns_per_sample": 1980.359902200489
+    },
+    {
+      "driver": "fork",
+      "category": "attemptNoWaitBusy",
+      "calls_per_success": 84.03879310344827,
+      "timed_samples": 4095,
+      "raw_inclusive_cpu_ns_per_sample": 10436.885714285714,
+      "raw_inclusive_wall_ns_per_sample": 45868.308913308916
+    },
+    {
+      "driver": "fork",
+      "category": "prepare_utf8",
+      "calls_per_success": 276.07758620689657,
+      "timed_samples": 13442,
+      "raw_inclusive_cpu_ns_per_sample": 10514.348311263206,
+      "raw_inclusive_wall_ns_per_sample": 11154.86385954471
+    },
+    {
+      "driver": "fork",
+      "category": "step",
+      "calls_per_success": 411.1010536398467,
+      "timed_samples": 20018,
+      "raw_inclusive_cpu_ns_per_sample": 2639.4067339394546,
+      "raw_inclusive_wall_ns_per_sample": 3482.562843440903
+    },
+    {
+      "driver": "fork",
+      "category": "column_name_utf8",
+      "calls_per_success": 1345.4193007662834,
+      "timed_samples": 65516,
+      "raw_inclusive_cpu_ns_per_sample": 790.2550674644361,
+      "raw_inclusive_wall_ns_per_sample": 1489.9825233530742
+    },
+    {
+      "driver": "fork",
+      "category": "bind_parameter_count",
+      "calls_per_success": 300.05699233716473,
+      "timed_samples": 14611,
+      "raw_inclusive_cpu_ns_per_sample": 498.0749435356923,
+      "raw_inclusive_wall_ns_per_sample": 1056.770515365136
+    },
+    {
+      "driver": "fork",
+      "category": "_exec_utf8",
+      "calls_per_success": 0.0,
+      "timed_samples": 0,
+      "raw_inclusive_cpu_ns_per_sample": null,
+      "raw_inclusive_wall_ns_per_sample": null
+    },
+    {
+      "driver": "fork",
+      "category": "finalize",
+      "calls_per_success": 276.07758620689657,
+      "timed_samples": 13442,
+      "raw_inclusive_cpu_ns_per_sample": 777.236274363934,
+      "raw_inclusive_wall_ns_per_sample": 1303.8567177503348
+    },
+    {
+      "driver": "fork",
+      "category": "column_text_utf8",
+      "calls_per_success": 365.00909961685824,
+      "timed_samples": 17774,
+      "raw_inclusive_cpu_ns_per_sample": 794.5043884325419,
+      "raw_inclusive_wall_ns_per_sample": 1400.243445482165
+    },
+    {
+      "driver": "fork",
+      "category": "sqlite3_busy_handler",
+      "calls_per_success": 84.03879310344827,
+      "timed_samples": 4092,
+      "raw_inclusive_cpu_ns_per_sample": 456.50244379276637,
+      "raw_inclusive_wall_ns_per_sample": 945.3497067448681
+    },
+    {
+      "driver": "fork",
+      "category": "sqlite3_busy_timeout",
+      "calls_per_success": 84.03879310344827,
+      "timed_samples": 4092,
+      "raw_inclusive_cpu_ns_per_sample": 473.43352883675465,
+      "raw_inclusive_wall_ns_per_sample": 1055.607771260997
+    }
+  ],
+  "timer_calibrations": [
+    {
+      "driver": "xerial",
+      "rep": 1,
+      "iterations": 4096,
+      "wall_ns": 2442178,
+      "thread_cpu_ns": 1167987,
+      "wall_ns_per_empty_timer": 596.23486328125,
+      "thread_cpu_ns_per_empty_timer": 285.153076171875,
+      "semantics": "Empty wall-start/CPU-start/CPU-end/wall-end clock sequence on coordinator before measurement; excludes counter/TLS/cleanup dispatch cost and is not a correction."
+    },
+    {
+      "driver": "fork",
+      "rep": 1,
+      "iterations": 4096,
+      "wall_ns": 1882064,
+      "thread_cpu_ns": 896575,
+      "wall_ns_per_empty_timer": 459.48828125,
+      "thread_cpu_ns_per_empty_timer": 218.890380859375,
+      "semantics": "Empty wall-start/CPU-start/CPU-end/wall-end clock sequence on coordinator before measurement; excludes counter/TLS/cleanup dispatch cost and is not a correction."
+    },
+    {
+      "driver": "fork",
+      "rep": 2,
+      "iterations": 4096,
+      "wall_ns": 2569438,
+      "thread_cpu_ns": 1229494,
+      "wall_ns_per_empty_timer": 627.30419921875,
+      "thread_cpu_ns_per_empty_timer": 300.16943359375,
+      "semantics": "Empty wall-start/CPU-start/CPU-end/wall-end clock sequence on coordinator before measurement; excludes counter/TLS/cleanup dispatch cost and is not a correction."
+    },
+    {
+      "driver": "xerial",
+      "rep": 2,
+      "iterations": 4096,
+      "wall_ns": 1905059,
+      "thread_cpu_ns": 909526,
+      "wall_ns_per_empty_timer": 465.102294921875,
+      "thread_cpu_ns_per_empty_timer": 222.05224609375,
+      "semantics": "Empty wall-start/CPU-start/CPU-end/wall-end clock sequence on coordinator before measurement; excludes counter/TLS/cleanup dispatch cost and is not a correction."
+    },
+    {
+      "driver": "xerial",
+      "rep": 3,
+      "iterations": 4096,
+      "wall_ns": 2614381,
+      "thread_cpu_ns": 1252500,
+      "wall_ns_per_empty_timer": 638.276611328125,
+      "thread_cpu_ns_per_empty_timer": 305.7861328125,
+      "semantics": "Empty wall-start/CPU-start/CPU-end/wall-end clock sequence on coordinator before measurement; excludes counter/TLS/cleanup dispatch cost and is not a correction."
+    },
+    {
+      "driver": "fork",
+      "rep": 3,
+      "iterations": 4096,
+      "wall_ns": 2583874,
+      "thread_cpu_ns": 1254821,
+      "wall_ns_per_empty_timer": 630.82861328125,
+      "thread_cpu_ns_per_empty_timer": 306.352783203125,
+      "semantics": "Empty wall-start/CPU-start/CPU-end/wall-end clock sequence on coordinator before measurement; excludes counter/TLS/cleanup dispatch cost and is not a correction."
+    }
+  ],
+  "allocation_estimates": {
+    "xerial": {
+      "estimated_allocation_bytes_per_success": 1758514.1956845822,
+      "estimated_org_sqlite_class_bytes_per_success": 56768.72812867791
+    },
+    "fork": {
+      "estimated_allocation_bytes_per_success": 1737508.601461772,
+      "estimated_org_sqlite_class_bytes_per_success": 48652.824176726615
+    }
+  },
+  "normalized_allocation_class_deltas": [
+    {
+      "class_or_lambda_owner_group": "org.sqlite.jdbc3.JDBC3ResultSet$$Lambda[owner aggregate]",
+      "xerial_estimated_bytes_per_request": 15919.925931737936,
+      "fork_estimated_bytes_per_request": 8008.340970682434,
+      "delta_bytes_per_request": -7911.584961055502
+    },
+    {
+      "class_or_lambda_owner_group": "[I",
+      "xerial_estimated_bytes_per_request": 85564.45978815222,
+      "fork_estimated_bytes_per_request": 78662.57501847745,
+      "delta_bytes_per_request": -6901.884769674769
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.reflection.property.PropertyTokenizer",
+      "xerial_estimated_bytes_per_request": 35706.70725774814,
+      "fork_estimated_bytes_per_request": 42323.6514740905,
+      "delta_bytes_per_request": 6616.944216342359
+    },
+    {
+      "class_or_lambda_owner_group": "[Ljava.lang.Object;",
+      "xerial_estimated_bytes_per_request": 103047.58258140447,
+      "fork_estimated_bytes_per_request": 97908.42670608524,
+      "delta_bytes_per_request": -5139.155875319222
+    },
+    {
+      "class_or_lambda_owner_group": "java.util.ArrayList",
+      "xerial_estimated_bytes_per_request": 40149.47728520988,
+      "fork_estimated_bytes_per_request": 35434.75601543894,
+      "delta_bytes_per_request": -4714.72126977094
+    },
+    {
+      "class_or_lambda_owner_group": "[[Ljava.lang.annotation.Annotation;",
+      "xerial_estimated_bytes_per_request": 23283.40588466065,
+      "fork_estimated_bytes_per_request": 20063.908023322656,
+      "delta_bytes_per_request": -3219.4978613379935
+    },
+    {
+      "class_or_lambda_owner_group": "[B",
+      "xerial_estimated_bytes_per_request": 324116.52820714004,
+      "fork_estimated_bytes_per_request": 326964.2007062495,
+      "delta_bytes_per_request": 2847.672499109467
+    },
+    {
+      "class_or_lambda_owner_group": "java.util.HashMap",
+      "xerial_estimated_bytes_per_request": 153892.61734013338,
+      "fork_estimated_bytes_per_request": 151254.31091401822,
+      "delta_bytes_per_request": -2638.3064261151594
+    },
+    {
+      "class_or_lambda_owner_group": "java.util.concurrent.ConcurrentLinkedQueue$Itr",
+      "xerial_estimated_bytes_per_request": 3044.120204001569,
+      "fork_estimated_bytes_per_request": 904.1675289480168,
+      "delta_bytes_per_request": -2139.9526750535524
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.executor.statement.RoutingStatementHandler",
+      "xerial_estimated_bytes_per_request": 205.6837975676736,
+      "fork_estimated_bytes_per_request": 2238.8910240617556,
+      "delta_bytes_per_request": 2033.207226494082
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.executor.statement.PreparedStatementHandler",
+      "xerial_estimated_bytes_per_request": 6499.608003138485,
+      "fork_estimated_bytes_per_request": 8266.674550381867,
+      "delta_bytes_per_request": 1767.066547243382
+    },
+    {
+      "class_or_lambda_owner_group": "java.nio.DirectByteBuffer",
+      "xerial_estimated_bytes_per_request": 128058.73236563358,
+      "fork_estimated_bytes_per_request": 126325.12047302291,
+      "delta_bytes_per_request": -1733.611892610672
+    },
+    {
+      "class_or_lambda_owner_group": "[Ljava.lang.annotation.Annotation;",
+      "xerial_estimated_bytes_per_request": 51585.49642997254,
+      "fork_estimated_bytes_per_request": 53087.550628233555,
+      "delta_bytes_per_request": 1502.0541982610157
+    },
+    {
+      "class_or_lambda_owner_group": "java.util.HashMap$Node",
+      "xerial_estimated_bytes_per_request": 78694.62094939192,
+      "fork_estimated_bytes_per_request": 77198.684733514,
+      "delta_bytes_per_request": -1495.9362158779113
+    },
+    {
+      "class_or_lambda_owner_group": "java.lang.String",
+      "xerial_estimated_bytes_per_request": 114236.78116908591,
+      "fork_estimated_bytes_per_request": 112805.66313541924,
+      "delta_bytes_per_request": -1431.118033666673
+    },
+    {
+      "class_or_lambda_owner_group": "[Ljava.util.regex.IntHashSet;",
+      "xerial_estimated_bytes_per_request": 11559.429423303256,
+      "fork_estimated_bytes_per_request": 10204.176398127618,
+      "delta_bytes_per_request": -1355.253025175638
+    },
+    {
+      "class_or_lambda_owner_group": "[Z",
+      "xerial_estimated_bytes_per_request": 12094.207296979208,
+      "fork_estimated_bytes_per_request": 13347.23495113739,
+      "delta_bytes_per_request": 1253.0276541581825
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.binding.MapperMethod$ParamMap",
+      "xerial_estimated_bytes_per_request": 3126.3937230286388,
+      "fork_estimated_bytes_per_request": 4348.615258273795,
+      "delta_bytes_per_request": 1222.2215352451562
+    },
+    {
+      "class_or_lambda_owner_group": "java.lang.reflect.Constructor",
+      "xerial_estimated_bytes_per_request": 22954.311808552375,
+      "fork_estimated_bytes_per_request": 24068.078508663875,
+      "delta_bytes_per_request": 1113.7667001115005
+    },
+    {
+      "class_or_lambda_owner_group": "java.lang.ThreadLocal$ThreadLocalMap$Entry",
+      "xerial_estimated_bytes_per_request": 8679.856257355827,
+      "fork_estimated_bytes_per_request": 7750.007390983001,
+      "delta_bytes_per_request": -929.8488663728258
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.scripting.xmltags.DynamicContext$ContextMap",
+      "xerial_estimated_bytes_per_request": 2139.1114947038054,
+      "fork_estimated_bytes_per_request": 3056.947359776628,
+      "delta_bytes_per_request": 917.8358650728228
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.executor.result.DefaultResultHandler",
+      "xerial_estimated_bytes_per_request": 1727.7438995684581,
+      "fork_estimated_bytes_per_request": 818.0563357148723,
+      "delta_bytes_per_request": -909.6875638535859
+    },
+    {
+      "class_or_lambda_owner_group": "com.networknt.schema.path.NodePath",
+      "xerial_estimated_bytes_per_request": 2920.709925460965,
+      "fork_estimated_bytes_per_request": 2023.6130409788946,
+      "delta_bytes_per_request": -897.0968844820707
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.executor.resultset.ResultSetWrapper",
+      "xerial_estimated_bytes_per_request": 7569.163750490388,
+      "fork_estimated_bytes_per_request": 8438.896936848156,
+      "delta_bytes_per_request": 869.7331863577674
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.executor.ErrorContext",
+      "xerial_estimated_bytes_per_request": 10983.51479011377,
+      "fork_estimated_bytes_per_request": 11840.289069557362,
+      "delta_bytes_per_request": 856.7742794435926
+    },
+    {
+      "class_or_lambda_owner_group": "java.util.regex.Pattern$$Lambda[owner aggregate]",
+      "xerial_estimated_bytes_per_request": 2015.7012161632013,
+      "fork_estimated_bytes_per_request": 2841.669376693767,
+      "delta_bytes_per_request": 825.9681605305657
+    },
+    {
+      "class_or_lambda_owner_group": "java.util.stream.ReferencePipeline$Head",
+      "xerial_estimated_bytes_per_request": 2344.795292271479,
+      "fork_estimated_bytes_per_request": 3143.0585530097724,
+      "delta_bytes_per_request": 798.2632607382934
+    },
+    {
+      "class_or_lambda_owner_group": "java.lang.reflect.Parameter",
+      "xerial_estimated_bytes_per_request": 17524.25955276579,
+      "fork_estimated_bytes_per_request": 18298.628562043195,
+      "delta_bytes_per_request": 774.369009277405
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.executor.resultset.DefaultResultSetHandler",
+      "xerial_estimated_bytes_per_request": 18264.721224009416,
+      "fork_estimated_bytes_per_request": 17523.627822944894,
+      "delta_bytes_per_request": -741.0934010645215
+    },
+    {
+      "class_or_lambda_owner_group": "org.apache.ibatis.builder.ParameterExpression",
+      "xerial_estimated_bytes_per_request": 1069.5557473519027,
+      "fork_estimated_bytes_per_request": 1808.3350578960335,
+      "delta_bytes_per_request": 738.7793105441308
+    }
+  ],
+  "allocation_name_normalization": "Volatile hidden lambda addresses collapsed only into labelled owner aggregates, not claimed identical runtime classes.",
+  "stock_gc": {
+    "xerial": {
+      "pause_ms_per_run": [
+        38.932616,
+        37.514147,
+        38.310045
+      ],
+      "safepoint_events": "not enabled in stock; not zero"
+    },
+    "fork": {
+      "pause_ms_per_run": [
+        38.247874,
+        38.573944,
+        38.433814
+      ],
+      "safepoint_events": "not enabled in stock; not zero"
+    }
+  },
+  "native_db_monitor_inflations": [
+    {
+      "mode": "stock",
+      "driver": "xerial",
+      "rep": 1,
+      "phase": "warmup",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "stock",
+      "driver": "xerial",
+      "rep": 1,
+      "phase": "measured",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "stock",
+      "driver": "fork",
+      "rep": 1,
+      "phase": "warmup",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 8
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000001b114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000001b114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000001b114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000001b114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000001b114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 3
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000001b114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "stock",
+      "driver": "fork",
+      "rep": 1,
+      "phase": "measured",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 4
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000001b6899a8.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.authorization.AuthorizationService.authenticateBearer [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000001b8e6430.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000001b8df908.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [JIT compiled] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000001b8e58f0.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000001b8e5b20.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000001b8e5b20.run [JIT compiled] <- java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run [Inlined] <- java.lang.Thread.runWith [Inlined] <- java.lang.VirtualThread.run [Inlined] <- java.lang.VirtualThread$VThreadContinuation$1.run [Inlined] <- jdk.internal.vm.Continuation.enter0 [Inlined] <- jdk.internal.vm.Continuation.enter [JIT compiled] <- jdk.internal.vm.Continuation.enterSpecial [Native]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000001b6899a8.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000001b98bc48.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000001b9c6270.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [JIT compiled] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000001b8e6430.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000001b8df908.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [JIT compiled] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000001b8e58f0.run [JIT compiled] <- java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run [Inlined] <- java.lang.Thread.runWith [Inlined] <- java.lang.VirtualThread.run [Inlined] <- java.lang.VirtualThread$VThreadContinuation$1.run [Inlined] <- jdk.internal.vm.Continuation.enter0 [Inlined] <- jdk.internal.vm.Continuation.enter [JIT compiled] <- jdk.internal.vm.Continuation.enterSpecial [Native]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000001b6899a8.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.lambda$execute$3 [Inlined] <- io.gateway.GatewayExecutionService$$Lambda.0x000000001b9cbd50.apply [JIT compiled] <- io.gateway.runtime.WorkflowRunner.run [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000001b98bc48.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000001b9c6270.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [JIT compiled] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000001b8e6430.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000001b8df908.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [JIT compiled] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000001b8e58f0.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000001b8e5b20.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- [truncated]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000001b114e50.call [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [JIT compiled] <- org.sqlite.jdbc4.JDBC4Connection.isValid [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.isConnectionDead [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.getConnection [JIT compiled] <- com.zaxxer.hikari.pool.HikariPool.getConnection [Inlined] <- com.zaxxer.hikari.HikariDataSource.getConnection [JIT compiled] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.openConnection [JIT compiled] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.getConnection [Inlined] <- org.apache.ibatis.executor.BaseExecutor.getConnection [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.prepareStatement [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.lambda$execute$3 [Inlined] <- io.gateway.GatewayExecutionService$$Lambda.0x000000001b9cbd50.apply [JIT compiled] <- io.gateway.runtime.WorkflowRunner.run [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000001b98bc48.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000001b9c6270.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [JIT compiled] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000001b8e6430.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000001b8df908.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [JIT compiled] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000001b8e58f0.run [JIT compiled] <- [truncated]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "async",
+      "driver": "xerial",
+      "rep": 1,
+      "phase": "warmup",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "async",
+      "driver": "xerial",
+      "rep": 1,
+      "phase": "measured",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "async",
+      "driver": "fork",
+      "rep": 1,
+      "phase": "warmup",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 8
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000014114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000014114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000014114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000014114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000014114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 3
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000014114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "async",
+      "driver": "fork",
+      "rep": 1,
+      "phase": "measured",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 5
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x0000000014669228.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [JIT compiled] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [Inlined] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [JIT compiled] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.authorization.AuthorizationService.authenticateBearer [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000148d6490.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000148d1e30.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x00000000148d38e8.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x00000000148d3b18.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x00000000148d3b18.run [JIT compiled] <- java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run [Inlined] <- java.lang.Thread.runWith [Inlined] <- java.lang.VirtualThread.run [Inlined] <- java.lang.VirtualThread$VThreadContinuation$1.run [Inlined] <- jdk.internal.vm.Continuation.enter0 [Inlined] <- jdk.internal.vm.Continuation.enter [JIT compiled] <- jdk.internal.vm.Continuation.enterSpecial [Native]": {
+          "events": 2
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x0000000014669228.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [JIT compiled] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [Inlined] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [JIT compiled] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [JIT compiled] <- io.gateway.GatewayExecutionService.lambda$execute$3 [JIT compiled] <- io.gateway.GatewayExecutionService$$Lambda.0x00000000149c2b30.apply [JIT compiled] <- io.gateway.runtime.WorkflowRunner.run [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x00000000149848a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x00000000149b7c98.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000148d6490.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000148d1e30.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x00000000148d38e8.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x00000000148d3b18.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- [truncated]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x0000000014669228.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [JIT compiled] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [Inlined] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [JIT compiled] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.write [JIT compiled] <- io.gateway.authorization.AuthorizationService.authorizeChecked [Inlined] <- io.gateway.authorization.AuthorizationService.authorize [Inlined] <- io.gateway.GatewayExecutionService.authorize [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x00000000149848a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x00000000149b7c98.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000148d6490.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000148d1e30.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x00000000148d38e8.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x00000000148d3b18.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- [truncated]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000014114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.isValid [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.isConnectionDead [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.getConnection [Inlined] <- com.zaxxer.hikari.pool.HikariPool.getConnection [Inlined] <- com.zaxxer.hikari.HikariDataSource.getConnection [Inlined] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.openConnection [JIT compiled] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.getConnection [Inlined] <- org.apache.ibatis.executor.BaseExecutor.getConnection [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.prepareStatement [JIT compiled] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [JIT compiled] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x00000000149848a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x00000000149b7c98.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000148d6490.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000148d1e30.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x00000000148d38e8.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- [truncated]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "async",
+      "driver": "fork",
+      "rep": 2,
+      "phase": "warmup",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 8
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000004f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000004f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000004f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000004f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000004f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 3
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000004f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "async",
+      "driver": "fork",
+      "rep": 2,
+      "phase": "measured",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 3
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000004f6832e8.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000004f98c8a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000004f9c0b08.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [JIT compiled] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000004f8daec0.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000004f8d88c8.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000004f8da380.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000004f8da5b0.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000004f8da5b0.run [JIT compiled] <- [truncated]": {
+          "events": 2
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000004f114e50.call [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [JIT compiled] <- org.sqlite.jdbc4.JDBC4Connection.isValid [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.isConnectionDead [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.getConnection [Inlined] <- com.zaxxer.hikari.pool.HikariPool.getConnection [Inlined] <- com.zaxxer.hikari.HikariDataSource.getConnection [JIT compiled] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.openConnection [JIT compiled] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.getConnection [Inlined] <- org.apache.ibatis.executor.BaseExecutor.getConnection [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.prepareStatement [JIT compiled] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [JIT compiled] <- io.gateway.GatewayExecutionService.lambda$execute$3 [JIT compiled] <- io.gateway.GatewayExecutionService$$Lambda.0x000000004f9ca8f0.apply [JIT compiled] <- io.gateway.runtime.WorkflowRunner.run [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000004f98c8a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000004f9c0b08.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [JIT compiled] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000004f8daec0.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000004f8d88c8.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000004f8da380.run [JIT compiled] <- [truncated]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "async",
+      "driver": "xerial",
+      "rep": 2,
+      "phase": "warmup",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "async",
+      "driver": "xerial",
+      "rep": 2,
+      "phase": "measured",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "stock",
+      "driver": "fork",
+      "rep": 2,
+      "phase": "warmup",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 8
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000008f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000008f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000008f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000008f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000008f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 3
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000008f114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "stock",
+      "driver": "fork",
+      "rep": 2,
+      "phase": "measured",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 3
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000008f66ad48.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [JIT compiled] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [Inlined] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [JIT compiled] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000008f988000.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000008f9be780.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000008f8dcf80.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000008f8d6978.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000008f8dc440.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000008f8dc670.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000008f8dc670.run [JIT compiled] <- [truncated]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000008f66ad48.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [JIT compiled] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [Inlined] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [JIT compiled] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.lambda$execute$3 [Inlined] <- io.gateway.GatewayExecutionService$$Lambda.0x000000008f9cc490.apply [Inlined] <- io.gateway.runtime.WorkflowRunner.run [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000008f988000.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000008f9be780.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000008f8dcf80.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000008f8d6978.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000008f8dc440.run [JIT compiled] <- java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run [Inlined] <- java.lang.Thread.runWith [Inlined] <- java.lang.VirtualThread.run [Inlined] <- java.lang.VirtualThread$VThreadContinuation$1.run [Inlined] <- jdk.internal.vm.Continuation.enter0 [Inlined] <- [truncated]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000008f114e50.call [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [JIT compiled] <- org.sqlite.jdbc4.JDBC4Connection.isValid [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.isConnectionDead [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.getConnection [Inlined] <- com.zaxxer.hikari.pool.HikariPool.getConnection [Inlined] <- com.zaxxer.hikari.HikariDataSource.getConnection [Inlined] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.openConnection [JIT compiled] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.getConnection [Inlined] <- org.apache.ibatis.executor.BaseExecutor.getConnection [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.prepareStatement [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [JIT compiled] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000008f988000.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000008f9be780.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000008f8dcf80.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000008f8d6978.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000008f8dc440.run [JIT compiled] <- java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run [Inlined] <- java.lang.Thread.runWith [Inlined] <- java.lang.VirtualThread.run [Inlined] <- [truncated]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "stock",
+      "driver": "xerial",
+      "rep": 2,
+      "phase": "warmup",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "stock",
+      "driver": "xerial",
+      "rep": 2,
+      "phase": "measured",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "stock",
+      "driver": "xerial",
+      "rep": 3,
+      "phase": "warmup",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "stock",
+      "driver": "xerial",
+      "rep": 3,
+      "phase": "measured",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "stock",
+      "driver": "fork",
+      "rep": 3,
+      "phase": "warmup",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 8
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000061114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000061114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000061114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000061114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000061114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 3
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000061114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "stock",
+      "driver": "fork",
+      "rep": 3,
+      "phase": "measured",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 3
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x0000000061682438.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [JIT compiled] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000006198c8a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x00000000619bf578.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000618dcd40.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000618d6978.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x00000000618dc440.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x00000000618dc670.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x00000000618dc670.run [JIT compiled] <- [truncated]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x0000000061682438.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [Inlined] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [JIT compiled] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.lambda$execute$3 [Inlined] <- io.gateway.GatewayExecutionService$$Lambda.0x00000000619cdd50.apply [Inlined] <- io.gateway.runtime.WorkflowRunner.run [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000006198c8a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x00000000619bf578.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000618dcd40.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000618d6978.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x00000000618dc440.run [JIT compiled] <- java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run [Inlined] <- java.lang.Thread.runWith [Inlined] <- java.lang.VirtualThread.run [Inlined] <- java.lang.VirtualThread$VThreadContinuation$1.run [Inlined] <- jdk.internal.vm.Continuation.enter0 [Inlined] <- [truncated]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x0000000061114e50.call [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [JIT compiled] <- org.sqlite.jdbc4.JDBC4Connection.isValid [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.isConnectionDead [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.getConnection [JIT compiled] <- com.zaxxer.hikari.pool.HikariPool.getConnection [Inlined] <- com.zaxxer.hikari.HikariDataSource.getConnection [Inlined] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.openConnection [JIT compiled] <- org.apache.ibatis.transaction.jdbc.JdbcTransaction.getConnection [Inlined] <- org.apache.ibatis.executor.BaseExecutor.getConnection [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.prepareStatement [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.lambda$execute$3 [Inlined] <- io.gateway.GatewayExecutionService$$Lambda.0x00000000619cdd50.apply [Inlined] <- io.gateway.runtime.WorkflowRunner.run [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000006198c8a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x00000000619bf578.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000618dcd40.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x00000000618d6978.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x00000000618dc440.run [Inlined] <- [truncated]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "async",
+      "driver": "xerial",
+      "rep": 3,
+      "phase": "warmup",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "async",
+      "driver": "xerial",
+      "rep": 3,
+      "phase": "measured",
+      "classes": {},
+      "stacks": {}
+    },
+    {
+      "mode": "async",
+      "driver": "fork",
+      "rep": 3,
+      "phase": "warmup",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 8
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000009e114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000009e114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000009e114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000009e114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.checkFailFast [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.<init> [Interpreted] <- com.zaxxer.hikari.HikariDataSource.<init> [Interpreted] <- io.gateway.persistence.PlatformStore.pool [Interpreted] <- io.gateway.persistence.PlatformStore.<init> [Interpreted] <- io.gateway.persistence.$PlatformStore$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveBeanRegistration [Interpreted] <- io.micronaut.context.DefaultBeanContext.getBean [Interpreted] <- io.micronaut.context.AbstractBeanResolutionContext.getBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.resolveBean [Interpreted] <- io.micronaut.context.AbstractInitializableBeanDefinition.getBeanForConstructorArgument [Interpreted] <- io.gateway.$Readiness$Definition.instantiate [Interpreted] <- io.micronaut.context.DefaultBeanContext.resolveByBeanFactory [Interpreted] <- io.micronaut.context.DefaultBeanContext.createRegistration [Interpreted] <- io.micronaut.context.SingletonScope.getOrCreate [Interpreted] <- io.micronaut.context.DefaultBeanContext.intializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBean [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeEagerBeans [Interpreted] <- io.micronaut.context.DefaultBeanContext.initializeContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.configureAndStartContext [Interpreted] <- io.micronaut.context.DefaultBeanContext.start [Interpreted] <- io.micronaut.context.DefaultApplicationContext.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.start [Interpreted] <- io.micronaut.context.ApplicationContextBuilder.run [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayFixture.<init> [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000009e114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- com.zaxxer.hikari.util.DriverDataSource.getConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newConnection [Interpreted] <- com.zaxxer.hikari.pool.PoolBase.newPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool.createPoolEntry [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- com.zaxxer.hikari.pool.HikariPool$PoolEntryCreator.call [Interpreted] <- java.util.concurrent.FutureTask.run [Interpreted] <- java.util.concurrent.ThreadPoolExecutor.runWorker [Interpreted] <- java.util.concurrent.ThreadPoolExecutor$Worker.run [Interpreted] <- java.lang.Thread.runWith [Interpreted] <- java.lang.Thread.run [Interpreted]": {
+          "events": 3
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.prepare [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.lambda$execute$0 [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement$$Lambda.0x000000009e114e50.call [Interpreted] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [JIT compiled] <- org.sqlite.jdbc3.JDBC3Statement.execute [Interpreted] <- org.sqlite.SQLiteConfig.apply [Interpreted] <- org.sqlite.SQLiteConnection.<init> [Interpreted] <- org.sqlite.jdbc3.JDBC3Connection.<init> [Interpreted] <- org.sqlite.jdbc4.JDBC4Connection.<init> [Interpreted] <- org.sqlite.JDBC.createConnection [Interpreted] <- org.sqlite.JDBC.connect [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- java.sql.DriverManager.getConnection [Interpreted] <- io.gateway.GatewayBenchmark.main [Interpreted]": {
+          "events": 1
+        }
+      }
+    },
+    {
+      "mode": "async",
+      "driver": "fork",
+      "rep": 3,
+      "phase": "measured",
+      "classes": {
+        "org.sqlite.core.NativeDB :: Monitor Enter": {
+          "events": 4
+        }
+      },
+      "stacks": {
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000009e682438.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [JIT compiled] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [JIT compiled] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.authorization.AuthorizationService.authenticateBearer [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000009e8daec0.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000009e8d88c8.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000009e8da380.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000009e8da5b0.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000009e8da5b0.run [JIT compiled] <- java.util.concurrent.ThreadPerTaskExecutor$TaskRunner.run [Inlined] <- java.lang.Thread.runWith [Inlined] <- java.lang.VirtualThread.run [Inlined] <- java.lang.VirtualThread$VThreadContinuation$1.run [Inlined] <- jdk.internal.vm.Continuation.enter0 [Inlined] <- jdk.internal.vm.Continuation.enter [JIT compiled] <- jdk.internal.vm.Continuation.enterSpecial [Native]": {
+          "events": 2
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000009e682438.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [JIT compiled] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [JIT compiled] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000009e98c8a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000009e9c0d68.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000009e8daec0.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000009e8d88c8.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000009e8da380.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000009e8da5b0.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000009e8da5b0.run [JIT compiled] <- [truncated]": {
+          "events": 1
+        },
+        "org.sqlite.core.NativeDB :: Monitor Enter :: org.sqlite.core.DB.execute [JIT compiled] <- org.sqlite.jdbc3.JDBC3PreparedStatement.lambda$execute$0 [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement$$Lambda.0x000000009e682438.call [Inlined] <- org.sqlite.jdbc3.JDBC3Statement.withConnectionTimeout [Inlined] <- org.sqlite.jdbc3.JDBC3PreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.ProxyPreparedStatement.execute [Inlined] <- com.zaxxer.hikari.pool.HikariProxyPreparedStatement.execute [JIT compiled] <- org.apache.ibatis.executor.statement.PreparedStatementHandler.query [JIT compiled] <- org.apache.ibatis.executor.statement.RoutingStatementHandler.query [Inlined] <- org.apache.ibatis.executor.SimpleExecutor.doQuery [Inlined] <- org.apache.ibatis.executor.BaseExecutor.queryFromDatabase [Inlined] <- org.apache.ibatis.executor.BaseExecutor.query [JIT compiled] <- org.apache.ibatis.executor.BaseExecutor.query [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [JIT compiled] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectList [Inlined] <- org.apache.ibatis.session.defaults.DefaultSqlSession.selectOne [Inlined] <- org.apache.ibatis.binding.MapperMethod.execute [JIT compiled] <- org.apache.ibatis.binding.MapperProxy$PlainMethodInvoker.invoke [Inlined] <- org.apache.ibatis.binding.MapperProxy.invoke [JIT compiled] <- jdk.proxy2.$Proxy38.foreignKeys [Inlined] <- io.gateway.persistence.PlatformStore.verifyConnection [Inlined] <- io.gateway.persistence.PlatformStore.read [JIT compiled] <- io.gateway.mcp.ToolCatalog.checkSecurityHeads [Inlined] <- io.gateway.GatewayExecutionService.lambda$execute$3 [Inlined] <- io.gateway.GatewayExecutionService$$Lambda.0x000000009e9cdfa0.apply [JIT compiled] <- io.gateway.runtime.WorkflowRunner.run [JIT compiled] <- io.gateway.GatewayExecutionService.execute [JIT compiled] <- io.gateway.GatewayExecutionService.executeTool [Inlined] <- io.gateway.mcp.McpSdkBridge.lambda$acquire$2 [Inlined] <- io.gateway.mcp.McpSdkBridge$$Lambda.0x000000009e98c8a8.apply [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification.lambda$fromSync$0 [Inlined] <- io.modelcontextprotocol.server.McpStatelessServerFeatures$AsyncToolSpecification$$Lambda.0x000000009e9c0d68.call [Inlined] <- reactor.core.publisher.MonoCallable$MonoCallableSubscription.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.request [Inlined] <- reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set [Inlined] <- reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [Inlined] <- reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onSubscribe [JIT compiled] <- reactor.core.publisher.MonoCallable.subscribe [JIT compiled] <- reactor.core.publisher.Mono.subscribe [JIT compiled] <- reactor.core.publisher.Mono.block [JIT compiled] <- io.gateway.mcp.McpSdkBridge.dispatch [JIT compiled] <- io.gateway.mcp.McpController.post [JIT compiled] <- io.gateway.mcp.$McpController$Definition$Exec.dispatch [Inlined] <- io.micronaut.context.AbstractExecutableMethodsDefinition$DispatchedExecutableMethod.invokeUnsafe [Inlined] <- io.micronaut.context.DefaultBeanContext$BeanContextUnsafeExecutionHandle.invokeUnsafe [Inlined] <- io.micronaut.web.router.AbstractRouteMatch.execute [Inlined] <- io.micronaut.web.router.DefaultUriRouteMatch.execute [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$executeRouteAndConvertBody$0 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000009e8daec0.get [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [Inlined] <- io.micronaut.http.server.RouteExecutor.executeRouteAndConvertBody [Inlined] <- io.micronaut.http.server.RouteExecutor.lambda$callRoute$2 [Inlined] <- io.micronaut.http.server.RouteExecutor$$Lambda.0x000000009e8d88c8.get [Inlined] <- io.micronaut.core.execution.ExecutionFlow.lambda$async$0 [Inlined] <- io.micronaut.core.execution.ExecutionFlow$$Lambda.0x000000009e8da380.run [Inlined] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl.propagate [JIT compiled] <- io.micronaut.core.propagation.PropagatedContextImpl.lambda$wrap$2 [Inlined] <- io.micronaut.core.propagation.PropagatedContextImpl$$Lambda.0x000000009e8da5b0.run [JIT compiled] <- io.micronaut.core.propagation.ThreadContext.propagate [Inlined] <- [truncated]": {
+          "events": 1
+        }
+      }
+    }
+  ],
+  "monitor_followup_summary": [
+    {
+      "mode": "stock",
+      "driver": "xerial",
+      "runs": 3,
+      "median_rps": 149.22580744654826,
+      "min_rps": 148.48920089184497,
+      "max_rps": 151.03445829069872,
+      "median_cpu_ms_per_success": 12.958314657104438,
+      "failed_runs": 0
+    },
+    {
+      "mode": "stock",
+      "driver": "fork",
+      "runs": 3,
+      "median_rps": 141.5139679183078,
+      "min_rps": 140.79999120012704,
+      "max_rps": 147.1179901500726,
+      "median_cpu_ms_per_success": 13.885230479774224,
+      "failed_runs": 0
+    },
+    {
+      "mode": "async",
+      "driver": "xerial",
+      "runs": 3,
+      "median_rps": 139.44848873708995,
+      "min_rps": 139.31456103164464,
+      "max_rps": 142.9392578816105,
+      "median_cpu_ms_per_success": 14.318453091429935,
+      "failed_runs": 0
+    },
+    {
+      "mode": "async",
+      "driver": "fork",
+      "runs": 3,
+      "median_rps": 134.51911263798848,
+      "min_rps": 130.3011566258518,
+      "max_rps": 134.71875716034333,
+      "median_cpu_ms_per_success": 14.961718942948876,
+      "failed_runs": 0
+    }
+  ],
+  "lock_timing_limit": "AP4.5 LockTracer stores monitor-enter timestamps in pthread TLS on64-bit. VT carrier migration may mismatch enter/entered timestamps; observed long AP waits are not used for quantitative gap attribution. JavaMonitorInflate evidence is independent JDK JFR.",
+  "requested_command_output": "target/vt-wait-evidence/github-36432647253/vt-wait-evidence/ci-cost-profile/requested-attribution.log",
+  "limits": [
+    "Inclusive frames/categories overlap; do not sum as disjointCPU.",
+    "Native timer CPU baseline219-306ns and instrumentation layout effects prevent guard479ns being multiplied into an exact production cost.",
+    "AP CPU overhead is asymmetric (+0.903 vs+1.407ms/request), so its +0.900ms driver gap is not the stock +0.396ms gap.",
+    "Three repetitions in one host; do not port prior AMD4.79% gap to Intel2.89%.",
+    "GC pause growth not observed; this does not independently measure all concurrent GC CPU."
+  ]
+}

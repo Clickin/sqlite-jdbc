@@ -1,0 +1,3968 @@
+{
+  "conclusion": "Do not adopt the blanket prepared-update outer guard. Four public-behavior scenarios change in both lock families, including a newly detectable DB/metadata lock cycle through a public connection override. Production locks remain unchanged.",
+  "run_id": 36526677256,
+  "run_url": "https://github.com/Clickin/sqlite-jdbc/actions/runs/36526677256",
+  "source_revision": "bed4caad757168b6f0295b8980a87fe35c8908a0",
+  "branch": "benchmarks/vt-lock-safety/20260929-equivalence",
+  "github_conclusion": "failure",
+  "failure_classification": "Complete valid observations and passed existing regressions; the unqualified adoption gate intentionally rejects detected behavior changes/deadlocks.",
+  "callback": {
+    "id": 36526677256,
+    "head_sha": "bed4caad757168b6f0295b8980a87fe35c8908a0",
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/Clickin/sqlite-jdbc/actions/runs/36526677256",
+    "run_attempt": 1,
+    "rest_requests": 9,
+    "observer_elapsed_seconds": 364.7,
+    "notification": "single background-process completion callback; REST polling internally"
+  },
+  "artifact": {
+    "id": 11015276462,
+    "name": "jdbc-lock-safety-36526677256-1",
+    "github_digest": "sha256:a6827018fa310bc1019d45e98f13d2f9729efd1a4361f1904d9400fd159bb1b3",
+    "size_bytes": 62021977,
+    "retention_days": 30
+  },
+  "candidate": "Existing DB guard spans complete JDBC3PreparedStatement.executeLargeUpdate body, including precondition checks; executeUpdate delegates. No other entrypoint widened.",
+  "summary": {
+    "observations_complete": true,
+    "observation_runs": 232,
+    "scenario_count": 29,
+    "scope_changes": 8,
+    "primitive_changes": 2,
+    "unstable_cells": 0,
+    "detected_cycle_runs": 4,
+    "regressions_executed": true,
+    "regressions_passed": true,
+    "full_review_executed": true,
+    "adoption_gate_passed": false,
+    "semantics": "Observable scope changes block an unqualified equivalence claim; not every ordering difference is a JDBC specification violation. Primitive changes and pre-existing failures are separate findings."
+  },
+  "environment": {
+    "purpose": "Scope behavioral equivalence gate, not a throughput test",
+    "arguments": {
+      "output": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/vt-wait-evidence/ci-lock-safety",
+      "repetitions": 2,
+      "variants": [
+        "fork",
+        "fork-outer",
+        "reentrant",
+        "reentrant-outer"
+      ],
+      "cases": null,
+      "skip_regressions": false,
+      "fault_library": "target/ci/lock-safety-faults/libsqlitejdbc.so"
+    },
+    "java": "openjdk version \"25.0.2\" 2026-01-20 LTS\nOpenJDK Runtime Environment Temurin-25.0.2+10 (build 25.0.2+10-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.2+10 (build 25.0.2+10-LTS, mixed mode, sharing)\n",
+    "native_library": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/classes/org/sqlite/native/Linux/x86_64/libsqlitejdbc.so",
+    "native_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+    "variants": {
+      "fork": {
+        "classes": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/classes",
+        "class_manifest_sha256": "7a6e0f89d832359e927e4022272f80709fb81d4319a71bd4a7177654167025da"
+      },
+      "fork-outer": {
+        "classes": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-scope-variants/fork-outer/target/classes",
+        "class_manifest_sha256": "7c1346c28ec7d1f389aed2b15b52969ce55d313abf2413f607f5e25c8e21bafe"
+      },
+      "reentrant": {
+        "classes": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-variants/reentrant/target/classes",
+        "class_manifest_sha256": "6ab039e8320ed07135d2fd7a20b84328c41b77f28cc53f111875d6e3b16e9f2c"
+      },
+      "reentrant-outer": {
+        "classes": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-scope-variants/reentrant-outer/target/classes",
+        "class_manifest_sha256": "891939303a69fb1f6346e81b616d77212c5c6fa1b47cd603127b5d12316c36b9"
+      }
+    },
+    "fault_library": "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-safety-faults/libsqlitejdbc.so",
+    "fault_sha256": "3161faf32a2042f8e9bce6d27e3cdd2954a694291757dd210064e5892da04440",
+    "scope_provenance": {
+      "candidate": "Existing DB guard spans complete JDBC3PreparedStatement.executeLargeUpdate body, including precondition checks; executeUpdate delegates. No other entrypoint widened.",
+      "builder_sha256": "5e683a967e374125a2192fe1c524d0256752c631c464f6f8eee11e8fc6547cd5",
+      "variants": {
+        "fork-outer": {
+          "base": "fork",
+          "base_source_sha256": "7b5f0b43134a818c2d00286f93d2ac5baa1aeb2254b79bacd1d30db4a12eac64",
+          "generated_source_sha256": "e0eb91c27ac9bf7dd8ad837bb1b23565584d59bd5a1a908580cdee4198492776",
+          "diff_sha256": "24829b49b48a8d8668ef58a848907eba47fb9b1fd987dcd6d169f806477fb1ba",
+          "compile_command": [
+            "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/25.0.2-10.0.LTS/x64/bin/javac",
+            "--release",
+            "8",
+            "-g",
+            "-encoding",
+            "UTF-8",
+            "-cp",
+            "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/classes",
+            "-d",
+            "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-scope-variants/fork-outer/target/classes",
+            "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-scope-variants/fork-outer/src/main/java/org/sqlite/jdbc3/JDBC3PreparedStatement.java"
+          ],
+          "class_files": {
+            "org/sqlite/SQLiteConfig$JournalMode.class": "b37d0e9833f14429da0f410a7ce329e617898ab4dfcfd16adae5eb780fe51e15",
+            "org/sqlite/SQLiteConfig$TransactionMode.class": "d48ee3517c8755c99c38651c2a2d575fa55b079004d514158c3bac86309c586f",
+            "org/sqlite/ExtendedCommand$BackupCommand.class": "63a3f2472e081b76e5dc83f9eca5766f5a4e578b156740ee708246f875b83f10",
+            "org/sqlite/SQLiteConfig$HexKeyMode.class": "69fa136b63b7f11805bc50799deb5cbc41b1a9e13e8a20483c4b86066e749a64",
+            "org/sqlite/SQLiteLimits.class": "4c33dbb0c948aa66fac84b62d1d394fc0397a990f0996d6f0eac1d5f315d895c",
+            "org/sqlite/Function.class": "13006165aa44c264be0cc1f8c4c69ceec3bc7f5f2851abb86387c72e95f277cb",
+            "org/sqlite/ExtendedCommand$RestoreCommand.class": "380f338da52aa555d8a6415c097da3730032c9e4f31ce691681e3279f67048aa",
+            "org/sqlite/SQLiteConnection.class": "1527a62f7886ca068947c35146a09d6f11984ce99f0938e2d305d665c307a7e7",
+            "org/sqlite/SQLiteConfig.class": "06d3b2985a69eaf42f895966be4e7877a2bfcf39236ddc4b01e08e9b2fd2f94b",
+            "org/sqlite/SQLiteUpdateListener.class": "ccec8e12bc9cb88e81e33cb640093fa1babbe2b3c6d33fb1d4c0cacbb59353bc",
+            "org/sqlite/ExtendedCommand$SQLExtension.class": "ac059b103347870f96064f0484edd596427be33d2c9c90d4865f83d01823ee4b",
+            "org/sqlite/SQLiteJDBCLoader$VersionHolder.class": "f511c408d3541b33ad3fced0219dd5b79c3103bac92e639ca14b8e4986a2a0f1",
+            "org/sqlite/SQLiteConfig$DatePrecision.class": "4160b24d9f20a68f6039e9cba1a6407f1069d333f6ed353854d796dbb5a14e09",
+            "org/sqlite/SQLiteConfig$Encoding.class": "f7a7fc7a9756323f59ad3ff1b61e2b74fd9e4081d0b07a57a1ec2642209aa6cf",
+            "org/sqlite/SQLiteJDBCLoader.class": "9c17974aca30017b1fd4043855a4e58310bf09d4b4f75ed74496789ae64022e9",
+            "org/sqlite/Function$Window.class": "ee8fe5c962a0cbd825155d110e16fa5077098a769b401b538069c5f1219f288d",
+            "org/sqlite/ExtendedCommand.class": "615b305d8e82231f9c110fcad121137497085c597b8e478edbad934bf82ab303",
+            "org/sqlite/SQLiteUpdateListener$Type.class": "880e57c5cb959ea290c2b9b04d19cd1382d3545c2cd251eb993e1d370dc4b1f5",
+            "org/sqlite/Function$Aggregate.class": "a84b02255038e87f012256cef1d31dac5c5040b26358b21511be7d7d1c65f739",
+            "org/sqlite/SQLiteErrorCode.class": "9dc0f3c34a57f1261ee51b5b16309b9c127da40aa5a498e4483bd5203068d84a",
+            "org/sqlite/FileException.class": "9c9cbeafcdbf52d3d81dac4a56ec6b6685a3b8ec92cad8ac19d0831a2673e823",
+            "org/sqlite/NativeLibraryNotFoundException.class": "c834c1d05274dd4efe437131d7a0d6a1ea3d336ccd1fb112eb17142cbf1f6200",
+            "org/sqlite/SQLiteConfig$Pragma.class": "d9f1b0b30b16e0fd9668b1095f3d129b0473ba59efd0f4c8a1c5aeb237a10936",
+            "org/sqlite/SQLiteOpenMode.class": "897d9357c152377c36bddfa449e3c715e62c0fb11792a291743f704ca45fa86b",
+            "org/sqlite/SQLiteException.class": "b3d775d5e427eaec4d018acfb86a28fe88d1793e5f3ade46121c9b1caf6fea78",
+            "org/sqlite/BusyHandler.class": "3f31caa73d79873ef12af6c64ed9e4773b3e05d74e0bc01de3d6ad9c1fb7b227",
+            "org/sqlite/SQLiteConnection$1.class": "6283453bbe2502f66b55dfacf1f60e6a840a048dc162184b41ed48e1160f5359",
+            "org/sqlite/SQLiteConnectionConfig.class": "e3a7a283e3de9e9511c486650a5e813dd1bbf67920f61267846de1879e777fff",
+            "org/sqlite/SQLiteDataSource.class": "e50254f4d7384a02b32bc4a204c8d7fe5737ccc9002e63486c724b002c7cc5ac",
+            "org/sqlite/SQLiteConfig$PragmaValue.class": "5b32510df8e2ca1bd94af14652ca7841e0c7bec08e0a09019e1247842fff8638",
+            "org/sqlite/SQLiteConfig$OnOff.class": "24c303a215cbf63d2b7264eac1ef5d0b42cbcd63be8daa6a9e979f4a10fe61da",
+            "org/sqlite/SQLiteCommitListener.class": "3532d3dc2e7db0cee6fcadf404964a497c5ab1f5768deb03781e2f15f88e7afd",
+            "org/sqlite/SQLiteConfig$LockingMode.class": "c948ed003b43b334f58d708a457b29b926889388bdb728a113b1495379ceb4bf",
+            "org/sqlite/Collation.class": "2b1f3196782981d24f7596cfc8dfb60733b9a22dfcbe373d5756e2390e6c9bac",
+            "org/sqlite/SQLiteConfig$DateClass.class": "03f0826ffec2ed22f63e1a0bf9ad409c7a9e7fdbf465f759b20df5b095dcdc3d",
+            "org/sqlite/SQLiteConfig$TempStore.class": "d63d0f96040063779d9558c01049141a66e7702b4cd6c6cbd3c4a5c27a29d4f6",
+            "org/sqlite/ProgressHandler.class": "a782f74597a13d768c06da220ceb696188bdc8b8eaf6d27c0d6e439d2de68cf2",
+            "org/sqlite/JDBC.class": "ebd70422aae53cd260948d0ec1af504e15dba434e149cd541ea0b39477f8d16f",
+            "org/sqlite/SQLiteConfig$SynchronousMode.class": "6ab8817d982154639f437cc84a578024a9caea274feb360152f149e87b8f5036",
+            "org/sqlite/javax/SQLitePooledConnectionHandle.class": "d12f2fb14281636abfc36d04b54e913890d87a354867afc0f36639a9d614fde2",
+            "org/sqlite/javax/SQLiteConnectionPoolDataSource.class": "41c9d777aefae62cc9f47e1a06c73d89d4cf15f804a4ab5c81f9e0342e4f5297",
+            "org/sqlite/javax/SQLitePooledConnection$1.class": "435003d26bf5e1e585ab50f0099e43c6beb30c58e52538c30b5389dddc230cb2",
+            "org/sqlite/javax/SQLitePooledConnection.class": "c7681aae3ad55a49684ea1e2ed32cf974bd978bb04e7047273f9d91b3c739d16",
+            "org/sqlite/date/FastDateParser$NumberStrategy.class": "180f2f7472d209a179aa05eda609df3f02bec6e8e26d189275c59f79722f8a68",
+            "org/sqlite/date/FastDateParser.class": "3ff491c1e5a54ca86c95630cbd725b7ad3b9db25029b0446c68c87b30eb08699",
+            "org/sqlite/date/FastDateParser$4.class": "292052ba697dd510ebc8d4aafdb74339a8cd9280754d25a6e1edfff986720cb3",
+            "org/sqlite/date/FastDatePrinter$Rule.class": "e477805a1823e94f25de86e87eec60306cc68e5a58650ee915fec10d41c90ae2",
+            "org/sqlite/date/DateFormatUtils.class": "5db358e01da12506c097b1ff686c3f47cd3274d0aea4e8753eaaa1539fad1f51",
+            "org/sqlite/date/FastDatePrinter$TwelveHourField.class": "3b72920aa3dcb641353326fd85885a8c5419cd16972bb6c7e9aa6dc21077e7b6",
+            "org/sqlite/date/FastDatePrinter$TimeZoneNumberRule.class": "79557810f12877d5c70da5b5f55c6ce8367b9adfa029e2bf56c21e418689ee53",
+            "org/sqlite/date/FastDateParser$2.class": "c1f4a2f36923c7cb75e65f5452e75993b12db0be551db8b06e74fc3cdb5cd65c",
+            "org/sqlite/date/FastDatePrinter$UnpaddedNumberField.class": "32739322bb05983b69bc4d921a67b95a75c2a24b3dcf39daf479acf40f59f702",
+            "org/sqlite/date/FastDatePrinter$StringLiteral.class": "c9dbf701174c88cef4292e8e3cc95db680e1d8adbe0b6e9e33d831106e07785f",
+            "org/sqlite/date/FastDatePrinter$TwoDigitNumberField.class": "938d8c785a32787e9181c91cb4c528a6176094ab114622af3bc99cb9056a19be",
+            "org/sqlite/date/FastDatePrinter$TextField.class": "844f54a19cd61e468979fed65a7701ea5dc661c3e2ddabcb27bf11452b0715bd",
+            "org/sqlite/date/DatePrinter.class": "1677514f0252aa5812a61ca9bc5747ff89c6b649e17434632e2ae94a1b436c70",
+            "org/sqlite/date/FastDatePrinter$TwentyFourHourField.class": "c48f24280bd26721edc45a14f8e191c86c1eb351b3b6e025c920afed709ee9d1",
+            "org/sqlite/date/ExceptionUtils.class": "2443f2115f7e9aea69fe6fbe917e1ed2ffbef47cd5d51536d9ddf42642dae1c2",
+            "org/sqlite/date/FastDateParser$1.class": "8f03c4bccb59c32feb089d2e12d6dfd3d87dd137cd67013d78a1ac8e9cf93c80",
+            "org/sqlite/date/FastDatePrinter$PaddedNumberField.class": "3e7ee27a6e900249b9e9bae3caf23fca577212b50bef2bd7f118ad54f9ef8530",
+            "org/sqlite/date/FastDatePrinter$UnpaddedMonthField.class": "2c35b16d811718f4308a4e3875a619c194cfa6d3d3fa8f0a6177fba909b7c81e",
+            "org/sqlite/date/FastDateParser$CopyQuotedStrategy.class": "f24ef6f147e91c3f2eea114842d8ce209e3162c581df4a367f25069d26358a4b",
+            "org/sqlite/date/FastDateParser$3.class": "65d03aa0ae0ffed237294d2ebc27a57e9eed22b49ad51b785cad24a98ca49506",
+            "org/sqlite/date/FastDateParser$CaseInsensitiveTextStrategy.class": "8af5654c0beb768d21fad2ba34f308606848fded0f915ea1ecd6b2d47ba2f3ec",
+            "org/sqlite/date/FastDatePrinter$TwoDigitYearField.class": "01c18342f83d52a179aa28d5a41433beeb117bcc9c3275fa1db07cb5f478b066",
+            "org/sqlite/date/FastDatePrinter.class": "3079cde1e29dce70fc26ed5e4b5b96a55a4f28613beba011bb7f303206b187fb",
+            "org/sqlite/date/FastDateParser$TimeZoneStrategy.class": "8b94853ed83d6bf3571376512c0e727e0914a0ec12f0f3a28a8e0a47b77b323b",
+            "org/sqlite/date/FastDatePrinter$Iso8601_Rule.class": "7d1b8f57a1086d879e42dc2a27825c22b47cd44c5fc2b163b0d19273412667b1",
+            "org/sqlite/date/FastDatePrinter$NumberRule.class": "7773ec4522ce779c697a2f122f29f03f38972a0eb4a6116d1eb685691e22dc17",
+            "org/sqlite/date/FormatCache$MultipartKey.class": "0584e17057d7c735b1772cfaba6f316977f57741743d84b55654f3bffeba26d8",
+            "org/sqlite/date/FastDateParser$ISO8601TimeZoneStrategy.class": "c5424ab74bf13bb0ca82c1f9a050b0713ffd57e1ee956e2acfaf92fd9ef876fe",
+            "org/sqlite/date/FastDatePrinter$TimeZoneNameRule.class": "564248d3078ca97e5b1b0c1642d96389cc5520d4a3a946607884d5cb7eadbeab",
+            "org/sqlite/date/FastDatePrinter$TimeZoneDisplayKey.class": "7964d55087e4263cdeaa7031191b84ba40280749e9d43562f1d0d53889dc111f",
+            "org/sqlite/date/FastDateFormat$1.class": "b9935decd10d7c2ccf8bd14da4fd9c06663cff7bb29b6b2caaa6a9ed0374600b",
+            "org/sqlite/date/FastDatePrinter$CharacterLiteral.class": "c9a58d398295d2926dc1c396b88a9be584b0fbab6888951146f436d39266501c",
+            "org/sqlite/date/FastDateFormat.class": "471f4ff3610d568229f1993119622dc54ad0761a81a29157f01ca07a1078fce0",
+            "org/sqlite/date/FastDateParser$Strategy.class": "daaa90a8dd080b49cdd91aa1a6f7d1dc3c063006708facea3086060bce9d4624",
+            "org/sqlite/date/FastDatePrinter$TwoDigitMonthField.class": "6d190989b6af1aac9c6659d94058de948985ada0433c53e6d541402147678dc0",
+            "org/sqlite/date/package-info.class": "91a0dd92a3f71ef808e9c7b3d353ed8fe5db54bca082cfc4a8fa3fbe7bcd2b55",
+            "org/sqlite/date/FormatCache.class": "90c322a2d47b1a8c0bc5d05ce089c9ab6978f287c39d6e54fb85eac6586a8a42",
+            "org/sqlite/date/DateParser.class": "57e5afdff7964d981b5f86fb49bf39cfdd1e49b93450fcd669be0144ecacf7e1",
+            "org/sqlite/core/SafeStmtPtr$SafePtrLongFunction.class": "efd903ce920cc6adc08d5c4b4e0ef7b3ca9a9de53cf881505f46d2fc66762fdb",
+            "org/sqlite/core/SafeStmtPtr$SafePtrConsumer.class": "de440d4c1b0667c95ce4bca423bde98957f13663dd444fa51d82ee691fba36bd",
+            "org/sqlite/core/DB$ProgressObserver.class": "191abf8195a82e274ea9a91cea4288967992bd07a3423690f20cd83a5b42be9b",
+            "org/sqlite/core/SafeStmtPtr$SafePtrIntFunction.class": "dba791e453c2b22b9f65105d3247750d7db164ae39575105fb9265fa3db8ea3a",
+            "org/sqlite/core/CoreDatabaseMetaData.class": "3a10618de3190c241c269e1026bdb328792aa79ed38f3e34fd92d56053f8486f",
+            "org/sqlite/core/SafeStmtPtr.class": "6fec5476caf160bbf38efda8fc3be4496d8db316beb9d3a65f37a73bd148dac3",
+            "org/sqlite/core/SafeStmtPtr$SafePtrFunction.class": "43f254fd3447c5fce58aadf423978aaf141d04e550258b350211b9d9d62bc090",
+            "org/sqlite/core/CorePreparedStatement.class": "47b0b133bae7d856d6118e607d94485fcb18e69be99f241c474689e0ba278698",
+            "org/sqlite/core/CoreStatement.class": "d577f0b38ae0079a0e25d4d25ccee8e65dcfdb0d44807a8da5744ef7bd81e46d",
+            "org/sqlite/core/ControlStatement.class": "d31c1f2d0e345edd215249e84f6a43689731c7aa60ee6ab59847a9d7faa7a8b6",
+            "org/sqlite/core/NativeDB.class": "2f0524300baa38d06cbb92fbc08eade9eca5afb88ad1e1baffdcabe7cda1059c",
+            "org/sqlite/core/Codes.class": "d175d8030ef3cdba5e535c3ad9fc77ad3f3de94ba17d0da4939607bc1dff2d09",
+            "org/sqlite/core/SafeStmtPtr$SafePtrDoubleFunction.class": "22f1b9b5bd64b4c81b45ab9b2e4c0c9386ca897b6010b1d113e5428f8a2bc100",
+            "org/sqlite/core/CorePreparedStatement$1.class": "5cdb743d00c55a6b623b239c79487146c887b5945937392b0a3ca79d8fd4a361",
+            "org/sqlite/core/DB.class": "9d0ccd068ed6d70d7629c3154833b256198e6ec1a3b79feacaa73613cc92c67c",
+            "org/sqlite/core/CoreResultSet.class": "af83fb715be5aafc56ce8966e182cb2990f0ccd01dda02f0dcfa083c0f2e2a77",
+            "org/sqlite/util/LibraryLoaderUtil.class": "94457e06202c501370d96ade54768953d8ce12a63df37effc9a65a5321f11519",
+            "org/sqlite/util/AndroidSignatureIgnore.class": "25ef9536205eb5944858c7115d03f941180f5abbbd2ac1be7f04f9ce1a975325",
+            "org/sqlite/util/LoggerFactory$SLF4JLogger.class": "103e84b9847dd9b108f871e4098c5db973aed13c89acde686c105d4f60af4f18",
+            "org/sqlite/util/OSInfo$LogHolder.class": "eeef7b1e81c4a7c90d4eee995592578c13b5e49f5e6d1f83063d06ec18e3b727",
+            "org/sqlite/util/Logger.class": "8a7285b3e4ed55d6ee0895cf25b8767938c24ac750e60fb43780d688623a48d1",
+            "org/sqlite/util/ResourceFinder.class": "6d3a64d3caac8bb6b7bbdb88ea4a42e07d88b2f5a8ba88d27ca5b1e071e1949d",
+            "org/sqlite/util/LoggerFactory.class": "3dca7ff2f0b0fe9d07f117c6c7d3e0af6773e69b9e552043d510f0f6e6111c04",
+            "org/sqlite/util/StringUtils.class": "17679b7deea22eaea996ec3edf838f7a43cffca16a4c47e2340eca4fa251fdeb",
+            "org/sqlite/util/LoggerFactory$JDKLogger.class": "59d37759e6508e664efbcfad5f1dd7e0decdd76d7c9e84d710f7a2fdeb76cba8",
+            "org/sqlite/util/ProcessRunner.class": "53a6ddc91cf3d6cb706dc15b5a62429f202ece350f1edd2ad6d363224dfd752c",
+            "org/sqlite/util/OSInfo.class": "69e962930e367d028cc4d963ee319abc7d9cbfdc38a674a95e594c98a3c32ab1",
+            "org/sqlite/util/QueryUtils.class": "5b49b52cd639d6b23cbcb06601db990c61f11273fa08b306b49841390afb0823",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData$ImportedKeyFinder$ForeignKey.class": "44b5fe3171a40ba816025b49fc4c75ff5688ed3a2b4347f21ae6bfe8bae0a60e",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData.class": "9cebbb750c2fce741a6da23ff0cbd28e1bee18c01eb5211b2746ca87d477e59b",
+            "org/sqlite/jdbc3/JDBC3Statement$BackupObserver.class": "22311feeed6aa6d1d16d6b70b5f6e849bb764d7086d714bd0c36793fba3112ec",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData$LogHolder.class": "0ac4cf79a87d4cfe06cf2e6607feae6f408354342702fabdf4ae74e766a56347",
+            "org/sqlite/jdbc3/JDBC3PreparedStatement.class": "01c653fdc6ffa66bfe33d8cfd5d8b2679a63bb5e14d07488ae2512d38b34e831",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData$PrimaryKeyFinder.class": "d1836f10b082ccc74cb48ab54647609722749bf08709b1dd3f929e1f94747c60",
+            "org/sqlite/jdbc3/JDBC3ResultSet.class": "1472be6129782be6cd8e2139471ea7ba451cbb8269b707bf57ecb30f19bace6b",
+            "org/sqlite/jdbc3/JDBC3Connection.class": "310f7e58ae7eaeac4126b252c8be9a571c513b72d0378b1ef685d19c5977e7f5",
+            "org/sqlite/jdbc3/JDBC3Savepoint.class": "4c3b314ef30e56462a46f020219f8bd56007d93e9876004de665a88862fe4445",
+            "org/sqlite/jdbc3/JDBC3Statement$SQLCallable.class": "3d10c4300a9fbf415320140a8b4766ca745a32ca175968e56ceb265f4f806f23",
+            "org/sqlite/jdbc3/JDBC3Statement.class": "76beaf532f6e2729a5818fbad9b6113a36030f4c18c7c66213877ef997cd2902",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData$ImportedKeyFinder.class": "880a1c3d08e439f5dff778ee08c256e5f1d943cc2ab241733a2698f587c398e9",
+            "org/sqlite/jdbc4/JDBC4Connection.class": "ab1104dceb2d5ef384e1e8c9eef09307bd5450dba260872e49bf1ecd4d3740a2",
+            "org/sqlite/jdbc4/JDBC4PreparedStatement.class": "97f0937e4ce8b4192871cbab59e503c99776c940eb4c05e1c36450097c388362",
+            "org/sqlite/jdbc4/JDBC4PooledConnection.class": "9015065c0a4f5bfb5a15eb08dbe3728046b667f8438bf278dbf77bcb7f77f670",
+            "org/sqlite/jdbc4/JDBC4ResultSet$SqliteClob.class": "fa4399dc15d3f3efd62f9a5b59a7cf7dcd90f8664ca4ee638e47c3dceac5346f",
+            "org/sqlite/jdbc4/JDBC4Statement.class": "664d63deb32141accb0ee778ff2b1907a9a06328a5212867592d49d2ddc408f7",
+            "org/sqlite/jdbc4/JDBC4ResultSet.class": "94eb78d000f9c34aee82bc88fb4a673b25b0fbd40d38d96823057621f9779a92",
+            "org/sqlite/jdbc4/JDBC4DatabaseMetaData.class": "3080303275ec4805d50d72cb93c1cefc96175c7e5872e9dc9f6191cb376f4f58"
+          },
+          "native_libraries": {
+            "org/sqlite/native/Windows/x86_64/sqlitejdbc.dll": "f16882d2eded914edd1e1d313e7c8579e040b0da090a52ea99ad7b0c5d961c45",
+            "org/sqlite/native/Windows/aarch64/sqlitejdbc.dll": "2294c9a62231294b0bf15a61462d1d7411be5b4ce9d37f93203c7c55b61a565d",
+            "org/sqlite/native/Windows/armv7/sqlitejdbc.dll": "75f68686cb7400dd0a03a68bb6d348cb75517341b884ad1e2120e25f73ffebcd",
+            "org/sqlite/native/Windows/x86/sqlitejdbc.dll": "567154202057ed53f82ff4a5294ab29ace39c37f7b0089f0520734e93fddaa48",
+            "org/sqlite/native/Linux-Android/x86_64/libsqlitejdbc.so": "ab9d152a3bf465dafed28bf0207234fc4351a8ff13b5e24f797bb988500f87c4",
+            "org/sqlite/native/Linux-Android/aarch64/libsqlitejdbc.so": "e815588693ff2490fb07a973d11e1092739d8f00e4f961fdcf9fe10790ac8a15",
+            "org/sqlite/native/Linux-Android/x86/libsqlitejdbc.so": "af38f73eb81b604ec60c108aea94caa4e3d3cffa7996d6c4deb935bf0e94ee17",
+            "org/sqlite/native/Linux-Android/arm/libsqlitejdbc.so": "857d3554b0468bcf07051a2e50dda50786620a2799a06a951ffe881e8dbd948a",
+            "org/sqlite/native/Linux-Musl/x86_64/libsqlitejdbc.so": "086c1e4300ada20cac58671e57028043b541c58640f095b6de094a04fdd18bc6",
+            "org/sqlite/native/Linux-Musl/aarch64/libsqlitejdbc.so": "915b89595c36749d1f2567a54c474f04af3aa354d30acf8c48fbb617bedb6b32",
+            "org/sqlite/native/Linux-Musl/x86/libsqlitejdbc.so": "fb46d8ae47e5ff573215676b4953b2f8e41c8eb4292b11b3f416e5aff413c1d0",
+            "org/sqlite/native/Linux/ppc64/libsqlitejdbc.so": "9f8eef49153a522091054c0e3ac1ff183f4667e9ea7c1a599e155622c04b22b4",
+            "org/sqlite/native/Linux/x86_64/libsqlitejdbc.so": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+            "org/sqlite/native/Linux/armv6/libsqlitejdbc.so": "c7fff3794ec3834c6af17d02bca06685cfa0d9392408fcd2e4374180ec9d57ad",
+            "org/sqlite/native/Linux/aarch64/libsqlitejdbc.so": "4e253e3f886f8da539e6d8fbd92c3a281f50e395bcba568ced953865e8bea5be",
+            "org/sqlite/native/Linux/armv7/libsqlitejdbc.so": "f49b80d6de01be54ec686b85dafaa4bb6545c31896e1fbc315c5ef0cc664cdf5",
+            "org/sqlite/native/Linux/x86/libsqlitejdbc.so": "8c3379b8fba34ac9ae82f98549958315a48ae78eddfdedac390167b34f3e521a",
+            "org/sqlite/native/Linux/riscv64/libsqlitejdbc.so": "1829666a647af59e5046d16c5a746872c46ccc2fb16b83490f8e0d20aa047a73",
+            "org/sqlite/native/Linux/arm/libsqlitejdbc.so": "98f03696254b725b1754580e155eb4aa849f1a121a7bc8a986c5aa83fdc71eba",
+            "org/sqlite/native/Mac/x86_64/libsqlitejdbc.dylib": "82ee6752c826f490b03d883fd23b0edd15ee5652b45b56ccbdd66c289298cd7b",
+            "org/sqlite/native/Mac/aarch64/libsqlitejdbc.dylib": "7e1ed3118ee93af4fb0538a9ace5b9deebf565d5e703942dafc4ed240a796593",
+            "org/sqlite/native/FreeBSD/x86_64/libsqlitejdbc.so": "4c7adc6cc7451db795a14b7ed867cac3add71c9c8f1b7054595a010ce458f12b",
+            "org/sqlite/native/FreeBSD/aarch64/libsqlitejdbc.so": "d209d24bc2f400c8c40942e59da187130a37c36ef5954926a7deeea85aa2cf5c",
+            "org/sqlite/native/FreeBSD/x86/libsqlitejdbc.so": "811f455f8ff7231675956f2ac02efbcbab57f490b32454aa7da31fed43bfcca7"
+          }
+        },
+        "reentrant-outer": {
+          "base": "reentrant",
+          "base_source_sha256": "75231d1e4ecd29b183f1f6b6724ba3905cf8d2965843f006c145c531277ee746",
+          "generated_source_sha256": "024e40f3e665314649ddf21a9c8538b247f0555eb045c693df81d251f9512bb7",
+          "diff_sha256": "2a7442692562c47c1d3190654331805197c35aca68f249df5fabd12a7808610e",
+          "compile_command": [
+            "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/25.0.2-10.0.LTS/x64/bin/javac",
+            "--release",
+            "8",
+            "-g",
+            "-encoding",
+            "UTF-8",
+            "-cp",
+            "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-variants/reentrant/target/classes",
+            "-d",
+            "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-scope-variants/reentrant-outer/target/classes",
+            "/home/runner/work/sqlite-jdbc/sqlite-jdbc/target/ci/lock-scope-variants/reentrant-outer/src/main/java/org/sqlite/jdbc3/JDBC3PreparedStatement.java"
+          ],
+          "class_files": {
+            "org/sqlite/SQLiteConfig$JournalMode.class": "b37d0e9833f14429da0f410a7ce329e617898ab4dfcfd16adae5eb780fe51e15",
+            "org/sqlite/SQLiteConfig$TransactionMode.class": "d48ee3517c8755c99c38651c2a2d575fa55b079004d514158c3bac86309c586f",
+            "org/sqlite/ExtendedCommand$BackupCommand.class": "63a3f2472e081b76e5dc83f9eca5766f5a4e578b156740ee708246f875b83f10",
+            "org/sqlite/SQLiteConfig$HexKeyMode.class": "69fa136b63b7f11805bc50799deb5cbc41b1a9e13e8a20483c4b86066e749a64",
+            "org/sqlite/SQLiteLimits.class": "4c33dbb0c948aa66fac84b62d1d394fc0397a990f0996d6f0eac1d5f315d895c",
+            "org/sqlite/Function.class": "13006165aa44c264be0cc1f8c4c69ceec3bc7f5f2851abb86387c72e95f277cb",
+            "org/sqlite/ExtendedCommand$RestoreCommand.class": "380f338da52aa555d8a6415c097da3730032c9e4f31ce691681e3279f67048aa",
+            "org/sqlite/SQLiteConnection.class": "4b8702b05c4b3c94a1652b50911ac8d6322c7c45b02cc08aceb6b4f54530d4c9",
+            "org/sqlite/SQLiteConfig.class": "06d3b2985a69eaf42f895966be4e7877a2bfcf39236ddc4b01e08e9b2fd2f94b",
+            "org/sqlite/SQLiteUpdateListener.class": "ccec8e12bc9cb88e81e33cb640093fa1babbe2b3c6d33fb1d4c0cacbb59353bc",
+            "org/sqlite/ExtendedCommand$SQLExtension.class": "ac059b103347870f96064f0484edd596427be33d2c9c90d4865f83d01823ee4b",
+            "org/sqlite/SQLiteJDBCLoader$VersionHolder.class": "f511c408d3541b33ad3fced0219dd5b79c3103bac92e639ca14b8e4986a2a0f1",
+            "org/sqlite/SQLiteConfig$DatePrecision.class": "4160b24d9f20a68f6039e9cba1a6407f1069d333f6ed353854d796dbb5a14e09",
+            "org/sqlite/SQLiteConfig$Encoding.class": "f7a7fc7a9756323f59ad3ff1b61e2b74fd9e4081d0b07a57a1ec2642209aa6cf",
+            "org/sqlite/SQLiteJDBCLoader.class": "9c17974aca30017b1fd4043855a4e58310bf09d4b4f75ed74496789ae64022e9",
+            "org/sqlite/Function$Window.class": "ee8fe5c962a0cbd825155d110e16fa5077098a769b401b538069c5f1219f288d",
+            "org/sqlite/ExtendedCommand.class": "615b305d8e82231f9c110fcad121137497085c597b8e478edbad934bf82ab303",
+            "org/sqlite/SQLiteUpdateListener$Type.class": "880e57c5cb959ea290c2b9b04d19cd1382d3545c2cd251eb993e1d370dc4b1f5",
+            "org/sqlite/Function$Aggregate.class": "a84b02255038e87f012256cef1d31dac5c5040b26358b21511be7d7d1c65f739",
+            "org/sqlite/SQLiteErrorCode.class": "9dc0f3c34a57f1261ee51b5b16309b9c127da40aa5a498e4483bd5203068d84a",
+            "org/sqlite/FileException.class": "9c9cbeafcdbf52d3d81dac4a56ec6b6685a3b8ec92cad8ac19d0831a2673e823",
+            "org/sqlite/NativeLibraryNotFoundException.class": "c834c1d05274dd4efe437131d7a0d6a1ea3d336ccd1fb112eb17142cbf1f6200",
+            "org/sqlite/SQLiteConfig$Pragma.class": "d9f1b0b30b16e0fd9668b1095f3d129b0473ba59efd0f4c8a1c5aeb237a10936",
+            "org/sqlite/SQLiteOpenMode.class": "897d9357c152377c36bddfa449e3c715e62c0fb11792a291743f704ca45fa86b",
+            "org/sqlite/SQLiteException.class": "b3d775d5e427eaec4d018acfb86a28fe88d1793e5f3ade46121c9b1caf6fea78",
+            "org/sqlite/BusyHandler.class": "3f31caa73d79873ef12af6c64ed9e4773b3e05d74e0bc01de3d6ad9c1fb7b227",
+            "org/sqlite/SQLiteConnection$1.class": "fb97f34b6913364d9ce57339a585741d31bd320f1528e5b1770c408699a25deb",
+            "org/sqlite/SQLiteConnectionConfig.class": "e3a7a283e3de9e9511c486650a5e813dd1bbf67920f61267846de1879e777fff",
+            "org/sqlite/SQLiteDataSource.class": "e50254f4d7384a02b32bc4a204c8d7fe5737ccc9002e63486c724b002c7cc5ac",
+            "org/sqlite/SQLiteConfig$PragmaValue.class": "5b32510df8e2ca1bd94af14652ca7841e0c7bec08e0a09019e1247842fff8638",
+            "org/sqlite/SQLiteConfig$OnOff.class": "24c303a215cbf63d2b7264eac1ef5d0b42cbcd63be8daa6a9e979f4a10fe61da",
+            "org/sqlite/SQLiteCommitListener.class": "3532d3dc2e7db0cee6fcadf404964a497c5ab1f5768deb03781e2f15f88e7afd",
+            "org/sqlite/SQLiteConfig$LockingMode.class": "c948ed003b43b334f58d708a457b29b926889388bdb728a113b1495379ceb4bf",
+            "org/sqlite/Collation.class": "2b1f3196782981d24f7596cfc8dfb60733b9a22dfcbe373d5756e2390e6c9bac",
+            "org/sqlite/SQLiteConfig$DateClass.class": "03f0826ffec2ed22f63e1a0bf9ad409c7a9e7fdbf465f759b20df5b095dcdc3d",
+            "org/sqlite/SQLiteConfig$TempStore.class": "d63d0f96040063779d9558c01049141a66e7702b4cd6c6cbd3c4a5c27a29d4f6",
+            "org/sqlite/ProgressHandler.class": "a782f74597a13d768c06da220ceb696188bdc8b8eaf6d27c0d6e439d2de68cf2",
+            "org/sqlite/JDBC.class": "ebd70422aae53cd260948d0ec1af504e15dba434e149cd541ea0b39477f8d16f",
+            "org/sqlite/SQLiteConfig$SynchronousMode.class": "6ab8817d982154639f437cc84a578024a9caea274feb360152f149e87b8f5036",
+            "org/sqlite/javax/SQLitePooledConnectionHandle.class": "d12f2fb14281636abfc36d04b54e913890d87a354867afc0f36639a9d614fde2",
+            "org/sqlite/javax/SQLiteConnectionPoolDataSource.class": "41c9d777aefae62cc9f47e1a06c73d89d4cf15f804a4ab5c81f9e0342e4f5297",
+            "org/sqlite/javax/SQLitePooledConnection$1.class": "435003d26bf5e1e585ab50f0099e43c6beb30c58e52538c30b5389dddc230cb2",
+            "org/sqlite/javax/SQLitePooledConnection.class": "c7681aae3ad55a49684ea1e2ed32cf974bd978bb04e7047273f9d91b3c739d16",
+            "org/sqlite/date/FastDateParser$NumberStrategy.class": "180f2f7472d209a179aa05eda609df3f02bec6e8e26d189275c59f79722f8a68",
+            "org/sqlite/date/FastDateParser.class": "3ff491c1e5a54ca86c95630cbd725b7ad3b9db25029b0446c68c87b30eb08699",
+            "org/sqlite/date/FastDateParser$4.class": "292052ba697dd510ebc8d4aafdb74339a8cd9280754d25a6e1edfff986720cb3",
+            "org/sqlite/date/FastDatePrinter$Rule.class": "e477805a1823e94f25de86e87eec60306cc68e5a58650ee915fec10d41c90ae2",
+            "org/sqlite/date/DateFormatUtils.class": "5db358e01da12506c097b1ff686c3f47cd3274d0aea4e8753eaaa1539fad1f51",
+            "org/sqlite/date/FastDatePrinter$TwelveHourField.class": "3b72920aa3dcb641353326fd85885a8c5419cd16972bb6c7e9aa6dc21077e7b6",
+            "org/sqlite/date/FastDatePrinter$TimeZoneNumberRule.class": "79557810f12877d5c70da5b5f55c6ce8367b9adfa029e2bf56c21e418689ee53",
+            "org/sqlite/date/FastDateParser$2.class": "c1f4a2f36923c7cb75e65f5452e75993b12db0be551db8b06e74fc3cdb5cd65c",
+            "org/sqlite/date/FastDatePrinter$UnpaddedNumberField.class": "32739322bb05983b69bc4d921a67b95a75c2a24b3dcf39daf479acf40f59f702",
+            "org/sqlite/date/FastDatePrinter$StringLiteral.class": "c9dbf701174c88cef4292e8e3cc95db680e1d8adbe0b6e9e33d831106e07785f",
+            "org/sqlite/date/FastDatePrinter$TwoDigitNumberField.class": "938d8c785a32787e9181c91cb4c528a6176094ab114622af3bc99cb9056a19be",
+            "org/sqlite/date/FastDatePrinter$TextField.class": "844f54a19cd61e468979fed65a7701ea5dc661c3e2ddabcb27bf11452b0715bd",
+            "org/sqlite/date/DatePrinter.class": "1677514f0252aa5812a61ca9bc5747ff89c6b649e17434632e2ae94a1b436c70",
+            "org/sqlite/date/FastDatePrinter$TwentyFourHourField.class": "c48f24280bd26721edc45a14f8e191c86c1eb351b3b6e025c920afed709ee9d1",
+            "org/sqlite/date/ExceptionUtils.class": "2443f2115f7e9aea69fe6fbe917e1ed2ffbef47cd5d51536d9ddf42642dae1c2",
+            "org/sqlite/date/FastDateParser$1.class": "8f03c4bccb59c32feb089d2e12d6dfd3d87dd137cd67013d78a1ac8e9cf93c80",
+            "org/sqlite/date/FastDatePrinter$PaddedNumberField.class": "3e7ee27a6e900249b9e9bae3caf23fca577212b50bef2bd7f118ad54f9ef8530",
+            "org/sqlite/date/FastDatePrinter$UnpaddedMonthField.class": "2c35b16d811718f4308a4e3875a619c194cfa6d3d3fa8f0a6177fba909b7c81e",
+            "org/sqlite/date/FastDateParser$CopyQuotedStrategy.class": "f24ef6f147e91c3f2eea114842d8ce209e3162c581df4a367f25069d26358a4b",
+            "org/sqlite/date/FastDateParser$3.class": "65d03aa0ae0ffed237294d2ebc27a57e9eed22b49ad51b785cad24a98ca49506",
+            "org/sqlite/date/FastDateParser$CaseInsensitiveTextStrategy.class": "8af5654c0beb768d21fad2ba34f308606848fded0f915ea1ecd6b2d47ba2f3ec",
+            "org/sqlite/date/FastDatePrinter$TwoDigitYearField.class": "01c18342f83d52a179aa28d5a41433beeb117bcc9c3275fa1db07cb5f478b066",
+            "org/sqlite/date/FastDatePrinter.class": "3079cde1e29dce70fc26ed5e4b5b96a55a4f28613beba011bb7f303206b187fb",
+            "org/sqlite/date/FastDateParser$TimeZoneStrategy.class": "8b94853ed83d6bf3571376512c0e727e0914a0ec12f0f3a28a8e0a47b77b323b",
+            "org/sqlite/date/FastDatePrinter$Iso8601_Rule.class": "7d1b8f57a1086d879e42dc2a27825c22b47cd44c5fc2b163b0d19273412667b1",
+            "org/sqlite/date/FastDatePrinter$NumberRule.class": "7773ec4522ce779c697a2f122f29f03f38972a0eb4a6116d1eb685691e22dc17",
+            "org/sqlite/date/FormatCache$MultipartKey.class": "0584e17057d7c735b1772cfaba6f316977f57741743d84b55654f3bffeba26d8",
+            "org/sqlite/date/FastDateParser$ISO8601TimeZoneStrategy.class": "c5424ab74bf13bb0ca82c1f9a050b0713ffd57e1ee956e2acfaf92fd9ef876fe",
+            "org/sqlite/date/FastDatePrinter$TimeZoneNameRule.class": "564248d3078ca97e5b1b0c1642d96389cc5520d4a3a946607884d5cb7eadbeab",
+            "org/sqlite/date/FastDatePrinter$TimeZoneDisplayKey.class": "7964d55087e4263cdeaa7031191b84ba40280749e9d43562f1d0d53889dc111f",
+            "org/sqlite/date/FastDateFormat$1.class": "b9935decd10d7c2ccf8bd14da4fd9c06663cff7bb29b6b2caaa6a9ed0374600b",
+            "org/sqlite/date/FastDatePrinter$CharacterLiteral.class": "c9a58d398295d2926dc1c396b88a9be584b0fbab6888951146f436d39266501c",
+            "org/sqlite/date/FastDateFormat.class": "471f4ff3610d568229f1993119622dc54ad0761a81a29157f01ca07a1078fce0",
+            "org/sqlite/date/FastDateParser$Strategy.class": "daaa90a8dd080b49cdd91aa1a6f7d1dc3c063006708facea3086060bce9d4624",
+            "org/sqlite/date/FastDatePrinter$TwoDigitMonthField.class": "6d190989b6af1aac9c6659d94058de948985ada0433c53e6d541402147678dc0",
+            "org/sqlite/date/package-info.class": "91a0dd92a3f71ef808e9c7b3d353ed8fe5db54bca082cfc4a8fa3fbe7bcd2b55",
+            "org/sqlite/date/FormatCache.class": "90c322a2d47b1a8c0bc5d05ce089c9ab6978f287c39d6e54fb85eac6586a8a42",
+            "org/sqlite/date/DateParser.class": "57e5afdff7964d981b5f86fb49bf39cfdd1e49b93450fcd669be0144ecacf7e1",
+            "org/sqlite/core/SafeStmtPtr$SafePtrLongFunction.class": "efd903ce920cc6adc08d5c4b4e0ef7b3ca9a9de53cf881505f46d2fc66762fdb",
+            "org/sqlite/core/SafeStmtPtr$SafePtrConsumer.class": "de440d4c1b0667c95ce4bca423bde98957f13663dd444fa51d82ee691fba36bd",
+            "org/sqlite/core/DB$ProgressObserver.class": "191abf8195a82e274ea9a91cea4288967992bd07a3423690f20cd83a5b42be9b",
+            "org/sqlite/core/SafeStmtPtr$SafePtrIntFunction.class": "dba791e453c2b22b9f65105d3247750d7db164ae39575105fb9265fa3db8ea3a",
+            "org/sqlite/core/CoreDatabaseMetaData.class": "3a10618de3190c241c269e1026bdb328792aa79ed38f3e34fd92d56053f8486f",
+            "org/sqlite/core/SafeStmtPtr.class": "e9abebacb2b2652c0cc4f4573f8ce6750675641f2515768a90876c043b7a8f8c",
+            "org/sqlite/core/SafeStmtPtr$SafePtrFunction.class": "43f254fd3447c5fce58aadf423978aaf141d04e550258b350211b9d9d62bc090",
+            "org/sqlite/core/CorePreparedStatement.class": "47b0b133bae7d856d6118e607d94485fcb18e69be99f241c474689e0ba278698",
+            "org/sqlite/core/CoreStatement.class": "eb9cfa839ef8638ec7a500bfe08ffc86fff98fb253fe5c4ab66049ba26661c6f",
+            "org/sqlite/core/ControlStatement.class": "d31c1f2d0e345edd215249e84f6a43689731c7aa60ee6ab59847a9d7faa7a8b6",
+            "org/sqlite/core/NativeDB.class": "636ea2d4fe5a4c4dce870ead43114e899e542109959e7c6501ef383d7f3c945d",
+            "org/sqlite/core/Codes.class": "d175d8030ef3cdba5e535c3ad9fc77ad3f3de94ba17d0da4939607bc1dff2d09",
+            "org/sqlite/core/SafeStmtPtr$SafePtrDoubleFunction.class": "22f1b9b5bd64b4c81b45ab9b2e4c0c9386ca897b6010b1d113e5428f8a2bc100",
+            "org/sqlite/core/CorePreparedStatement$1.class": "5cdb743d00c55a6b623b239c79487146c887b5945937392b0a3ca79d8fd4a361",
+            "org/sqlite/core/DB.class": "1caeba2a477ce86f6922b0fdf5381d43dd707e594fb6b9dcd8d4d06f2671b3c6",
+            "org/sqlite/core/LockedNativeDB.class": "990929eab4aebf7c7343b835f884f3d7c2f9541575a7b4e84a69225d6231411e",
+            "org/sqlite/core/CoreResultSet.class": "19caca787d214f7c1e44582929b1f5d98928faa2618a5a530774976ac97eea52",
+            "org/sqlite/util/LibraryLoaderUtil.class": "94457e06202c501370d96ade54768953d8ce12a63df37effc9a65a5321f11519",
+            "org/sqlite/util/AndroidSignatureIgnore.class": "25ef9536205eb5944858c7115d03f941180f5abbbd2ac1be7f04f9ce1a975325",
+            "org/sqlite/util/LoggerFactory$SLF4JLogger.class": "103e84b9847dd9b108f871e4098c5db973aed13c89acde686c105d4f60af4f18",
+            "org/sqlite/util/OSInfo$LogHolder.class": "eeef7b1e81c4a7c90d4eee995592578c13b5e49f5e6d1f83063d06ec18e3b727",
+            "org/sqlite/util/Logger.class": "8a7285b3e4ed55d6ee0895cf25b8767938c24ac750e60fb43780d688623a48d1",
+            "org/sqlite/util/ResourceFinder.class": "6d3a64d3caac8bb6b7bbdb88ea4a42e07d88b2f5a8ba88d27ca5b1e071e1949d",
+            "org/sqlite/util/LoggerFactory.class": "3dca7ff2f0b0fe9d07f117c6c7d3e0af6773e69b9e552043d510f0f6e6111c04",
+            "org/sqlite/util/StringUtils.class": "17679b7deea22eaea996ec3edf838f7a43cffca16a4c47e2340eca4fa251fdeb",
+            "org/sqlite/util/LoggerFactory$JDKLogger.class": "59d37759e6508e664efbcfad5f1dd7e0decdd76d7c9e84d710f7a2fdeb76cba8",
+            "org/sqlite/util/ProcessRunner.class": "53a6ddc91cf3d6cb706dc15b5a62429f202ece350f1edd2ad6d363224dfd752c",
+            "org/sqlite/util/OSInfo.class": "69e962930e367d028cc4d963ee319abc7d9cbfdc38a674a95e594c98a3c32ab1",
+            "org/sqlite/util/QueryUtils.class": "5b49b52cd639d6b23cbcb06601db990c61f11273fa08b306b49841390afb0823",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData$ImportedKeyFinder$ForeignKey.class": "44b5fe3171a40ba816025b49fc4c75ff5688ed3a2b4347f21ae6bfe8bae0a60e",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData.class": "9cebbb750c2fce741a6da23ff0cbd28e1bee18c01eb5211b2746ca87d477e59b",
+            "org/sqlite/jdbc3/JDBC3Statement$BackupObserver.class": "3815463dd2621595aa573cd657ba726820e94082fb54f57b4fd108ffe63e32d7",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData$LogHolder.class": "0ac4cf79a87d4cfe06cf2e6607feae6f408354342702fabdf4ae74e766a56347",
+            "org/sqlite/jdbc3/JDBC3PreparedStatement.class": "a82428ca32703587259e00934b6aba11a19c551a2daf410c0414299dda8729ee",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData$PrimaryKeyFinder.class": "d1836f10b082ccc74cb48ab54647609722749bf08709b1dd3f929e1f94747c60",
+            "org/sqlite/jdbc3/JDBC3ResultSet.class": "1472be6129782be6cd8e2139471ea7ba451cbb8269b707bf57ecb30f19bace6b",
+            "org/sqlite/jdbc3/JDBC3Connection.class": "50030454e1e1c3fb121c45a9342a8442e473d37a070bc131b419c2b08af101f9",
+            "org/sqlite/jdbc3/JDBC3Savepoint.class": "4c3b314ef30e56462a46f020219f8bd56007d93e9876004de665a88862fe4445",
+            "org/sqlite/jdbc3/JDBC3Statement$SQLCallable.class": "3d10c4300a9fbf415320140a8b4766ca745a32ca175968e56ceb265f4f806f23",
+            "org/sqlite/jdbc3/JDBC3Statement.class": "5dfb04fef0359d6caeaf95d01154bdb6eb47687ad9b11deb2adf83cfd51f3e1d",
+            "org/sqlite/jdbc3/JDBC3DatabaseMetaData$ImportedKeyFinder.class": "880a1c3d08e439f5dff778ee08c256e5f1d943cc2ab241733a2698f587c398e9",
+            "org/sqlite/jdbc4/JDBC4Connection.class": "bdfb2bb37c03432d4564a2a52e1ed3df618bc79afa44b2fbbc4a826ca9fe3423",
+            "org/sqlite/jdbc4/JDBC4PreparedStatement.class": "97f0937e4ce8b4192871cbab59e503c99776c940eb4c05e1c36450097c388362",
+            "org/sqlite/jdbc4/JDBC4PooledConnection.class": "9015065c0a4f5bfb5a15eb08dbe3728046b667f8438bf278dbf77bcb7f77f670",
+            "org/sqlite/jdbc4/JDBC4ResultSet$SqliteClob.class": "fa4399dc15d3f3efd62f9a5b59a7cf7dcd90f8664ca4ee638e47c3dceac5346f",
+            "org/sqlite/jdbc4/JDBC4Statement.class": "664d63deb32141accb0ee778ff2b1907a9a06328a5212867592d49d2ddc408f7",
+            "org/sqlite/jdbc4/JDBC4ResultSet.class": "94eb78d000f9c34aee82bc88fb4a673b25b0fbd40d38d96823057621f9779a92",
+            "org/sqlite/jdbc4/JDBC4DatabaseMetaData.class": "3080303275ec4805d50d72cb93c1cefc96175c7e5872e9dc9f6191cb376f4f58"
+          },
+          "native_libraries": {
+            "org/sqlite/native/Windows/x86_64/sqlitejdbc.dll": "f16882d2eded914edd1e1d313e7c8579e040b0da090a52ea99ad7b0c5d961c45",
+            "org/sqlite/native/Windows/aarch64/sqlitejdbc.dll": "2294c9a62231294b0bf15a61462d1d7411be5b4ce9d37f93203c7c55b61a565d",
+            "org/sqlite/native/Windows/armv7/sqlitejdbc.dll": "75f68686cb7400dd0a03a68bb6d348cb75517341b884ad1e2120e25f73ffebcd",
+            "org/sqlite/native/Windows/x86/sqlitejdbc.dll": "567154202057ed53f82ff4a5294ab29ace39c37f7b0089f0520734e93fddaa48",
+            "org/sqlite/native/Linux-Android/x86_64/libsqlitejdbc.so": "ab9d152a3bf465dafed28bf0207234fc4351a8ff13b5e24f797bb988500f87c4",
+            "org/sqlite/native/Linux-Android/aarch64/libsqlitejdbc.so": "e815588693ff2490fb07a973d11e1092739d8f00e4f961fdcf9fe10790ac8a15",
+            "org/sqlite/native/Linux-Android/x86/libsqlitejdbc.so": "af38f73eb81b604ec60c108aea94caa4e3d3cffa7996d6c4deb935bf0e94ee17",
+            "org/sqlite/native/Linux-Android/arm/libsqlitejdbc.so": "857d3554b0468bcf07051a2e50dda50786620a2799a06a951ffe881e8dbd948a",
+            "org/sqlite/native/Linux-Musl/x86_64/libsqlitejdbc.so": "086c1e4300ada20cac58671e57028043b541c58640f095b6de094a04fdd18bc6",
+            "org/sqlite/native/Linux-Musl/aarch64/libsqlitejdbc.so": "915b89595c36749d1f2567a54c474f04af3aa354d30acf8c48fbb617bedb6b32",
+            "org/sqlite/native/Linux-Musl/x86/libsqlitejdbc.so": "fb46d8ae47e5ff573215676b4953b2f8e41c8eb4292b11b3f416e5aff413c1d0",
+            "org/sqlite/native/Linux/ppc64/libsqlitejdbc.so": "9f8eef49153a522091054c0e3ac1ff183f4667e9ea7c1a599e155622c04b22b4",
+            "org/sqlite/native/Linux/x86_64/libsqlitejdbc.so": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+            "org/sqlite/native/Linux/armv6/libsqlitejdbc.so": "c7fff3794ec3834c6af17d02bca06685cfa0d9392408fcd2e4374180ec9d57ad",
+            "org/sqlite/native/Linux/aarch64/libsqlitejdbc.so": "4e253e3f886f8da539e6d8fbd92c3a281f50e395bcba568ced953865e8bea5be",
+            "org/sqlite/native/Linux/armv7/libsqlitejdbc.so": "f49b80d6de01be54ec686b85dafaa4bb6545c31896e1fbc315c5ef0cc664cdf5",
+            "org/sqlite/native/Linux/x86/libsqlitejdbc.so": "8c3379b8fba34ac9ae82f98549958315a48ae78eddfdedac390167b34f3e521a",
+            "org/sqlite/native/Linux/riscv64/libsqlitejdbc.so": "1829666a647af59e5046d16c5a746872c46ccc2fb16b83490f8e0d20aa047a73",
+            "org/sqlite/native/Linux/arm/libsqlitejdbc.so": "98f03696254b725b1754580e155eb4aa849f1a121a7bc8a986c5aa83fdc71eba",
+            "org/sqlite/native/Mac/x86_64/libsqlitejdbc.dylib": "82ee6752c826f490b03d883fd23b0edd15ee5652b45b56ccbdd66c289298cd7b",
+            "org/sqlite/native/Mac/aarch64/libsqlitejdbc.dylib": "7e1ed3118ee93af4fb0538a9ace5b9deebf565d5e703942dafc4ed240a796593",
+            "org/sqlite/native/FreeBSD/x86_64/libsqlitejdbc.so": "4c7adc6cc7451db795a14b7ed867cac3add71c9c8f1b7054595a010ce458f12b",
+            "org/sqlite/native/FreeBSD/aarch64/libsqlitejdbc.so": "d209d24bc2f400c8c40942e59da187130a37c36ef5954926a7deeea85aa2cf5c",
+            "org/sqlite/native/FreeBSD/x86/libsqlitejdbc.so": "811f455f8ff7231675956f2ac02efbcbab57f490b32454aa7da31fed43bfcca7"
+          }
+        }
+      }
+    },
+    "test_sources": {
+      "src/test/java/org/sqlite/BackupBusyWaitTest.java": "e222abed7129a3739b31e6e798c8c8561af95ef00bac6d3531ad5782b981a76e",
+      "src/test/java/org/sqlite/BackupFaultInjectionTest.java": "5448ac2fad66e80bb1413089314defc373fd176f5254acb7736c19b574e1e35a",
+      "src/test/java/org/sqlite/BackupSessionLifecycleTest.java": "c5d2768975e12a258464ff7ce575624d7d548d3e2250232cab052b41af3d0d80",
+      "src/test/java/org/sqlite/BackupTest.java": "1337abe514eedcd540b25868cc19c66260705516848a96f080995f7df4e15f46",
+      "src/test/java/org/sqlite/BusyHandlerTest.java": "8ae06a35dc3e86045169bf52f22e6bc67d6f312a471c94a291e15c2e3ee2a768",
+      "src/test/java/org/sqlite/BusyPolicyTest.java": "250e64a60c69d872cebafd9a0d6e3032124a6060e1483a096120f772a1840817",
+      "src/test/java/org/sqlite/CachedRowSetTest.java": "1351fdca2644e90ac9028ed99c6096c9ecee82ccb7d45cedd9bb454887fd2c6b",
+      "src/test/java/org/sqlite/CollationTest.java": "7a2b652c8685f69995618a3bfedbe00cfe790e0927b72229d3d6d190733ea806",
+      "src/test/java/org/sqlite/ConnectionTest.java": "d657e7d2e7eaef77e3105caa35408724a4e809fc3a6876befbdcd8a90b2768c7",
+      "src/test/java/org/sqlite/ControlTransactionTest.java": "5a2ec6f41810193c4db3e575a13f14112f514832c53621dfe990351fd25d94ff",
+      "src/test/java/org/sqlite/DBMetaDataTest.java": "77471e076af3aca03a56fc32914d5b8d39c1adbb71f971018c35e417de113619",
+      "src/test/java/org/sqlite/ErrorMessageTest.java": "0c4ab2663c427afd3a1cfa92361ede1ffa2fe02a6946f1b6b2f89036d76c0d98",
+      "src/test/java/org/sqlite/ExtendedCommandTest.java": "a65c96aa738231dfb2b3a7a792a5cafe6318b11b91af31c3a5f4f9b436797599",
+      "src/test/java/org/sqlite/ExtensionTest.java": "f0111ddca91938943f5825ffa319cc9967e65d1406716e6e3156e70f728787f6",
+      "src/test/java/org/sqlite/FetchSizeTest.java": "9fb0f2df7de66cac0a46b241c0c1cd3311a80646d0431d377097741b99053760",
+      "src/test/java/org/sqlite/InsertQueryTest.java": "6dfcecb209e01829ba0aea782b47351443e3970ad1d33ac4c3fb979e6dff1f40",
+      "src/test/java/org/sqlite/JDBCTest.java": "0e622134ea01164f202ead898bbf2d15e746432b185a4cd3dc19936d35db162c",
+      "src/test/java/org/sqlite/JSON1Test.java": "bb07398946480ca44c70d03e6f8c399f53506b44c83a312e2d28aebd239c0238",
+      "src/test/java/org/sqlite/ListenerTest.java": "7cb070a5931ff2040c1ba1478c55a6145893d5e337a1dcda176578a6b83d501a",
+      "src/test/java/org/sqlite/MathFunctionsTest.java": "29a68f808024a36d4516a78f36694df8fdbb6b4bc8872ab151ce49db5ad74d78",
+      "src/test/java/org/sqlite/MetadataLeakTest.java": "242bb51330240174bab5f443aa4d8de1049e6d947374e080a636c4aa4d0049ee",
+      "src/test/java/org/sqlite/MultipleClassLoaderTest.java": "b5d9faf2bacc72bbbfd02b89f5fbce0a39dc65fc5e28af2bb3b0aa37d1e177fd",
+      "src/test/java/org/sqlite/PrepStmtTest.java": "24d605d59b7507f574104ddbf8c297f90d4498401368d5b39947f0932f5a686a",
+      "src/test/java/org/sqlite/PreparedStatementThreadTest.java": "7af8ae0999a0bf26a20c96ab23131505bd79827e6af17742771e36e9d8d985f4",
+      "src/test/java/org/sqlite/ProgressHandlerTest.java": "13d841889cff5ceb40d295d723cb26e136ebf4fbb7a0d67c670da8d529dd23c5",
+      "src/test/java/org/sqlite/QueryTest.java": "8e37bbf5a71b8b9b6f6511094ec343ca9a830ac08d07fb19daed3fca5a0c736b",
+      "src/test/java/org/sqlite/RSMetaDataTest.java": "d787e71bdf2b8d12a2669eb06c432cf2a39ac77f678a92459e3dd9b6c4519a43",
+      "src/test/java/org/sqlite/ReadUncommittedTest.java": "be3594ae30aa6f8f5bffd4aa7d28e074d18ae9855e83d67faa1fbc54c455c881",
+      "src/test/java/org/sqlite/ResultSetTest.java": "6065d284933c8462cc13217992820a9261075c0e9ee126df6cbe9961d90303f9",
+      "src/test/java/org/sqlite/ResultSetWithoutResultsTest.java": "958c1f2ff5ca2f1257dfd847207ea793839969b234d140576b51af346697233c",
+      "src/test/java/org/sqlite/SQLiteConfigTest.java": "f0c01825405d3ad020c30a849e7afc6042368de42b32087b2e864b45e16c6a98",
+      "src/test/java/org/sqlite/SQLiteConnectionPoolDataSourceTest.java": "283ea1f0a7ab2f82cf6c606da0881b2327155c491a66859b89e1e5c88e42cf1a",
+      "src/test/java/org/sqlite/SQLiteDataSourceTest.java": "6703f2912fdff00ef87acca0aec9ce1d1e334a6e17e7d8f8a36fcba14226ffc5",
+      "src/test/java/org/sqlite/SQLiteJDBCLoaderTest.java": "5d1a5b27250fd22c19e406fb71f6656426b2c27fd7fbe02e3185d70a6543bfc0",
+      "src/test/java/org/sqlite/SavepointTest.java": "0391680df392315cc6ba7a6b91299aa42f80da0a715880696e64adf41dd45daf",
+      "src/test/java/org/sqlite/SerializeTest.java": "2519ce1b6f33043e9323daa96d78a8f019f86a68e3fbc85ba929901fe6548c9a",
+      "src/test/java/org/sqlite/StatementTest.java": "81125078aa972d55deba801a81841271a659f0f3306060e128850cbe8cc4054b",
+      "src/test/java/org/sqlite/TransactionTest.java": "da8a5e94125b8c5258555f0c6d906155a6c1fa422bdc4905233c5946fad96896",
+      "src/test/java/org/sqlite/TypeMapTest.java": "ed2fb4bf7319bcba0662b83707375501337173956bae7c57dda6e6a2c46b7505",
+      "src/test/java/org/sqlite/UDFCustomErrorTest.java": "4238e1a7102d8f7e7065758e4c69fc5ea5e769e9acf63ce618f4f9277345a27f",
+      "src/test/java/org/sqlite/UDFTest.java": "db7e6afece192387bef8e5dc0821d05aed5bf28ea9a3a59c499450cbe2ba3eaa",
+      "src/test/java/org/sqlite/Utils.java": "bef3eddca2a6b80472050a3a52d5e7246128f0644d29c24ed091709b0ed6f121",
+      "src/test/java/org/sqlite/VtCarrierProgressTest.java": "4b86aec0d55e3078a3aa3098fcb52b52c97ad581eea4509b5f3ab5033b0dc3cd",
+      "src/test/java/org/sqlite/architecture/CodingRulesTest.java": "a750869757ffcf73b73d9299945b60206ab3ecfb7c1e714d5ca9392183a3493c",
+      "src/test/java/org/sqlite/architecture/TestCodingRulesTest.java": "e0feac63a04a02aed2bd07c93ce55ee3c567a3acc2668fa179516a343661e402",
+      "src/test/java/org/sqlite/core/NativeDBHelper.java": "4a16aef63cfb811303755701f752a654795e24b12139115911df3e3092121ca8",
+      "src/test/java/org/sqlite/core/VtWaitProbe.java": "4fe704c506266aa86f02be66c0d1f102cfe86b5ecac25cc945e445bfb1c7bf46",
+      "src/test/java/org/sqlite/util/OSInfoTest.java": "4d112c0fbeb4873387f41320562e201e7f5f36475644e261ed21af0bf0d147db",
+      "src/test/java/org/sqlite/vt/JfrPinnedReader.java": "b0d5b849bebc033ca695aa1df7b2cc3b4041f3f92efd951d467344be581d0f61",
+      "src/test/java/org/sqlite/vt/VtWaitScenarioMain.java": "18683482d779b17f465873af0a6fea171e30e155c067b00620e8e7556e27b535",
+      "src/test/resources/META-INF/native-image/org.xerial/sqlite-jdbc/reachability-metadata.json": "967e79f519b7f54956f7bb356ef094465f7f49de44196f5867795fc282852725",
+      "src/test/resources/META-INF/native-image/org.xerial/sqlite-jdbc/reflect-config.json": "bf8a4433a19f0df3f3c31c4ec32838989acdeecf05c7da6f8174ced4943efd3d",
+      "src/test/resources/META-INF/native-image/org.xerial/sqlite-jdbc/resource-config.json": "18ac6a5dcb7711f03f907334bec9a071961dcd79aced9ec660fdcbeb5f66ecf8",
+      "src/test/resources/org/sqlite/attach_test.db": "3692b4fe1fa2720b4c378be5614164a24a4383ad2021ac8b2b7b1d122023e441",
+      "src/test/resources/org/sqlite/sample.db": "3692b4fe1fa2720b4c378be5614164a24a4383ad2021ac8b2b7b1d122023e441",
+      "src/test/resources/org/sqlite/testdb.jar": "11a6182cdb33334b948746e3f11141b18cd006b702b42104ec2d255f55804da6"
+    },
+    "case_sources": {
+      "ProfileSummary.java": "4b6edfde5ec25de607756c282a233c5a5fbc5538469e7bc6052a87e8e7bb5117",
+      "LockCorrectness.java": "add5d93a5d6cb3cf23ccd8fa12c85a32d87ddf45a1ecf4ffd8cacfa3cfa4262d",
+      "LockScopeSafety.java": "638a6bcce989c011dc302ccedaca79bcc0b0a56debaf579f8f091f6a320bd54c",
+      "ScopeLifecycleCases.java": "89a74db55788310bb0058d1d1c2e7d60a8626c06f6d7b2984bacbff39de123cd",
+      "ScopeTransactionCases.java": "32c316043ecd20eeec42984f18dab3af7b7a0ee73867c8ca367a195af8dfc6e0",
+      "ScopeExtensionCases.java": "6c9536ae85ce3edf809a8a160a9b02b0a21fba09bf102b8f3178facc1d1d68ee"
+    },
+    "runner_sha256": "86816c39438ea8cdebdbf28881222fdbf500068e93caac1ca714952a3197c9b5"
+  },
+  "fault_build_identity": {
+    "normal_native_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+    "fault_native_sha256": "3161faf32a2042f8e9bce6d27e3cdd2954a694291757dd210064e5892da04440",
+    "sqlite_object_sha256": "52c0c3e3fcdf73822de1808b2b87dd209d52acc483ced083b911190bf34c43de",
+    "native_source_sha256": "925a35d558c3c7b21adb8c25894ac64b0258b5a83e362f48f7e26e6d08ea325f",
+    "fault_define": "SQLITEJDBC_TEST_FAULTS",
+    "normal_resource_unchanged": true
+  },
+  "regressions": [
+    {
+      "suites": 24,
+      "tests": 324,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "failed_tests": [],
+      "skipped_tests": [
+        "org.sqlite.BusyHandlerTest#basicBusyHandler",
+        "org.sqlite.BusyHandlerTest#testUnregister",
+        "org.sqlite.ControlTransactionTest#t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction",
+        "org.sqlite.ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml",
+        "org.sqlite.InsertQueryTest#reproduceDatabaseLocked",
+        "org.sqlite.SQLiteConnectionPoolDataSourceTest#proxyConnectionCloseTest",
+        "org.sqlite.SerializeTest#testPerformance",
+        "org.sqlite.SerializeTest#testVeryLarge",
+        "org.sqlite.StatementTest#ambiguousColumnNaming"
+      ],
+      "variant": "fork",
+      "stage": "normal",
+      "process_exit_code": 0,
+      "native_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "valid": true
+    },
+    {
+      "suites": 2,
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_tests": [],
+      "skipped_tests": [],
+      "variant": "fork",
+      "stage": "fault",
+      "process_exit_code": 0,
+      "native_sha256": "3161faf32a2042f8e9bce6d27e3cdd2954a694291757dd210064e5892da04440",
+      "valid": true
+    },
+    {
+      "suites": 24,
+      "tests": 324,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "failed_tests": [],
+      "skipped_tests": [
+        "org.sqlite.BusyHandlerTest#basicBusyHandler",
+        "org.sqlite.BusyHandlerTest#testUnregister",
+        "org.sqlite.ControlTransactionTest#t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction",
+        "org.sqlite.ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml",
+        "org.sqlite.InsertQueryTest#reproduceDatabaseLocked",
+        "org.sqlite.SQLiteConnectionPoolDataSourceTest#proxyConnectionCloseTest",
+        "org.sqlite.SerializeTest#testPerformance",
+        "org.sqlite.SerializeTest#testVeryLarge",
+        "org.sqlite.StatementTest#ambiguousColumnNaming"
+      ],
+      "variant": "fork-outer",
+      "stage": "normal",
+      "process_exit_code": 0,
+      "native_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "valid": true
+    },
+    {
+      "suites": 2,
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_tests": [],
+      "skipped_tests": [],
+      "variant": "fork-outer",
+      "stage": "fault",
+      "process_exit_code": 0,
+      "native_sha256": "3161faf32a2042f8e9bce6d27e3cdd2954a694291757dd210064e5892da04440",
+      "valid": true
+    },
+    {
+      "suites": 24,
+      "tests": 324,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "failed_tests": [],
+      "skipped_tests": [
+        "org.sqlite.BusyHandlerTest#basicBusyHandler",
+        "org.sqlite.BusyHandlerTest#testUnregister",
+        "org.sqlite.ControlTransactionTest#t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction",
+        "org.sqlite.ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml",
+        "org.sqlite.InsertQueryTest#reproduceDatabaseLocked",
+        "org.sqlite.SQLiteConnectionPoolDataSourceTest#proxyConnectionCloseTest",
+        "org.sqlite.SerializeTest#testPerformance",
+        "org.sqlite.SerializeTest#testVeryLarge",
+        "org.sqlite.StatementTest#ambiguousColumnNaming"
+      ],
+      "variant": "reentrant",
+      "stage": "normal",
+      "process_exit_code": 0,
+      "native_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "valid": true
+    },
+    {
+      "suites": 2,
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_tests": [],
+      "skipped_tests": [],
+      "variant": "reentrant",
+      "stage": "fault",
+      "process_exit_code": 0,
+      "native_sha256": "3161faf32a2042f8e9bce6d27e3cdd2954a694291757dd210064e5892da04440",
+      "valid": true
+    },
+    {
+      "suites": 24,
+      "tests": 324,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 9,
+      "failed_tests": [],
+      "skipped_tests": [
+        "org.sqlite.BusyHandlerTest#basicBusyHandler",
+        "org.sqlite.BusyHandlerTest#testUnregister",
+        "org.sqlite.ControlTransactionTest#t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction",
+        "org.sqlite.ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml",
+        "org.sqlite.InsertQueryTest#reproduceDatabaseLocked",
+        "org.sqlite.SQLiteConnectionPoolDataSourceTest#proxyConnectionCloseTest",
+        "org.sqlite.SerializeTest#testPerformance",
+        "org.sqlite.SerializeTest#testVeryLarge",
+        "org.sqlite.StatementTest#ambiguousColumnNaming"
+      ],
+      "variant": "reentrant-outer",
+      "stage": "normal",
+      "process_exit_code": 0,
+      "native_sha256": "059c6b70bf8ffefdbb865144ba2669ef7b9e9fdddc7e824dde46aed1a6df55cd",
+      "valid": true
+    },
+    {
+      "suites": 2,
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failed_tests": [],
+      "skipped_tests": [],
+      "variant": "reentrant-outer",
+      "stage": "fault",
+      "process_exit_code": 0,
+      "native_sha256": "3161faf32a2042f8e9bce6d27e3cdd2954a694291757dd210064e5892da04440",
+      "valid": true
+    }
+  ],
+  "scope_and_primitive_differences": [
+    {
+      "group": "extension",
+      "scenario": "extension_peer_query",
+      "axis": "scope",
+      "before": "fork",
+      "after": "fork-outer",
+      "before_observation": {
+        "final_value": 1,
+        "peer_completed_inside_hook": true,
+        "peer_snapshot": 0
+      },
+      "after_observation": {
+        "final_value": 1,
+        "peer_completed_inside_hook": false,
+        "peer_snapshot": 1
+      }
+    },
+    {
+      "group": "extension",
+      "scenario": "extension_peer_query",
+      "axis": "scope",
+      "before": "reentrant",
+      "after": "reentrant-outer",
+      "before_observation": {
+        "final_value": 1,
+        "peer_snapshot": 0,
+        "peer_completed_inside_hook": true
+      },
+      "after_observation": {
+        "peer_completed_inside_hook": false,
+        "final_value": 1,
+        "peer_snapshot": 1
+      }
+    },
+    {
+      "group": "extension",
+      "scenario": "metadata_lock_cycle",
+      "axis": "scope",
+      "before": "fork",
+      "after": "fork-outer",
+      "before_observation": {
+        "metadata_completed": true,
+        "deadlock_detected": false,
+        "update_completed": true
+      },
+      "after_observation": {
+        "metadata_completed": false,
+        "deadlock_detected": true,
+        "update_completed": false
+      }
+    },
+    {
+      "group": "extension",
+      "scenario": "metadata_lock_cycle",
+      "axis": "scope",
+      "before": "reentrant",
+      "after": "reentrant-outer",
+      "before_observation": {
+        "deadlock_detected": false,
+        "update_completed": true,
+        "metadata_completed": true
+      },
+      "after_observation": {
+        "metadata_completed": false,
+        "update_completed": false,
+        "deadlock_detected": true
+      }
+    },
+    {
+      "group": "extension",
+      "scenario": "external_db_monitor",
+      "axis": "primitive",
+      "before": "fork",
+      "after": "reentrant",
+      "before_observation": {
+        "sql_completed_before_external_monitor_release": false,
+        "final_value": 1
+      },
+      "after_observation": {
+        "sql_completed_before_external_monitor_release": true,
+        "final_value": 1
+      }
+    },
+    {
+      "group": "extension",
+      "scenario": "external_connection_monitor",
+      "axis": "primitive",
+      "before": "fork",
+      "after": "reentrant",
+      "before_observation": {
+        "sql_completed_before_external_monitor_release": false,
+        "final_value": 1
+      },
+      "after_observation": {
+        "sql_completed_before_external_monitor_release": true,
+        "final_value": 1
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "closed-update-preflight",
+      "axis": "scope",
+      "before": "fork",
+      "after": "fork-outer",
+      "before_observation": {
+        "failure": {
+          "class": "java.sql.SQLException",
+          "sql_state": null,
+          "code": 0
+        },
+        "rows": [
+          10,
+          20,
+          30
+        ],
+        "statement_closed": true,
+        "gate_value": 1,
+        "before_release": true
+      },
+      "after_observation": {
+        "rows": [
+          10,
+          20,
+          30
+        ],
+        "failure": {
+          "class": "java.sql.SQLException",
+          "sql_state": null,
+          "code": 0
+        },
+        "before_release": false,
+        "gate_value": 1,
+        "statement_closed": true
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "closed-update-preflight",
+      "axis": "scope",
+      "before": "reentrant",
+      "after": "reentrant-outer",
+      "before_observation": {
+        "rows": [
+          10,
+          20,
+          30
+        ],
+        "failure": {
+          "class": "java.sql.SQLException",
+          "sql_state": null,
+          "code": 0
+        },
+        "before_release": true,
+        "gate_value": 1,
+        "statement_closed": true
+      },
+      "after_observation": {
+        "gate_value": 1,
+        "statement_closed": true,
+        "rows": [
+          10,
+          20,
+          30
+        ],
+        "failure": {
+          "class": "java.sql.SQLException",
+          "sql_state": null,
+          "code": 0
+        },
+        "before_release": false
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "select-update-preflight",
+      "axis": "scope",
+      "before": "fork",
+      "after": "fork-outer",
+      "before_observation": {
+        "failure": {
+          "class": "java.sql.SQLException",
+          "sql_state": null,
+          "code": 0
+        },
+        "before_release": true,
+        "gate_value": 1,
+        "statement_closed": false,
+        "rows": [
+          10,
+          20,
+          30
+        ]
+      },
+      "after_observation": {
+        "before_release": false,
+        "gate_value": 1,
+        "statement_closed": false,
+        "rows": [
+          10,
+          20,
+          30
+        ],
+        "failure": {
+          "class": "java.sql.SQLException",
+          "sql_state": null,
+          "code": 0
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "select-update-preflight",
+      "axis": "scope",
+      "before": "reentrant",
+      "after": "reentrant-outer",
+      "before_observation": {
+        "rows": [
+          10,
+          20,
+          30
+        ],
+        "failure": {
+          "class": "java.sql.SQLException",
+          "sql_state": null,
+          "code": 0
+        },
+        "before_release": true,
+        "gate_value": 1,
+        "statement_closed": false
+      },
+      "after_observation": {
+        "rows": [
+          10,
+          20,
+          30
+        ],
+        "failure": {
+          "class": "java.sql.SQLException",
+          "sql_state": null,
+          "code": 0
+        },
+        "before_release": false,
+        "gate_value": 1,
+        "statement_closed": false
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "group": "extension",
+      "scenario": "extension_peer_query",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "final_value": 1,
+            "peer_completed_inside_hook": true,
+            "peer_snapshot": 0
+          },
+          "raw_results": [
+            "extension-extension_peer_query-rep-1-fork/result.json",
+            "extension-extension_peer_query-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "final_value": 1,
+            "peer_completed_inside_hook": false,
+            "peer_snapshot": 1
+          },
+          "raw_results": [
+            "extension-extension_peer_query-rep-1-fork-outer/result.json",
+            "extension-extension_peer_query-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "final_value": 1,
+            "peer_snapshot": 0,
+            "peer_completed_inside_hook": true
+          },
+          "raw_results": [
+            "extension-extension_peer_query-rep-1-reentrant/result.json",
+            "extension-extension_peer_query-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "peer_completed_inside_hook": false,
+            "final_value": 1,
+            "peer_snapshot": 1
+          },
+          "raw_results": [
+            "extension-extension_peer_query-rep-1-reentrant-outer/result.json",
+            "extension-extension_peer_query-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "extension",
+      "scenario": "external_connection_monitor",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sql_completed_before_external_monitor_release": false,
+            "final_value": 1
+          },
+          "raw_results": [
+            "extension-external_connection_monitor-rep-1-fork/result.json",
+            "extension-external_connection_monitor-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sql_completed_before_external_monitor_release": false,
+            "final_value": 1
+          },
+          "raw_results": [
+            "extension-external_connection_monitor-rep-1-fork-outer/result.json",
+            "extension-external_connection_monitor-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sql_completed_before_external_monitor_release": true,
+            "final_value": 1
+          },
+          "raw_results": [
+            "extension-external_connection_monitor-rep-1-reentrant/result.json",
+            "extension-external_connection_monitor-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sql_completed_before_external_monitor_release": true,
+            "final_value": 1
+          },
+          "raw_results": [
+            "extension-external_connection_monitor-rep-1-reentrant-outer/result.json",
+            "extension-external_connection_monitor-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "extension",
+      "scenario": "external_db_monitor",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sql_completed_before_external_monitor_release": false,
+            "final_value": 1
+          },
+          "raw_results": [
+            "extension-external_db_monitor-rep-1-fork/result.json",
+            "extension-external_db_monitor-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sql_completed_before_external_monitor_release": false,
+            "final_value": 1
+          },
+          "raw_results": [
+            "extension-external_db_monitor-rep-1-fork-outer/result.json",
+            "extension-external_db_monitor-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sql_completed_before_external_monitor_release": true,
+            "final_value": 1
+          },
+          "raw_results": [
+            "extension-external_db_monitor-rep-1-reentrant/result.json",
+            "extension-external_db_monitor-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sql_completed_before_external_monitor_release": true,
+            "final_value": 1
+          },
+          "raw_results": [
+            "extension-external_db_monitor-rep-1-reentrant-outer/result.json",
+            "extension-external_db_monitor-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "extension",
+      "scenario": "metadata_lock_cycle",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "metadata_completed": true,
+            "deadlock_detected": false,
+            "update_completed": true
+          },
+          "raw_results": [
+            "extension-metadata_lock_cycle-rep-1-fork/result.json",
+            "extension-metadata_lock_cycle-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "metadata_completed": false,
+            "deadlock_detected": true,
+            "update_completed": false
+          },
+          "raw_results": [
+            "extension-metadata_lock_cycle-rep-1-fork-outer/result.json",
+            "extension-metadata_lock_cycle-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "deadlock_detected": false,
+            "update_completed": true,
+            "metadata_completed": true
+          },
+          "raw_results": [
+            "extension-metadata_lock_cycle-rep-1-reentrant/result.json",
+            "extension-metadata_lock_cycle-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "metadata_completed": false,
+            "update_completed": false,
+            "deadlock_detected": true
+          },
+          "raw_results": [
+            "extension-metadata_lock_cycle-rep-1-reentrant-outer/result.json",
+            "extension-metadata_lock_cycle-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "cancel-active-update",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "statement_closed": false,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 9
+            },
+            "cancel_before_release": true,
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "rollback": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 1
+            }
+          },
+          "raw_results": [
+            "lifecycle-cancel-active-update-rep-1-fork/result.json",
+            "lifecycle-cancel-active-update-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "rollback": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 1
+            },
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "cancel_before_release": true,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 9
+            },
+            "statement_closed": false
+          },
+          "raw_results": [
+            "lifecycle-cancel-active-update-rep-1-fork-outer/result.json",
+            "lifecycle-cancel-active-update-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "statement_closed": false,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 9
+            },
+            "cancel_before_release": true,
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "rollback": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 1
+            }
+          },
+          "raw_results": [
+            "lifecycle-cancel-active-update-rep-1-reentrant/result.json",
+            "lifecycle-cancel-active-update-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "rollback": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 1
+            },
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "cancel_before_release": true,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 9
+            },
+            "statement_closed": false
+          },
+          "raw_results": [
+            "lifecycle-cancel-active-update-rep-1-reentrant-outer/result.json",
+            "lifecycle-cancel-active-update-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "close-active-connection",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "close_before_release": false,
+            "execute_before_release": false,
+            "execute": {
+              "completed": true
+            },
+            "update_count": 1,
+            "close": {
+              "completed": true
+            },
+            "connection_closed": true,
+            "statement_closed": false,
+            "later_execute": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "durable_rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-close-active-connection-rep-1-fork/result.json",
+            "lifecycle-close-active-connection-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "close_before_release": false,
+            "execute_before_release": false,
+            "execute": {
+              "completed": true
+            },
+            "update_count": 1,
+            "close": {
+              "completed": true
+            },
+            "connection_closed": true,
+            "statement_closed": false,
+            "later_execute": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "durable_rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-close-active-connection-rep-1-fork-outer/result.json",
+            "lifecycle-close-active-connection-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "close_before_release": false,
+            "execute_before_release": false,
+            "execute": {
+              "completed": true
+            },
+            "update_count": 1,
+            "close": {
+              "completed": true
+            },
+            "connection_closed": true,
+            "statement_closed": false,
+            "later_execute": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "durable_rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-close-active-connection-rep-1-reentrant/result.json",
+            "lifecycle-close-active-connection-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "close_before_release": false,
+            "execute_before_release": false,
+            "execute": {
+              "completed": true
+            },
+            "update_count": 1,
+            "close": {
+              "completed": true
+            },
+            "connection_closed": true,
+            "statement_closed": false,
+            "later_execute": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "durable_rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-close-active-connection-rep-1-reentrant-outer/result.json",
+            "lifecycle-close-active-connection-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "close-active-statement",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "close_before_release": false,
+            "execute_before_release": false,
+            "execute": {
+              "completed": true
+            },
+            "update_count": 1,
+            "close": {
+              "completed": true
+            },
+            "connection_closed": false,
+            "statement_closed": true,
+            "later_execute": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "durable_rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-close-active-statement-rep-1-fork/result.json",
+            "lifecycle-close-active-statement-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "close_before_release": false,
+            "execute_before_release": false,
+            "execute": {
+              "completed": true
+            },
+            "update_count": 1,
+            "close": {
+              "completed": true
+            },
+            "connection_closed": false,
+            "statement_closed": true,
+            "later_execute": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "durable_rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-close-active-statement-rep-1-fork-outer/result.json",
+            "lifecycle-close-active-statement-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "close_before_release": false,
+            "execute_before_release": false,
+            "execute": {
+              "completed": true
+            },
+            "update_count": 1,
+            "close": {
+              "completed": true
+            },
+            "connection_closed": false,
+            "statement_closed": true,
+            "later_execute": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "durable_rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-close-active-statement-rep-1-reentrant/result.json",
+            "lifecycle-close-active-statement-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "close_before_release": false,
+            "execute_before_release": false,
+            "execute": {
+              "completed": true
+            },
+            "update_count": 1,
+            "close": {
+              "completed": true
+            },
+            "connection_closed": false,
+            "statement_closed": true,
+            "later_execute": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "durable_rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-close-active-statement-rep-1-reentrant-outer/result.json",
+            "lifecycle-close-active-statement-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "closed-update-preflight",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "statement_closed": true,
+            "gate_value": 1,
+            "before_release": true
+          },
+          "raw_results": [
+            "lifecycle-closed-update-preflight-rep-1-fork/result.json",
+            "lifecycle-closed-update-preflight-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "failure": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "before_release": false,
+            "gate_value": 1,
+            "statement_closed": true
+          },
+          "raw_results": [
+            "lifecycle-closed-update-preflight-rep-1-fork-outer/result.json",
+            "lifecycle-closed-update-preflight-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "failure": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "before_release": true,
+            "gate_value": 1,
+            "statement_closed": true
+          },
+          "raw_results": [
+            "lifecycle-closed-update-preflight-rep-1-reentrant/result.json",
+            "lifecycle-closed-update-preflight-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "gate_value": 1,
+            "statement_closed": true,
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "failure": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "before_release": false
+          },
+          "raw_results": [
+            "lifecycle-closed-update-preflight-rep-1-reentrant-outer/result.json",
+            "lifecycle-closed-update-preflight-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "generated-keys-lifecycle",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "keys": [
+              101,
+              102,
+              201,
+              103
+            ],
+            "key_owner_is_prepared_statement": false,
+            "prior_owner_closed_on_success": true,
+            "prior_cursor_closed_on_failure": false,
+            "same_cursor_after_failure": true,
+            "key_after_failure": 102,
+            "constraint": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 19
+            },
+            "all_keys_closed_after_owner_close": true,
+            "rows": [
+              1,
+              2,
+              4,
+              3
+            ]
+          },
+          "raw_results": [
+            "lifecycle-generated-keys-lifecycle-rep-1-fork/result.json",
+            "lifecycle-generated-keys-lifecycle-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "keys": [
+              101,
+              102,
+              201,
+              103
+            ],
+            "key_owner_is_prepared_statement": false,
+            "prior_owner_closed_on_success": true,
+            "prior_cursor_closed_on_failure": false,
+            "same_cursor_after_failure": true,
+            "key_after_failure": 102,
+            "constraint": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 19
+            },
+            "all_keys_closed_after_owner_close": true,
+            "rows": [
+              1,
+              2,
+              4,
+              3
+            ]
+          },
+          "raw_results": [
+            "lifecycle-generated-keys-lifecycle-rep-1-fork-outer/result.json",
+            "lifecycle-generated-keys-lifecycle-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "keys": [
+              101,
+              102,
+              201,
+              103
+            ],
+            "key_owner_is_prepared_statement": false,
+            "prior_owner_closed_on_success": true,
+            "prior_cursor_closed_on_failure": false,
+            "same_cursor_after_failure": true,
+            "key_after_failure": 102,
+            "constraint": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 19
+            },
+            "all_keys_closed_after_owner_close": true,
+            "rows": [
+              1,
+              2,
+              4,
+              3
+            ]
+          },
+          "raw_results": [
+            "lifecycle-generated-keys-lifecycle-rep-1-reentrant/result.json",
+            "lifecycle-generated-keys-lifecycle-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "keys": [
+              101,
+              102,
+              201,
+              103
+            ],
+            "key_owner_is_prepared_statement": false,
+            "prior_owner_closed_on_success": true,
+            "prior_cursor_closed_on_failure": false,
+            "same_cursor_after_failure": true,
+            "key_after_failure": 102,
+            "constraint": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 19
+            },
+            "all_keys_closed_after_owner_close": true,
+            "rows": [
+              1,
+              2,
+              4,
+              3
+            ]
+          },
+          "raw_results": [
+            "lifecycle-generated-keys-lifecycle-rep-1-reentrant-outer/result.json",
+            "lifecycle-generated-keys-lifecycle-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "keys-close-on-completion",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "statement_closed_with_keys": false,
+            "next_update": {
+              "completed": true
+            },
+            "key_owner_is_prepared_statement": false,
+            "key_owner_closed_with_keys": false,
+            "all_keys_closed_after_explicit_close": true,
+            "rows": [
+              10,
+              20
+            ]
+          },
+          "raw_results": [
+            "lifecycle-keys-close-on-completion-rep-1-fork/result.json",
+            "lifecycle-keys-close-on-completion-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "key_owner_is_prepared_statement": false,
+            "key_owner_closed_with_keys": false,
+            "all_keys_closed_after_explicit_close": true,
+            "rows": [
+              10,
+              20
+            ],
+            "statement_closed_with_keys": false,
+            "next_update": {
+              "completed": true
+            }
+          },
+          "raw_results": [
+            "lifecycle-keys-close-on-completion-rep-1-fork-outer/result.json",
+            "lifecycle-keys-close-on-completion-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "rows": [
+              10,
+              20
+            ],
+            "all_keys_closed_after_explicit_close": true,
+            "key_owner_closed_with_keys": false,
+            "key_owner_is_prepared_statement": false,
+            "next_update": {
+              "completed": true
+            },
+            "statement_closed_with_keys": false
+          },
+          "raw_results": [
+            "lifecycle-keys-close-on-completion-rep-1-reentrant/result.json",
+            "lifecycle-keys-close-on-completion-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "key_owner_closed_with_keys": false,
+            "key_owner_is_prepared_statement": false,
+            "next_update": {
+              "completed": true
+            },
+            "statement_closed_with_keys": false,
+            "rows": [
+              10,
+              20
+            ],
+            "all_keys_closed_after_explicit_close": true
+          },
+          "raw_results": [
+            "lifecycle-keys-close-on-completion-rep-1-reentrant-outer/result.json",
+            "lifecycle-keys-close-on-completion-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "listener-commit-failure",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "durable_after_failure": [
+              11,
+              20,
+              30
+            ],
+            "callback_calls": 1,
+            "after_recovery_rollback": [
+              11,
+              20,
+              30
+            ],
+            "execute": {
+              "class": "java.lang.IllegalStateException"
+            }
+          },
+          "raw_results": [
+            "lifecycle-listener-commit-failure-rep-1-fork/result.json",
+            "lifecycle-listener-commit-failure-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "callback_calls": 1,
+            "durable_after_failure": [
+              11,
+              20,
+              30
+            ],
+            "execute": {
+              "class": "java.lang.IllegalStateException"
+            },
+            "after_recovery_rollback": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-listener-commit-failure-rep-1-fork-outer/result.json",
+            "lifecycle-listener-commit-failure-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "callback_calls": 1,
+            "durable_after_failure": [
+              11,
+              20,
+              30
+            ],
+            "execute": {
+              "class": "java.lang.IllegalStateException"
+            },
+            "after_recovery_rollback": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-listener-commit-failure-rep-1-reentrant/result.json",
+            "lifecycle-listener-commit-failure-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "after_recovery_rollback": [
+              11,
+              20,
+              30
+            ],
+            "execute": {
+              "class": "java.lang.IllegalStateException"
+            },
+            "durable_after_failure": [
+              11,
+              20,
+              30
+            ],
+            "callback_calls": 1
+          },
+          "raw_results": [
+            "lifecycle-listener-commit-failure-rep-1-reentrant-outer/result.json",
+            "lifecycle-listener-commit-failure-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "listener-state-reentry",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "same_thread": true,
+            "rows": [
+              11,
+              20,
+              30
+            ],
+            "events": [
+              "UPDATE:main:t:1",
+              "commit"
+            ],
+            "state_getters_valid": true
+          },
+          "raw_results": [
+            "lifecycle-listener-state-reentry-rep-1-fork/result.json",
+            "lifecycle-listener-state-reentry-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "same_thread": true,
+            "rows": [
+              11,
+              20,
+              30
+            ],
+            "events": [
+              "UPDATE:main:t:1",
+              "commit"
+            ],
+            "state_getters_valid": true
+          },
+          "raw_results": [
+            "lifecycle-listener-state-reentry-rep-1-fork-outer/result.json",
+            "lifecycle-listener-state-reentry-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "state_getters_valid": true,
+            "same_thread": true,
+            "rows": [
+              11,
+              20,
+              30
+            ],
+            "events": [
+              "UPDATE:main:t:1",
+              "commit"
+            ]
+          },
+          "raw_results": [
+            "lifecycle-listener-state-reentry-rep-1-reentrant/result.json",
+            "lifecycle-listener-state-reentry-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "same_thread": true,
+            "state_getters_valid": true,
+            "events": [
+              "UPDATE:main:t:1",
+              "commit"
+            ],
+            "rows": [
+              11,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-listener-state-reentry-rep-1-reentrant-outer/result.json",
+            "lifecycle-listener-state-reentry-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "listener-update-failure",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "exception": {
+              "before_rollback": [
+                11,
+                20,
+                30
+              ],
+              "after_rollback": [
+                10,
+                20,
+                30
+              ],
+              "execute": {
+                "class": "java.lang.IllegalStateException"
+              }
+            },
+            "error": {
+              "before_rollback": [
+                11,
+                20,
+                30
+              ],
+              "after_rollback": [
+                10,
+                20,
+                30
+              ],
+              "execute": {
+                "class": "java.lang.AssertionError"
+              }
+            }
+          },
+          "raw_results": [
+            "lifecycle-listener-update-failure-rep-1-fork/result.json",
+            "lifecycle-listener-update-failure-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "exception": {
+              "before_rollback": [
+                11,
+                20,
+                30
+              ],
+              "after_rollback": [
+                10,
+                20,
+                30
+              ],
+              "execute": {
+                "class": "java.lang.IllegalStateException"
+              }
+            },
+            "error": {
+              "before_rollback": [
+                11,
+                20,
+                30
+              ],
+              "after_rollback": [
+                10,
+                20,
+                30
+              ],
+              "execute": {
+                "class": "java.lang.AssertionError"
+              }
+            }
+          },
+          "raw_results": [
+            "lifecycle-listener-update-failure-rep-1-fork-outer/result.json",
+            "lifecycle-listener-update-failure-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "exception": {
+              "after_rollback": [
+                10,
+                20,
+                30
+              ],
+              "before_rollback": [
+                11,
+                20,
+                30
+              ],
+              "execute": {
+                "class": "java.lang.IllegalStateException"
+              }
+            },
+            "error": {
+              "after_rollback": [
+                10,
+                20,
+                30
+              ],
+              "before_rollback": [
+                11,
+                20,
+                30
+              ],
+              "execute": {
+                "class": "java.lang.AssertionError"
+              }
+            }
+          },
+          "raw_results": [
+            "lifecycle-listener-update-failure-rep-1-reentrant/result.json",
+            "lifecycle-listener-update-failure-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "exception": {
+              "after_rollback": [
+                10,
+                20,
+                30
+              ],
+              "execute": {
+                "class": "java.lang.IllegalStateException"
+              },
+              "before_rollback": [
+                11,
+                20,
+                30
+              ]
+            },
+            "error": {
+              "after_rollback": [
+                10,
+                20,
+                30
+              ],
+              "execute": {
+                "class": "java.lang.AssertionError"
+              },
+              "before_rollback": [
+                11,
+                20,
+                30
+              ]
+            }
+          },
+          "raw_results": [
+            "lifecycle-listener-update-failure-rep-1-reentrant-outer/result.json",
+            "lifecycle-listener-update-failure-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "select-update-preflight",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "before_release": true,
+            "gate_value": 1,
+            "statement_closed": false,
+            "rows": [
+              10,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-select-update-preflight-rep-1-fork/result.json",
+            "lifecycle-select-update-preflight-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "before_release": false,
+            "gate_value": 1,
+            "statement_closed": false,
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "failure": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            }
+          },
+          "raw_results": [
+            "lifecycle-select-update-preflight-rep-1-fork-outer/result.json",
+            "lifecycle-select-update-preflight-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "failure": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "before_release": true,
+            "gate_value": 1,
+            "statement_closed": false
+          },
+          "raw_results": [
+            "lifecycle-select-update-preflight-rep-1-reentrant/result.json",
+            "lifecycle-select-update-preflight-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "rows": [
+              10,
+              20,
+              30
+            ],
+            "failure": {
+              "class": "java.sql.SQLException",
+              "sql_state": null,
+              "code": 0
+            },
+            "before_release": false,
+            "gate_value": 1,
+            "statement_closed": false
+          },
+          "raw_results": [
+            "lifecycle-select-update-preflight-rep-1-reentrant-outer/result.json",
+            "lifecycle-select-update-preflight-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "udf-error-recovery",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "callback_calls": 2,
+            "same_statement_reuse": {
+              "failure": {
+                "class": "java.sql.SQLException",
+                "sql_state": null,
+                "code": 0
+              }
+            },
+            "after_rollback": [
+              10,
+              20,
+              30
+            ],
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 1
+            },
+            "statement_closed": false
+          },
+          "raw_results": [
+            "lifecycle-udf-error-recovery-rep-1-fork/result.json",
+            "lifecycle-udf-error-recovery-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "callback_calls": 2,
+            "same_statement_reuse": {
+              "failure": {
+                "class": "java.sql.SQLException",
+                "sql_state": null,
+                "code": 0
+              }
+            },
+            "after_rollback": [
+              10,
+              20,
+              30
+            ],
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 1
+            },
+            "statement_closed": false
+          },
+          "raw_results": [
+            "lifecycle-udf-error-recovery-rep-1-fork-outer/result.json",
+            "lifecycle-udf-error-recovery-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 1
+            },
+            "after_rollback": [
+              10,
+              20,
+              30
+            ],
+            "same_statement_reuse": {
+              "failure": {
+                "class": "java.sql.SQLException",
+                "sql_state": null,
+                "code": 0
+              }
+            },
+            "callback_calls": 2,
+            "statement_closed": false
+          },
+          "raw_results": [
+            "lifecycle-udf-error-recovery-rep-1-reentrant/result.json",
+            "lifecycle-udf-error-recovery-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "callback_calls": 2,
+            "statement_closed": false,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sql_state": null,
+              "code": 1
+            },
+            "after_rollback": [
+              10,
+              20,
+              30
+            ],
+            "same_statement_reuse": {
+              "failure": {
+                "class": "java.sql.SQLException",
+                "sql_state": null,
+                "code": 0
+              }
+            }
+          },
+          "raw_results": [
+            "lifecycle-udf-error-recovery-rep-1-reentrant-outer/result.json",
+            "lifecycle-udf-error-recovery-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "lifecycle",
+      "scenario": "udf-read-reentry",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "callback_reads": [
+              20
+            ],
+            "same_thread": true,
+            "count": 1,
+            "after_rollback": [
+              10,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-udf-read-reentry-rep-1-fork/result.json",
+            "lifecycle-udf-read-reentry-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "count": 1,
+            "same_thread": true,
+            "callback_reads": [
+              20
+            ],
+            "after_rollback": [
+              10,
+              20,
+              30
+            ]
+          },
+          "raw_results": [
+            "lifecycle-udf-read-reentry-rep-1-fork-outer/result.json",
+            "lifecycle-udf-read-reentry-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "after_rollback": [
+              10,
+              20,
+              30
+            ],
+            "count": 1,
+            "same_thread": true,
+            "callback_reads": [
+              20
+            ]
+          },
+          "raw_results": [
+            "lifecycle-udf-read-reentry-rep-1-reentrant/result.json",
+            "lifecycle-udf-read-reentry-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "count": 1,
+            "after_rollback": [
+              10,
+              20,
+              30
+            ],
+            "callback_reads": [
+              20
+            ],
+            "same_thread": true
+          },
+          "raw_results": [
+            "lifecycle-udf-read-reentry-rep-1-reentrant-outer/result.json",
+            "lifecycle-udf-read-reentry-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "busy_timeout_setter",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "setterCompletedBeforeRelease": false,
+            "autoCommit": false,
+            "remaining": 0,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "finalPolicy": {
+              "config": 777,
+              "jdbc": 777,
+              "pragma": 777
+            },
+            "callbackOnCaller": true
+          },
+          "raw_results": [
+            "transactions-busy_timeout_setter-rep-1-fork/result.json",
+            "transactions-busy_timeout_setter-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "remaining": 0,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "finalPolicy": {
+              "jdbc": 777,
+              "pragma": 777,
+              "config": 777
+            },
+            "callbackOnCaller": true,
+            "setterCompletedBeforeRelease": false,
+            "autoCommit": false
+          },
+          "raw_results": [
+            "transactions-busy_timeout_setter-rep-1-fork-outer/result.json",
+            "transactions-busy_timeout_setter-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "callbackOnCaller": true,
+            "finalPolicy": {
+              "jdbc": 777,
+              "config": 777,
+              "pragma": 777
+            },
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "remaining": 0,
+            "autoCommit": false,
+            "setterCompletedBeforeRelease": false
+          },
+          "raw_results": [
+            "transactions-busy_timeout_setter-rep-1-reentrant/result.json",
+            "transactions-busy_timeout_setter-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "autoCommit": false,
+            "setterCompletedBeforeRelease": false,
+            "callbackOnCaller": true,
+            "finalPolicy": {
+              "pragma": 777,
+              "jdbc": 777,
+              "config": 777
+            },
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "remaining": 0
+          },
+          "raw_results": [
+            "transactions-busy_timeout_setter-rep-1-reentrant-outer/result.json",
+            "transactions-busy_timeout_setter-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "cancel_busy_callback",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 9
+            },
+            "changed": -1,
+            "callbackOnCaller": true,
+            "operationPendingAtCancellation": true,
+            "javaInterruptAtReturn": false,
+            "ownRowsBeforeRollback": 0,
+            "outsideRowsBeforeRollback": 0,
+            "tempRowsBeforeRollback": 0,
+            "rollbackFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 1
+            },
+            "policy": {
+              "pragma": 0,
+              "config": 200,
+              "jdbc": 200
+            },
+            "autoCommit": false,
+            "committedRowsAfterClose": 0
+          },
+          "raw_results": [
+            "transactions-cancel_busy_callback-rep-1-fork/result.json",
+            "transactions-cancel_busy_callback-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 9
+            },
+            "changed": -1,
+            "callbackOnCaller": true,
+            "operationPendingAtCancellation": true,
+            "javaInterruptAtReturn": false,
+            "ownRowsBeforeRollback": 0,
+            "outsideRowsBeforeRollback": 0,
+            "tempRowsBeforeRollback": 0,
+            "rollbackFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 1
+            },
+            "policy": {
+              "jdbc": 200,
+              "config": 200,
+              "pragma": 0
+            },
+            "autoCommit": false,
+            "committedRowsAfterClose": 0
+          },
+          "raw_results": [
+            "transactions-cancel_busy_callback-rep-1-fork-outer/result.json",
+            "transactions-cancel_busy_callback-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 9
+            },
+            "changed": -1,
+            "callbackOnCaller": true,
+            "operationPendingAtCancellation": true,
+            "javaInterruptAtReturn": false,
+            "ownRowsBeforeRollback": 0,
+            "outsideRowsBeforeRollback": 0,
+            "tempRowsBeforeRollback": 0,
+            "rollbackFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 1
+            },
+            "policy": {
+              "jdbc": 200,
+              "pragma": 0,
+              "config": 200
+            },
+            "autoCommit": false,
+            "committedRowsAfterClose": 0
+          },
+          "raw_results": [
+            "transactions-cancel_busy_callback-rep-1-reentrant/result.json",
+            "transactions-cancel_busy_callback-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 9
+            },
+            "changed": -1,
+            "callbackOnCaller": true,
+            "operationPendingAtCancellation": true,
+            "javaInterruptAtReturn": false,
+            "ownRowsBeforeRollback": 0,
+            "outsideRowsBeforeRollback": 0,
+            "tempRowsBeforeRollback": 0,
+            "rollbackFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 1
+            },
+            "policy": {
+              "pragma": 0,
+              "jdbc": 200,
+              "config": 200
+            },
+            "autoCommit": false,
+            "committedRowsAfterClose": 0
+          },
+          "raw_results": [
+            "transactions-cancel_busy_callback-rep-1-reentrant-outer/result.json",
+            "transactions-cancel_busy_callback-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "commit_restart_pending",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "retainedRows": 1,
+            "autoCommit": false,
+            "recovered": 1,
+            "retainedValue": 1,
+            "pendingFailure": {
+              "class": "java.sql.SQLException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "sumBeforeRollback": 3,
+            "controlFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            }
+          },
+          "raw_results": [
+            "transactions-commit_restart_pending-rep-1-fork/result.json",
+            "transactions-commit_restart_pending-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "retainedRows": 1,
+            "autoCommit": false,
+            "recovered": 1,
+            "retainedValue": 1,
+            "pendingFailure": {
+              "class": "java.sql.SQLException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "sumBeforeRollback": 3,
+            "controlFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            }
+          },
+          "raw_results": [
+            "transactions-commit_restart_pending-rep-1-fork-outer/result.json",
+            "transactions-commit_restart_pending-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "pendingFailure": {
+              "class": "java.sql.SQLException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "retainedValue": 1,
+            "recovered": 1,
+            "autoCommit": false,
+            "retainedRows": 1,
+            "controlFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "sumBeforeRollback": 3
+          },
+          "raw_results": [
+            "transactions-commit_restart_pending-rep-1-reentrant/result.json",
+            "transactions-commit_restart_pending-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "controlFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "retainedRows": 1,
+            "autoCommit": false,
+            "recovered": 1,
+            "retainedValue": 1,
+            "pendingFailure": {
+              "class": "java.sql.SQLException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "sumBeforeRollback": 3
+          },
+          "raw_results": [
+            "transactions-commit_restart_pending-rep-1-reentrant-outer/result.json",
+            "transactions-commit_restart_pending-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "constraint_reuse",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "unchangedValue": 20,
+            "reused": 1,
+            "autoCommit": false,
+            "restoredSum": 30,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 19
+            },
+            "earlierWork": 30
+          },
+          "raw_results": [
+            "transactions-constraint_reuse-rep-1-fork/result.json",
+            "transactions-constraint_reuse-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "reused": 1,
+            "unchangedValue": 20,
+            "earlierWork": 30,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 19
+            },
+            "restoredSum": 30,
+            "autoCommit": false
+          },
+          "raw_results": [
+            "transactions-constraint_reuse-rep-1-fork-outer/result.json",
+            "transactions-constraint_reuse-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "autoCommit": false,
+            "restoredSum": 30,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 19
+            },
+            "earlierWork": 30,
+            "unchangedValue": 20,
+            "reused": 1
+          },
+          "raw_results": [
+            "transactions-constraint_reuse-rep-1-reentrant/result.json",
+            "transactions-constraint_reuse-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 19
+            },
+            "restoredSum": 30,
+            "autoCommit": false,
+            "reused": 1,
+            "unchangedValue": 20,
+            "earlierWork": 30
+          },
+          "raw_results": [
+            "transactions-constraint_reuse-rep-1-reentrant-outer/result.json",
+            "transactions-constraint_reuse-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "interrupt_busy_callback",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": null,
+              "sqlState": null,
+              "errorCode": null
+            },
+            "changed": 1,
+            "callbackOnCaller": true,
+            "operationPendingAtCancellation": true,
+            "javaInterruptAtReturn": true,
+            "ownRowsBeforeRollback": 1,
+            "outsideRowsBeforeRollback": 0,
+            "tempRowsBeforeRollback": 1,
+            "rollbackFailure": {
+              "class": null,
+              "sqlState": null,
+              "errorCode": null
+            },
+            "policy": {
+              "pragma": 0,
+              "config": 200,
+              "jdbc": 200
+            },
+            "autoCommit": false,
+            "committedRowsAfterClose": 0
+          },
+          "raw_results": [
+            "transactions-interrupt_busy_callback-rep-1-fork/result.json",
+            "transactions-interrupt_busy_callback-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": null,
+              "sqlState": null,
+              "errorCode": null
+            },
+            "changed": 1,
+            "callbackOnCaller": true,
+            "operationPendingAtCancellation": true,
+            "javaInterruptAtReturn": true,
+            "ownRowsBeforeRollback": 1,
+            "outsideRowsBeforeRollback": 0,
+            "tempRowsBeforeRollback": 1,
+            "rollbackFailure": {
+              "class": null,
+              "sqlState": null,
+              "errorCode": null
+            },
+            "policy": {
+              "pragma": 0,
+              "config": 200,
+              "jdbc": 200
+            },
+            "autoCommit": false,
+            "committedRowsAfterClose": 0
+          },
+          "raw_results": [
+            "transactions-interrupt_busy_callback-rep-1-fork-outer/result.json",
+            "transactions-interrupt_busy_callback-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": null,
+              "sqlState": null,
+              "errorCode": null
+            },
+            "changed": 1,
+            "callbackOnCaller": true,
+            "operationPendingAtCancellation": true,
+            "javaInterruptAtReturn": true,
+            "ownRowsBeforeRollback": 1,
+            "outsideRowsBeforeRollback": 0,
+            "tempRowsBeforeRollback": 1,
+            "rollbackFailure": {
+              "class": null,
+              "sqlState": null,
+              "errorCode": null
+            },
+            "policy": {
+              "pragma": 0,
+              "config": 200,
+              "jdbc": 200
+            },
+            "autoCommit": false,
+            "committedRowsAfterClose": 0
+          },
+          "raw_results": [
+            "transactions-interrupt_busy_callback-rep-1-reentrant/result.json",
+            "transactions-interrupt_busy_callback-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "failure": {
+              "class": null,
+              "sqlState": null,
+              "errorCode": null
+            },
+            "changed": 1,
+            "callbackOnCaller": true,
+            "operationPendingAtCancellation": true,
+            "javaInterruptAtReturn": true,
+            "ownRowsBeforeRollback": 1,
+            "outsideRowsBeforeRollback": 0,
+            "tempRowsBeforeRollback": 1,
+            "rollbackFailure": {
+              "class": null,
+              "sqlState": null,
+              "errorCode": null
+            },
+            "policy": {
+              "pragma": 0,
+              "config": 200,
+              "jdbc": 200
+            },
+            "autoCommit": false,
+            "committedRowsAfterClose": 0
+          },
+          "raw_results": [
+            "transactions-interrupt_busy_callback-rep-1-reentrant-outer/result.json",
+            "transactions-interrupt_busy_callback-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "query_timeout_failure",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "restoredPolicy": {
+              "config": 37,
+              "jdbc": 37,
+              "pragma": 37
+            },
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "queryTimeout": 1,
+            "autoCommit": false,
+            "remaining": 0
+          },
+          "raw_results": [
+            "transactions-query_timeout_failure-rep-1-fork/result.json",
+            "transactions-query_timeout_failure-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "restoredPolicy": {
+              "config": 37,
+              "pragma": 37,
+              "jdbc": 37
+            },
+            "remaining": 0,
+            "autoCommit": false,
+            "queryTimeout": 1,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            }
+          },
+          "raw_results": [
+            "transactions-query_timeout_failure-rep-1-fork-outer/result.json",
+            "transactions-query_timeout_failure-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "remaining": 0,
+            "autoCommit": false,
+            "queryTimeout": 1,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "restoredPolicy": {
+              "pragma": 37,
+              "jdbc": 37,
+              "config": 37
+            }
+          },
+          "raw_results": [
+            "transactions-query_timeout_failure-rep-1-reentrant/result.json",
+            "transactions-query_timeout_failure-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "restoredPolicy": {
+              "config": 37,
+              "jdbc": 37,
+              "pragma": 37
+            },
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "queryTimeout": 1,
+            "autoCommit": false,
+            "remaining": 0
+          },
+          "raw_results": [
+            "transactions-query_timeout_failure-rep-1-reentrant-outer/result.json",
+            "transactions-query_timeout_failure-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "query_timeout_setter_race",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "finalJdbcTimeout": 200,
+            "finalNativeTimeout": 777,
+            "finalValue": 1,
+            "configurationMatchesNative": false,
+            "configurationBeforeGateRelease": 777,
+            "requestedTimeout": 777
+          },
+          "raw_results": [
+            "transactions-query_timeout_setter_race-rep-1-fork/result.json",
+            "transactions-query_timeout_setter_race-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "requestedTimeout": 777,
+            "configurationBeforeGateRelease": 777,
+            "configurationMatchesNative": false,
+            "finalValue": 1,
+            "finalNativeTimeout": 777,
+            "finalJdbcTimeout": 200
+          },
+          "raw_results": [
+            "transactions-query_timeout_setter_race-rep-1-fork-outer/result.json",
+            "transactions-query_timeout_setter_race-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "requestedTimeout": 777,
+            "finalJdbcTimeout": 200,
+            "finalNativeTimeout": 777,
+            "finalValue": 1,
+            "configurationMatchesNative": false,
+            "configurationBeforeGateRelease": 777
+          },
+          "raw_results": [
+            "transactions-query_timeout_setter_race-rep-1-reentrant/result.json",
+            "transactions-query_timeout_setter_race-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "requestedTimeout": 777,
+            "finalJdbcTimeout": 200,
+            "finalNativeTimeout": 777,
+            "finalValue": 1,
+            "configurationMatchesNative": false,
+            "configurationBeforeGateRelease": 777
+          },
+          "raw_results": [
+            "transactions-query_timeout_setter_race-rep-1-reentrant-outer/result.json",
+            "transactions-query_timeout_setter_race-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "query_timeout_success",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "changed": 1,
+            "committed": 7,
+            "restoredPolicy": {
+              "pragma": 37,
+              "config": 37,
+              "jdbc": 37
+            },
+            "queryTimeout": 1,
+            "autoCommit": false
+          },
+          "raw_results": [
+            "transactions-query_timeout_success-rep-1-fork/result.json",
+            "transactions-query_timeout_success-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "committed": 7,
+            "changed": 1,
+            "autoCommit": false,
+            "queryTimeout": 1,
+            "restoredPolicy": {
+              "config": 37,
+              "pragma": 37,
+              "jdbc": 37
+            }
+          },
+          "raw_results": [
+            "transactions-query_timeout_success-rep-1-fork-outer/result.json",
+            "transactions-query_timeout_success-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "autoCommit": false,
+            "changed": 1,
+            "committed": 7,
+            "restoredPolicy": {
+              "pragma": 37,
+              "config": 37,
+              "jdbc": 37
+            },
+            "queryTimeout": 1
+          },
+          "raw_results": [
+            "transactions-query_timeout_success-rep-1-reentrant/result.json",
+            "transactions-query_timeout_success-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "changed": 1,
+            "autoCommit": false,
+            "queryTimeout": 1,
+            "restoredPolicy": {
+              "jdbc": 37,
+              "config": 37,
+              "pragma": 37
+            },
+            "committed": 7
+          },
+          "raw_results": [
+            "transactions-query_timeout_success-rep-1-reentrant-outer/result.json",
+            "transactions-query_timeout_success-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "readonly_upgrade",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "autoCommit": false,
+            "committed": 7,
+            "writeQueryPolicy": 0,
+            "readOnlyFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 8
+            },
+            "changed": 1,
+            "sameStatementReuse": {
+              "failure": {
+                "class": "java.sql.SQLException",
+                "sqlState": null,
+                "errorCode": 0
+              }
+            },
+            "readOnlyQueryPolicy": 1
+          },
+          "raw_results": [
+            "transactions-readonly_upgrade-rep-1-fork/result.json",
+            "transactions-readonly_upgrade-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "writeQueryPolicy": 0,
+            "committed": 7,
+            "autoCommit": false,
+            "readOnlyQueryPolicy": 1,
+            "sameStatementReuse": {
+              "failure": {
+                "class": "java.sql.SQLException",
+                "sqlState": null,
+                "errorCode": 0
+              }
+            },
+            "changed": 1,
+            "readOnlyFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 8
+            }
+          },
+          "raw_results": [
+            "transactions-readonly_upgrade-rep-1-fork-outer/result.json",
+            "transactions-readonly_upgrade-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "readOnlyQueryPolicy": 1,
+            "sameStatementReuse": {
+              "failure": {
+                "class": "java.sql.SQLException",
+                "sqlState": null,
+                "errorCode": 0
+              }
+            },
+            "changed": 1,
+            "readOnlyFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 8
+            },
+            "writeQueryPolicy": 0,
+            "committed": 7,
+            "autoCommit": false
+          },
+          "raw_results": [
+            "transactions-readonly_upgrade-rep-1-reentrant/result.json",
+            "transactions-readonly_upgrade-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "committed": 7,
+            "writeQueryPolicy": 0,
+            "readOnlyFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 8
+            },
+            "changed": 1,
+            "sameStatementReuse": {
+              "failure": {
+                "class": "java.sql.SQLException",
+                "sqlState": null,
+                "errorCode": 0
+              }
+            },
+            "readOnlyQueryPolicy": 1,
+            "autoCommit": false
+          },
+          "raw_results": [
+            "transactions-readonly_upgrade-rep-1-reentrant-outer/result.json",
+            "transactions-readonly_upgrade-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "rollback_restart_pending",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sumBeforeRollback": 2,
+            "controlFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "retainedRows": 1,
+            "autoCommit": false,
+            "recovered": 1,
+            "retainedValue": 0,
+            "pendingFailure": {
+              "class": "java.sql.SQLException",
+              "sqlState": null,
+              "errorCode": 5
+            }
+          },
+          "raw_results": [
+            "transactions-rollback_restart_pending-rep-1-fork/result.json",
+            "transactions-rollback_restart_pending-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "sumBeforeRollback": 2,
+            "controlFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "retainedRows": 1,
+            "autoCommit": false,
+            "recovered": 1,
+            "retainedValue": 0,
+            "pendingFailure": {
+              "class": "java.sql.SQLException",
+              "sqlState": null,
+              "errorCode": 5
+            }
+          },
+          "raw_results": [
+            "transactions-rollback_restart_pending-rep-1-fork-outer/result.json",
+            "transactions-rollback_restart_pending-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "autoCommit": false,
+            "recovered": 1,
+            "retainedValue": 0,
+            "pendingFailure": {
+              "class": "java.sql.SQLException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "sumBeforeRollback": 2,
+            "controlFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "retainedRows": 1
+          },
+          "raw_results": [
+            "transactions-rollback_restart_pending-rep-1-reentrant/result.json",
+            "transactions-rollback_restart_pending-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "retainedRows": 1,
+            "autoCommit": false,
+            "recovered": 1,
+            "retainedValue": 0,
+            "pendingFailure": {
+              "class": "java.sql.SQLException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "sumBeforeRollback": 2,
+            "controlFailure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            }
+          },
+          "raw_results": [
+            "transactions-rollback_restart_pending-rep-1-reentrant-outer/result.json",
+            "transactions-rollback_restart_pending-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "savepoint_rollback_release",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "afterSavepointRollback": 20,
+            "committed": 30,
+            "autoCommit": false,
+            "outsideAfterRelease": 10
+          },
+          "raw_results": [
+            "transactions-savepoint_rollback_release-rep-1-fork/result.json",
+            "transactions-savepoint_rollback_release-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "outsideAfterRelease": 10,
+            "autoCommit": false,
+            "committed": 30,
+            "afterSavepointRollback": 20
+          },
+          "raw_results": [
+            "transactions-savepoint_rollback_release-rep-1-fork-outer/result.json",
+            "transactions-savepoint_rollback_release-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "autoCommit": false,
+            "committed": 30,
+            "afterSavepointRollback": 20,
+            "outsideAfterRelease": 10
+          },
+          "raw_results": [
+            "transactions-savepoint_rollback_release-rep-1-reentrant/result.json",
+            "transactions-savepoint_rollback_release-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "afterSavepointRollback": 20,
+            "outsideAfterRelease": 10,
+            "autoCommit": false,
+            "committed": 30
+          },
+          "raw_results": [
+            "transactions-savepoint_rollback_release-rep-1-reentrant-outer/result.json",
+            "transactions-savepoint_rollback_release-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "transaction_rollback",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "autoCommit": false,
+            "reused": 1,
+            "committed": 20,
+            "rolledBack": 10,
+            "outsideBeforeRollback": 10,
+            "ownBeforeRollback": 20,
+            "changed": 1
+          },
+          "raw_results": [
+            "transactions-transaction_rollback-rep-1-fork/result.json",
+            "transactions-transaction_rollback-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "changed": 1,
+            "ownBeforeRollback": 20,
+            "outsideBeforeRollback": 10,
+            "rolledBack": 10,
+            "committed": 20,
+            "reused": 1,
+            "autoCommit": false
+          },
+          "raw_results": [
+            "transactions-transaction_rollback-rep-1-fork-outer/result.json",
+            "transactions-transaction_rollback-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "changed": 1,
+            "autoCommit": false,
+            "reused": 1,
+            "committed": 20,
+            "rolledBack": 10,
+            "outsideBeforeRollback": 10,
+            "ownBeforeRollback": 20
+          },
+          "raw_results": [
+            "transactions-transaction_rollback-rep-1-reentrant/result.json",
+            "transactions-transaction_rollback-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "ownBeforeRollback": 20,
+            "outsideBeforeRollback": 10,
+            "rolledBack": 10,
+            "committed": 20,
+            "reused": 1,
+            "autoCommit": false,
+            "changed": 1
+          },
+          "raw_results": [
+            "transactions-transaction_rollback-rep-1-reentrant-outer/result.json",
+            "transactions-transaction_rollback-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    },
+    {
+      "group": "transactions",
+      "scenario": "upgrade_writer_busy",
+      "variants": {
+        "fork": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "outsideBeforeRollback": 0,
+            "policy": {
+              "pragma": 0,
+              "config": 0,
+              "jdbc": 0
+            },
+            "reused": 1,
+            "autoCommit": false,
+            "remaining": 0,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            }
+          },
+          "raw_results": [
+            "transactions-upgrade_writer_busy-rep-1-fork/result.json",
+            "transactions-upgrade_writer_busy-rep-2-fork/result.json"
+          ]
+        },
+        "fork-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "policy": {
+              "jdbc": 0,
+              "config": 0,
+              "pragma": 0
+            },
+            "outsideBeforeRollback": 0,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "remaining": 0,
+            "autoCommit": false,
+            "reused": 1
+          },
+          "raw_results": [
+            "transactions-upgrade_writer_busy-rep-1-fork-outer/result.json",
+            "transactions-upgrade_writer_busy-rep-2-fork-outer/result.json"
+          ]
+        },
+        "reentrant": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "autoCommit": false,
+            "reused": 1,
+            "policy": {
+              "config": 0,
+              "pragma": 0,
+              "jdbc": 0
+            },
+            "outsideBeforeRollback": 0,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "remaining": 0
+          },
+          "raw_results": [
+            "transactions-upgrade_writer_busy-rep-1-reentrant/result.json",
+            "transactions-upgrade_writer_busy-rep-2-reentrant/result.json"
+          ]
+        },
+        "reentrant-outer": {
+          "repetitions": 2,
+          "observation_valid": true,
+          "observation": {
+            "reused": 1,
+            "autoCommit": false,
+            "remaining": 0,
+            "failure": {
+              "class": "org.sqlite.SQLiteException",
+              "sqlState": null,
+              "errorCode": 5
+            },
+            "outsideBeforeRollback": 0,
+            "policy": {
+              "config": 0,
+              "jdbc": 0,
+              "pragma": 0
+            }
+          },
+          "raw_results": [
+            "transactions-upgrade_writer_busy-rep-1-reentrant-outer/result.json",
+            "transactions-upgrade_writer_busy-rep-2-reentrant-outer/result.json"
+          ]
+        }
+      }
+    }
+  ],
+  "local_verification": {
+    "platform": "macOS arm64 Temurin25.0.2",
+    "original_case_runs": 224,
+    "supplemental_timeout_race_runs": 8,
+    "observations_valid": true,
+    "coarse_cycle_detections": 4,
+    "regressions": [
+      {
+        "suites": 24,
+        "tests": 324,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 9,
+        "failed_tests": [],
+        "skipped_tests": [
+          "org.sqlite.BusyHandlerTest#basicBusyHandler",
+          "org.sqlite.BusyHandlerTest#testUnregister",
+          "org.sqlite.ControlTransactionTest#t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction",
+          "org.sqlite.ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml",
+          "org.sqlite.InsertQueryTest#reproduceDatabaseLocked",
+          "org.sqlite.SQLiteConnectionPoolDataSourceTest#proxyConnectionCloseTest",
+          "org.sqlite.SerializeTest#testPerformance",
+          "org.sqlite.SerializeTest#testVeryLarge",
+          "org.sqlite.StatementTest#ambiguousColumnNaming"
+        ],
+        "variant": "fork",
+        "stage": "normal",
+        "process_exit_code": 0,
+        "native_sha256": "7e1ed3118ee93af4fb0538a9ace5b9deebf565d5e703942dafc4ed240a796593",
+        "valid": true
+      },
+      {
+        "suites": 2,
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failed_tests": [],
+        "skipped_tests": [],
+        "variant": "fork",
+        "stage": "fault",
+        "process_exit_code": 0,
+        "native_sha256": "c16c44425623ee11d4f01fe2c7b5abb7a9d85c1d52cc1075dc631a32d347b682",
+        "valid": true
+      },
+      {
+        "suites": 24,
+        "tests": 324,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 9,
+        "failed_tests": [],
+        "skipped_tests": [
+          "org.sqlite.BusyHandlerTest#basicBusyHandler",
+          "org.sqlite.BusyHandlerTest#testUnregister",
+          "org.sqlite.ControlTransactionTest#t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction",
+          "org.sqlite.ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml",
+          "org.sqlite.InsertQueryTest#reproduceDatabaseLocked",
+          "org.sqlite.SQLiteConnectionPoolDataSourceTest#proxyConnectionCloseTest",
+          "org.sqlite.SerializeTest#testPerformance",
+          "org.sqlite.SerializeTest#testVeryLarge",
+          "org.sqlite.StatementTest#ambiguousColumnNaming"
+        ],
+        "variant": "fork-outer",
+        "stage": "normal",
+        "process_exit_code": 0,
+        "native_sha256": "7e1ed3118ee93af4fb0538a9ace5b9deebf565d5e703942dafc4ed240a796593",
+        "valid": true
+      },
+      {
+        "suites": 2,
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failed_tests": [],
+        "skipped_tests": [],
+        "variant": "fork-outer",
+        "stage": "fault",
+        "process_exit_code": 0,
+        "native_sha256": "c16c44425623ee11d4f01fe2c7b5abb7a9d85c1d52cc1075dc631a32d347b682",
+        "valid": true
+      },
+      {
+        "suites": 24,
+        "tests": 324,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 9,
+        "failed_tests": [],
+        "skipped_tests": [
+          "org.sqlite.BusyHandlerTest#basicBusyHandler",
+          "org.sqlite.BusyHandlerTest#testUnregister",
+          "org.sqlite.ControlTransactionTest#t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction",
+          "org.sqlite.ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml",
+          "org.sqlite.InsertQueryTest#reproduceDatabaseLocked",
+          "org.sqlite.SQLiteConnectionPoolDataSourceTest#proxyConnectionCloseTest",
+          "org.sqlite.SerializeTest#testPerformance",
+          "org.sqlite.SerializeTest#testVeryLarge",
+          "org.sqlite.StatementTest#ambiguousColumnNaming"
+        ],
+        "variant": "reentrant",
+        "stage": "normal",
+        "process_exit_code": 0,
+        "native_sha256": "7e1ed3118ee93af4fb0538a9ace5b9deebf565d5e703942dafc4ed240a796593",
+        "valid": true
+      },
+      {
+        "suites": 2,
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failed_tests": [],
+        "skipped_tests": [],
+        "variant": "reentrant",
+        "stage": "fault",
+        "process_exit_code": 0,
+        "native_sha256": "c16c44425623ee11d4f01fe2c7b5abb7a9d85c1d52cc1075dc631a32d347b682",
+        "valid": true
+      },
+      {
+        "suites": 24,
+        "tests": 324,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 9,
+        "failed_tests": [],
+        "skipped_tests": [
+          "org.sqlite.BusyHandlerTest#basicBusyHandler",
+          "org.sqlite.BusyHandlerTest#testUnregister",
+          "org.sqlite.ControlTransactionTest#t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction",
+          "org.sqlite.ControlTransactionTest#t12_compatibilityProbeFailureDoesNotRepeatUserDml",
+          "org.sqlite.InsertQueryTest#reproduceDatabaseLocked",
+          "org.sqlite.SQLiteConnectionPoolDataSourceTest#proxyConnectionCloseTest",
+          "org.sqlite.SerializeTest#testPerformance",
+          "org.sqlite.SerializeTest#testVeryLarge",
+          "org.sqlite.StatementTest#ambiguousColumnNaming"
+        ],
+        "variant": "reentrant-outer",
+        "stage": "normal",
+        "process_exit_code": 0,
+        "native_sha256": "7e1ed3118ee93af4fb0538a9ace5b9deebf565d5e703942dafc4ed240a796593",
+        "valid": true
+      },
+      {
+        "suites": 2,
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failed_tests": [],
+        "skipped_tests": [],
+        "variant": "reentrant-outer",
+        "stage": "fault",
+        "process_exit_code": 0,
+        "native_sha256": "c16c44425623ee11d4f01fe2c7b5abb7a9d85c1d52cc1075dc631a32d347b682",
+        "valid": true
+      }
+    ]
+  },
+  "methodology": [
+    "Exact generated executeLargeUpdate body guard is exercised through real public JDBC calls; executeUpdate delegates. Other entrypoints are not widened.",
+    "Four classpaths separate monitor/ReentrantLock selection from original/coarse scope. Native binary is identical within each normal/fault stage.",
+    "Fresh JVM per scenario; rendezvous gates and bounded futures; no assertion of BLOCKED versus WAITING implementation state.",
+    "Metadata cycles use platform threads so ThreadMXBean can identify monitor/ownable-lock cycles; callback/cancel/transaction probes also use virtual threads.",
+    "One pre-existing transaction regression removed its Thread.State.BLOCKED-specific orchestration; final rollback/data assertions remain intact.",
+    "Early invalid probes assumed fatal UDF/READONLY statements remained reusable; source DB.execute finalizes these errors. Final probes record reuse behavior and separately validate recovery with a fresh prepared statement."
+  ],
+  "interpretation_limits": [
+    "No claim that every observable ordering/latency change violates the JDBC specification.",
+    "New deadlock requires a public JDBC4Connection subclass override that queries metadata plus a concurrent metadata caller; not a claim that default JDBC callers always deadlock.",
+    "External DB/Connection monitor coordination loss is a primitive-migration difference, not a new outer-scope regression.",
+    "Timeout configuration/native-policy divergence and fatal-error statement invalidation were observed on original scope too; not caused by coarsening.",
+    "This is not proof of all JDBC methods, all interleavings, all native lifetime races, or all JDK/Android runtimes. Native timed-busy cancellation is not equated with the deliberately gated custom-handler cases.",
+    "Seven pre-existing disabled tests remain disabled; two normal-library fault-only skips were exercised in the separate fault stage."
+  ]
+}
