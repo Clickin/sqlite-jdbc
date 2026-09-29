@@ -286,6 +286,9 @@ public abstract class DB implements Codes {
 
     private volatile boolean setlkTimeoutCapabilityChecked;
 
+    /** SQLITE_ENABLE_SETLK_TIMEOUT of the loaded native library; null until read successfully. */
+    private static volatile Boolean loadedLibrarySetlkTimeoutCapability;
+
     /**
      * Executes one driver-generated transaction control statement with Java-side busy waits: each
      * native attempt installs a non-sleeping busy marker instead of the default timeout handler,
@@ -416,7 +419,14 @@ public abstract class DB implements Codes {
             return false;
         }
         if (!setlkTimeoutCapabilityChecked) {
-            setlkTimeoutCapability = detectSetlkTimeoutCapability();
+            // Compile options belong to the loaded native library, so a known answer is shared by
+            // every connection; an unreadable one is retried per connection and means fallback.
+            Boolean capability = loadedLibrarySetlkTimeoutCapability;
+            if (capability == null) {
+                capability = detectSetlkTimeoutCapability();
+                loadedLibrarySetlkTimeoutCapability = capability;
+            }
+            setlkTimeoutCapability = capability;
             setlkTimeoutCapabilityChecked = true;
         }
         return Boolean.FALSE.equals(setlkTimeoutCapability);
