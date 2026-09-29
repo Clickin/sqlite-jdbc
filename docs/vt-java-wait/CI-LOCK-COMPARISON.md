@@ -2,6 +2,8 @@
 
 **분리된 GitHub CI [36509360919](https://github.com/Clickin/sqlite-jdbc/actions/runs/36509360919)가 성공했다.** 64개 성능 JVM이 동일한 작업량을 모두 완료했다. ReentrantLock은 single/private16/shared16에서 이득이 있었지만, shared4에서는 CPU가 늘어 보편적인 개선으로 결론 내리지 않는다. 상세 수치는 아래 실제 CI 결과와 [결과 JSON](ci-lock-comparison-results.json)에 있다.
 
+후속 [shared4 원인 분석](CI-LOCK-CAUSE.md)은 SQLite busy 재시도, AQS spin, VT scheduler와 락 범위를 분리해 검증했다. 아래의 과거 수치는 그대로 보존하며, 조건에 따라 shared16의 우위도 바뀌었으므로 작업자 수만으로 일반화하지 않는다.
+
 ## 목적과 제외 범위
 
 **HTTP/admission/pool/disk/backup을 제거하고, 같은 SQLite 작업을 같은 횟수만큼 완료하는 비용을 비교한다.** 비교 대상은 현재 fork, 내부 conn monitor 3개를 제거한 flat, DB당 non-fair ReentrantLock 하나를 쓰는 후보이며 xerial을 대조군으로 둔다. Production driver는 변경하지 않는다.
