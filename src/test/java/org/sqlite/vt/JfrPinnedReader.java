@@ -47,7 +47,13 @@ public class JfrPinnedReader {
             System.out.println("PINNED=" + count);
             System.exit(0);
         } catch (Throwable error) {
-            System.out.println("READER-ERROR " + error);
+            Throwable cause = error;
+            while (cause instanceof java.lang.reflect.InvocationTargetException
+                    && cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+            System.out.println("READER-ERROR " + cause);
+            cause.printStackTrace(System.out);
             System.exit(1);
         }
     }

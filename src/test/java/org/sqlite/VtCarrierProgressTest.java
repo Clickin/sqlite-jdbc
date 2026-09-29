@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
@@ -30,7 +31,12 @@ import org.junit.jupiter.api.io.TempDir;
  * <p>Runs only on JDKs with virtual threads (19+); JUnit assumptions keep the skips honest on Java
  * 8. Evidence (child command, output, exit codes, JFR recordings) is written under
  * target/vt-wait-evidence/.
+ *
+ * <p>The independent-progress scenarios need JEP 491 (JDK 24+): before it, a virtual thread that
+ * waits inside the connection monitor pins its carrier, so on JDK 19-23 the single carrier cannot
+ * run another virtual thread until the wait ends. The exclusion scenarios run on JDK 19+.
  */
+@DisabledInNativeImage // spawns child JVMs from java.home
 public class VtCarrierProgressTest {
 
     @TempDir File tempDir;
@@ -65,6 +71,11 @@ public class VtCarrierProgressTest {
     private void runScenarioAndAssert(String scenario, boolean assertIndependentProgress)
             throws Exception {
         assumeTrue(jdkFeatureVersion() >= 19, "virtual threads require JDK 19+");
+        if (assertIndependentProgress) {
+            assumeTrue(
+                    jdkFeatureVersion() >= 24,
+                    "a wait inside a monitor pins the carrier before JEP 491 (JDK 24)");
+        }
 
         Path evidenceDir = Paths.get(EVIDENCE_DIR, scenario + "-" + System.currentTimeMillis());
         Files.createDirectories(evidenceDir);
@@ -135,7 +146,7 @@ public class VtCarrierProgressTest {
             assertThat(stdout).anyMatch(line -> line.equals("PROBER-ALIVE-AFTER-400MS=true"));
         }
 
-        int pinned = readPinnedEventCount(evidenceDir.resolve(scenario + ".jfr"));
+        int pinned = readPinnedEventCount(evidenceDir, scenario + ".jfr");
         if (jdkFeatureVersion() >= 24) {
             // JEP 491: a waiting virtual thread must release its carrier; sleeping inside the
             // native busy loop would keep it. JFR is auxiliary evidence, the child progress
@@ -147,8 +158,16 @@ public class VtCarrierProgressTest {
         }
     }
 
-    /** Reads jdk.VirtualThreadPinned events with a dedicated reader JVM; -1 when unavailable. */
-    private int readPinnedEventCount(Path recording) throws Exception {
+    /**
+     * Reads jdk.VirtualThreadPinned events with a dedicated reader JVM; -1 when unavailable.
+     *
+     * <p>Under QEMU user-mode emulation (the multiarch CI jobs set SKIP_TEST_MULTIARCH) the reader
+     * has failed on recordings that the same JDK reads natively, so there a reader failure is
+     * recorded as evidence instead of failing the test. The child progress markers remain the
+     * primary proof everywhere.
+     */
+    private int readPinnedEventCount(Path evidenceDir, String recordingName) throws Exception {
+        Path recording = evidenceDir.resolve(recordingName);
         if (!Files.exists(recording)) {
             return -1;
         }
@@ -173,6 +192,15 @@ public class VtCarrierProgressTest {
             if (line.startsWith("PINNED=")) {
                 return Integer.parseInt(line.substring("PINNED=".length()).trim());
             }
+        }
+        Files.write(
+                evidenceDir.resolve(recordingName + "-reader.txt"),
+                String.join("\n", output).getBytes(StandardCharsets.UTF_8));
+        if (Boolean.parseBoolean(System.getenv("SKIP_TEST_MULTIARCH"))) {
+            System.out.println(
+                    "JFR reader failed under emulation (informational): "
+                            + String.join("\n", output));
+            return -1;
         }
         // The reader JVM must be able to read recordings on verification JDKs; do not swallow.
         if (jdkFeatureVersion() >= 21) {
