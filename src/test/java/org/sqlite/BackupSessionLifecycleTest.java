@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -232,6 +234,144 @@ public class BackupSessionLifecycleTest {
                                     3,
                                     1);
             assertThat(rc).isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
+        }
+    }
+
+    @Test
+    void restoreObserverFailureRollsBackAndReleasesDestination() throws Exception {
+        File source = new File(tempDir, "restore-source.sqlite");
+        try (SQLiteConnection conn =
+                        (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite::memory:");
+                Statement stmt = conn.createStatement()) {
+            createSample(conn);
+            assertThat(conn.getDatabase().backup("main", source.getAbsolutePath(), null))
+                    .isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
+            stmt.executeUpdate("delete from sample where id = 2");
+            RuntimeException failure = new RuntimeException("restore observer");
+            assertThatThrownBy(
+                            () ->
+                                    conn.getDatabase()
+                                            .restore(
+                                                    "main",
+                                                    source.getAbsolutePath(),
+                                                    (remaining, pageCount) -> {
+                                                        throw failure;
+                                                    },
+                                                    1,
+                                                    0,
+                                                    1))
+                    .isSameAs(failure);
+            try (ResultSet rows = stmt.executeQuery("select count(*) from sample")) {
+                assertThat(rows.next()).isTrue();
+                assertThat(rows.getInt(1)).isEqualTo(1);
+            }
+            assertThat(conn.getDatabase().restore("main", source.getAbsolutePath(), null))
+                    .isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
+            try (ResultSet rows = stmt.executeQuery("select count(*) from sample")) {
+                assertThat(rows.next()).isTrue();
+                assertThat(rows.getInt(1)).isEqualTo(2);
+            }
+        }
+    }
+
+    @Test
+    void nullFileNamesKeepNativeFailureCode() throws Exception {
+        try (SQLiteConnection conn =
+                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite::memory:")) {
+            assertThat(conn.getDatabase().backup("main", null, null))
+                    .isEqualTo(SQLiteErrorCode.SQLITE_NOMEM.code);
+            assertThat(conn.getDatabase().restore("main", null, null))
+                    .isEqualTo(SQLiteErrorCode.SQLITE_NOMEM.code);
+        }
+    }
+
+    @Test
+    void restoreObserverCannotUseOrCloseDestination() throws Exception {
+        File source = new File(tempDir, "restore-source.sqlite");
+        try (SQLiteConnection conn =
+                (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite::memory:")) {
+            createSample(conn);
+            assertThat(conn.getDatabase().backup("main", source.getAbsolutePath(), null))
+                    .isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
+            try (Statement stmt = conn.createStatement();
+                    PreparedStatement prepared = conn.prepareStatement("select 42")) {
+                AtomicInteger calls = new AtomicInteger();
+                DB.ProgressObserver observer =
+                        (remaining, pageCount) -> {
+                            calls.incrementAndGet();
+                            assertThatThrownBy(() -> stmt.executeQuery("select 42"))
+                                    .isInstanceOf(SQLException.class)
+                                    .hasMessageContaining("restore");
+                            assertThatThrownBy(prepared::executeQuery)
+                                    .isInstanceOf(SQLException.class)
+                                    .hasMessageContaining("restore");
+                            assertThatThrownBy(prepared::close)
+                                    .isInstanceOf(SQLException.class)
+                                    .hasMessageContaining("restore");
+                            assertThatThrownBy(conn::close)
+                                    .isInstanceOf(SQLException.class)
+                                    .hasMessageContaining("backup/restore");
+                            assertThatThrownBy(() -> conn.setBusyTimeout(1))
+                                    .isInstanceOf(SQLException.class)
+                                    .hasMessageContaining("restore");
+                        };
+                assertThat(
+                                conn.getDatabase()
+                                        .restore(
+                                                "main",
+                                                source.getAbsolutePath(),
+                                                observer,
+                                                1,
+                                                0,
+                                                1))
+                        .isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
+                assertThat(calls.get()).isGreaterThan(0);
+                assertThat(conn.isClosed()).isFalse();
+                try (ResultSet rows = prepared.executeQuery()) {
+                    assertThat(rows.next()).isTrue();
+                    assertThat(rows.getInt(1)).isEqualTo(42);
+                }
+                try (ResultSet rows = stmt.executeQuery("select count(*) from sample")) {
+                    assertThat(rows.next()).isTrue();
+                    assertThat(rows.getInt(1)).isEqualTo(2);
+                }
+            }
+        }
+    }
+
+    @Test
+    void backupObserverCanQuerySourceButCannotCloseIt() throws Exception {
+        File destination = new File(tempDir, "backup-destination.sqlite");
+        try (SQLiteConnection conn =
+                        (SQLiteConnection) DriverManager.getConnection("jdbc:sqlite::memory:");
+                Statement stmt = conn.createStatement()) {
+            createSample(conn);
+            AtomicInteger calls = new AtomicInteger();
+            DB.ProgressObserver observer =
+                    (remaining, pageCount) -> {
+                        calls.incrementAndGet();
+                        assertThatThrownBy(conn::close)
+                                .isInstanceOf(SQLException.class)
+                                .hasMessageContaining("backup/restore");
+                        try (ResultSet rows = stmt.executeQuery("select count(*) from sample")) {
+                            assertThat(rows.next()).isTrue();
+                            assertThat(rows.getInt(1)).isEqualTo(2);
+                        } catch (SQLException error) {
+                            throw new AssertionError(error);
+                        }
+                    };
+            assertThat(
+                            conn.getDatabase()
+                                    .backup(
+                                            "main",
+                                            destination.getAbsolutePath(),
+                                            observer,
+                                            1,
+                                            0,
+                                            1))
+                    .isEqualTo(SQLiteErrorCode.SQLITE_OK.code);
+            assertThat(calls.get()).isGreaterThan(0);
+            assertThat(conn.isClosed()).isFalse();
         }
     }
 

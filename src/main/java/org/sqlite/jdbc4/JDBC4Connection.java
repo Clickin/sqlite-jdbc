@@ -28,11 +28,13 @@ public class JDBC4Connection extends JDBC3Connection {
 
     public PreparedStatement prepareStatement(String sql, int rst, int rsc, int rsh)
             throws SQLException {
-        checkOpen();
-        checkCursor(rst, rsc, rsh);
+        synchronized (getDatabase()) {
+            checkOpen();
+            checkCursor(rst, rsc, rsh);
 
-        recoverTransactionRestart();
-        return new JDBC4PreparedStatement(this, sql);
+            recoverTransactionRestart();
+            return new JDBC4PreparedStatement(this, sql);
+        }
     }
 
     // JDBC 4

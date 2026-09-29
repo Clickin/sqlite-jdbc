@@ -36,6 +36,16 @@ Eligibility uses the live native `PRAGMA busy_timeout`, driver BusyHandler regis
 
 If COMMIT/ROLLBACK succeeds but the following BEGIN fails, the exact failed BEGIN is retained as pending. User SQL is blocked before prepare/execute can cause side effects; `commit`, `rollback`, `setAutoCommit(true)`, or a later statement recover only that BEGIN. Recovery preserves the primary SQLite error code and does not imply that the preceding operation failed.
 
+Transaction transitions now hold the DB monitor until the JDBC restart state is updated. Statement execution, batch execution, savepoints, and prepared-statement creation check recovery while holding that same monitor, so a statement queued behind a failed BEGIN cannot run in implicit auto-commit mode. An already-interrupted thread is rejected before its first eligible control attempt. If the compatibility COMMIT throws during cancellation, its BEGIN is rolled back just as it is for a returned error code.
+
+Review regressions were reproduced before the fixes: a pre-interrupted BEGIN succeeded, a compatibility-COMMIT exception left later inserts invisible to another connection, and an insert queued behind a failed restart survived `rollback()`. All three passed after the fixes with the fault-enabled native library:
+
+```shell
+mvn -q test '-Dtest=ControlTransactionTest#t03PreInterruptedBeginDoesNotStartATransaction+t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction+t07ConcurrentStatementCannotBypassAFailedTransactionRestart'
+```
+
+The review run exercised 3 tests with no failures, errors, or skips. A standalone JDBC smoke also observed `SQLITE_INTERRUPT` with auto-commit and the interrupt flag preserved, then successfully inserted and rolled back on the recovered connection. The full-suite numbers below describe the original implementation run, not a new post-review full-suite run.
+
 ## Verification
 
 - JDK 25 full suite: `mvn -q test` — 446 tests, 0 failures, 0 errors, 12 skipped.

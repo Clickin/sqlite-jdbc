@@ -1,6 +1,7 @@
 package org.sqlite;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Path;
@@ -10,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -413,6 +415,33 @@ public class ControlTransactionTest {
     }
 
     @Test
+    void t12_interruptedCompatibilityCommitDoesNotLeakAnOpenTransaction() throws Exception {
+        try (Connection connection =
+                        open("interrupted-probe.db", 1000, SQLiteConfig.TransactionMode.DEFERRED);
+                Statement statement = connection.createStatement();
+                Connection observer =
+                        open("interrupted-probe.db", 1000, SQLiteConfig.TransactionMode.DEFERRED)) {
+            createTable(connection);
+            boolean faultLibrary = true;
+            try {
+                NativeDBHelper.backupTestOutstanding(((SQLiteConnection) connection).getDatabase());
+            } catch (UnsatisfiedLinkError unavailable) {
+                faultLibrary = false;
+            }
+            assumeTrue(faultLibrary, "run with make test-faults");
+            NativeDBHelper.interruptNextAutocommitProbeCommit(
+                    ((SQLiteConnection) connection).getDatabase());
+            assertThatExceptionOfType(SQLException.class)
+                    .isThrownBy(() -> statement.execute("insert into t values (1)"))
+                    .satisfies(failure -> assertThat(failure.getErrorCode() & 0xff).isEqualTo(9));
+            assertThat(connection.getAutoCommit()).isTrue();
+            assertThat(count(observer)).isEqualTo(1);
+            statement.execute("insert into t values (2)");
+            assertThat(count(observer)).isEqualTo(2);
+        }
+    }
+
+    @Test
     void t13_constraintErrorsAreNotRetried() throws Exception {
         try (Connection connection =
                         open("constraint.db", 1000, SQLiteConfig.TransactionMode.DEFERRED);
@@ -589,6 +618,26 @@ public class ControlTransactionTest {
     }
 
     @Test
+    void t03PreInterruptedBeginDoesNotStartATransaction() throws Exception {
+        try (Connection connection =
+                open("pre-interrupted-begin.db", 1000, SQLiteConfig.TransactionMode.IMMEDIATE)) {
+            try {
+                Thread.currentThread().interrupt();
+                assertThatExceptionOfType(SQLException.class)
+                        .isThrownBy(() -> connection.setAutoCommit(false))
+                        .satisfies(
+                                failure -> assertThat(failure.getErrorCode() & 0xff).isEqualTo(9));
+                assertThat(Thread.currentThread().isInterrupted()).isTrue();
+                assertThat(connection.getAutoCommit()).isTrue();
+            } finally {
+                Thread.interrupted();
+            }
+            connection.setAutoCommit(false);
+            connection.rollback();
+        }
+    }
+
+    @Test
     void t03StatementCancelDoesNotWaitForDatabaseMonitorOrPoisonNextOperation() throws Exception {
         try (Connection blocker =
                         open("statement-cancel.db", 500, SQLiteConfig.TransactionMode.DEFERRED);
@@ -701,6 +750,62 @@ public class ControlTransactionTest {
                 assertThat(result.next()).isTrue();
                 assertThat(result.getInt(1)).isEqualTo(2);
                 assertThat(result.next()).isFalse();
+            }
+        }
+    }
+
+    @Test
+    void t07ConcurrentStatementCannotBypassAFailedTransactionRestart() throws Exception {
+        try (Connection waiter =
+                        open("concurrent-restart.db", 5000, SQLiteConfig.TransactionMode.DEFERRED);
+                Connection reader =
+                        open("concurrent-restart.db", 1000, SQLiteConfig.TransactionMode.DEFERRED);
+                Statement statement = waiter.createStatement()) {
+            createTable(waiter);
+            insert(waiter, 1);
+            statement.executeUpdate("create temp table temp_t(v)");
+            waiter.setAutoCommit(false);
+            statement.executeUpdate("insert into temp_t values (1)");
+            reader.setAutoCommit(false);
+            try (Statement readStatement = reader.createStatement();
+                    ResultSet result = readStatement.executeQuery("select * from t")) {
+                assertThat(result.next()).isTrue();
+            }
+            ((SQLiteConnection) waiter)
+                    .getConnectionConfig()
+                    .setTransactionMode(SQLiteConfig.TransactionMode.EXCLUSIVE);
+            long waits = waitCount();
+            ExecutorService executor = Executors.newFixedThreadPool(2);
+            CountDownLatch statementStarted = new CountDownLatch(1);
+            try {
+                Future<SQLException> commit =
+                        executor.submit(
+                                () -> {
+                                    try {
+                                        waiter.commit();
+                                        return null;
+                                    } catch (SQLException exception) {
+                                        return exception;
+                                    }
+                                });
+                awaitWait(waits);
+                Future<Integer> insert =
+                        executor.submit(
+                                () -> {
+                                    statementStarted.countDown();
+                                    return statement.executeUpdate("insert into temp_t values (2)");
+                                });
+                assertThat(statementStarted.await(2, TimeUnit.SECONDS)).isTrue();
+                assertThat(commit.get(7, TimeUnit.SECONDS).getErrorCode() & 0xff).isEqualTo(5);
+                reader.setAutoCommit(true);
+                assertThat(insert.get(5, TimeUnit.SECONDS)).isEqualTo(1);
+                waiter.rollback();
+                try (ResultSet result = statement.executeQuery("select count(*) from temp_t")) {
+                    assertThat(result.next()).isTrue();
+                    assertThat(result.getInt(1)).isEqualTo(1);
+                }
+            } finally {
+                executor.shutdownNow();
             }
         }
     }

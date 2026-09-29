@@ -49,7 +49,6 @@ public abstract class JDBC3Statement extends CoreStatement {
 
         return this.withConnectionTimeout(
                 () -> {
-                    recoverTransactionRestart();
                     SQLExtension ext = ExtendedCommand.parse(sql);
                     if (ext != null) {
                         if (conn instanceof JDBC3Connection) {
@@ -94,7 +93,6 @@ public abstract class JDBC3Statement extends CoreStatement {
 
         return this.withConnectionTimeout(
                 () -> {
-                    recoverTransactionRestart();
                     conn.getDatabase().prepare(JDBC3Statement.this);
 
                     if (!exec()) {
@@ -248,13 +246,13 @@ public abstract class JDBC3Statement extends CoreStatement {
         // TODO: optimize
         internalClose();
         if (batch == null || batchPos == 0) return new long[] {};
-        if (conn instanceof JDBC3Connection) {
-            ((JDBC3Connection) conn).tryEnforceTransactionMode();
-        }
 
         long[] changes = new long[batchPos];
         DB db = conn.getDatabase();
         synchronized (db) {
+            if (conn instanceof JDBC3Connection) {
+                ((JDBC3Connection) conn).tryEnforceTransactionMode();
+            }
             try {
                 for (int i = 0; i < changes.length; i++) {
                     try {
@@ -472,17 +470,22 @@ public abstract class JDBC3Statement extends CoreStatement {
     }
 
     protected <T> T withConnectionTimeout(SQLCallable<T> callable) throws SQLException {
-        int origBusyTimeout = conn.getBusyTimeout();
-        if (queryTimeout > 0) {
-            // SQLite handles busy timeout in milliseconds, JDBC in seconds
-            conn.setBusyTimeout(1000 * queryTimeout);
-        }
-        try {
-            return callable.call();
-        } finally {
+        synchronized (conn.getDatabase()) {
+            int origBusyTimeout = conn.getBusyTimeout();
             if (queryTimeout > 0) {
-                // reset connection timeout to the original value
-                conn.setBusyTimeout(origBusyTimeout);
+                // SQLite handles busy timeout in milliseconds, JDBC in seconds
+                conn.setBusyTimeout(1000 * queryTimeout);
+            }
+            try {
+                // Recheck after acquiring the monitor: another thread may have completed a
+                // COMMIT but failed its following BEGIN while this statement was blocked.
+                recoverTransactionRestart();
+                return callable.call();
+            } finally {
+                if (queryTimeout > 0) {
+                    // reset connection timeout to the original value
+                    conn.setBusyTimeout(origBusyTimeout);
+                }
             }
         }
     }
