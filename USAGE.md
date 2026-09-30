@@ -205,6 +205,20 @@ config.setExplicitReadOnly(true);
 try (Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:?jdbc.explicit_readonly=true")) { /*...*/ }
 ```
 
+## Virtual threads and busy waits
+
+When a database is locked, SQLite normally sleeps inside native code until `busy_timeout` expires. A virtual thread cannot unmount during that sleep, so it blocks its carrier thread.
+
+For the following operations, the driver waits in Java instead:
+- online backup and restore (`backup to` / `restore from`)
+- the `BEGIN` and `COMMIT` statements the driver issues itself, for `setAutoCommit`, `commit`, `rollback` and explicit read-only transactions
+
+The busy timeout, error codes and interrupt behavior stay the same. Other threads using the same connection still wait until the operation finishes.
+
+On JDK 24 and later, a virtual thread waiting in these operations releases its carrier. On earlier JDKs the calling thread blocks as before.
+
+All other SQL, including `BEGIN`/`COMMIT` written by the application, keeps SQLite's native wait. The native wait is also kept when `busy_timeout` is `0`, when a custom `BusyHandler` is registered, or when the statement runs from inside a driver callback such as a user-defined function.
+
 ## How to use with Android
 
 Android expects JNI native libraries to be bundled differently than a normal Java application.
