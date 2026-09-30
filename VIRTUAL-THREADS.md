@@ -36,7 +36,4 @@ The carrier claim applies only to the eligible generated-control waits and backu
 
 - `mvn -q test -Dtest=BusyPolicyTest,ControlTransactionTest` exercises real lock contention, all P01–P12 policy transitions, transaction restart failures, cancellation, attached databases, extended BUSY_SNAPSHOT, and callback reentry.
 - `mvn -q test -Dtest=VtCarrierProgressTest` launches independent child JVMs with one scheduler carrier. BEGIN IMMEDIATE and reader-blocked COMMIT both let an independent virtual thread finish while the target is still waiting; the same-connection exclusion scenario stays blocked.
-- `bash scripts/vt-wait-control-group.sh` runs the same backup, BEGIN, and COMMIT scenarios against the parent native-wait implementation and current Java-wait implementation. In the current JDK 25 run, the independent virtual thread completed during each current wait; parent runs completed it only after native timeout. JFR is auxiliary; child progress markers are the primary evidence.
-- Final JDK 25 full suite: 446 tests, 0 failures, 0 errors, 12 skipped (3 backup fault-injection tests and the T12 probe-fault test require `make test-faults`).
 - `make test-faults`: 3 backup ownership-fault tests and T12 autocommit-probe failure recovery passed.
-- `JAVA_HOME=<JDK 8> bash scripts/vt-java8-smoke.sh`: production compile plus backup, generated BEGIN wait, and interrupt restoration passed. The full Maven test build is blocked on JDK 8 by the Java 11 Enforcer rule and test dependencies compiled for class-file version 55; no full Java 8 suite result is claimed.
